@@ -62,6 +62,7 @@ export default function AdminPage() {
           <button onClick={logout} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>Sair</button>
         </div>
       </div>
+      <StatsBar />
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}>{tabBtn('teams', 'EQUIPAS')}{tabBtn('fixtures', 'CALENDÁRIO')}{tabBtn('knockout', 'FASE FINAL')}{tabBtn('settings', 'DEFINIÇÕES')}{tabBtn('access', 'ACESSOS')}</div>
 
       {tab === 'teams' && <TeamsTab state={state} apply={apply} />}
@@ -70,6 +71,33 @@ export default function AdminPage() {
       {tab === 'settings' && <SettingsTab state={state} apply={apply} />}
       {tab === 'access' && <AccessTab />}
       {open && <ScoringModal state={state} m={open} apply={apply} onClose={() => setOpenId(null)} editUnlock={editUnlock} setEditUnlock={setEditUnlock} />}
+    </div>
+  );
+}
+
+function StatsBar() {
+  const [s, setS] = useState<{ online: number; push: number; visits: number } | null>(null);
+  useEffect(() => {
+    let live = true;
+    const load = () => fetch('/api/stats').then((r) => (r.ok ? r.json() : null)).then((d) => { if (live && d) setS(d); }).catch(() => {});
+    load();
+    const id = setInterval(load, 10000);
+    return () => { live = false; clearInterval(id); };
+  }, []);
+  const chip = (icon: string, label: string, val: number | undefined, color: string) => (
+    <div style={{ flex: 1, minWidth: 130, background: '#fff', border: '1px solid #e4ece0', borderRadius: 12, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 11 }}>
+      <span style={{ fontSize: 20 }}>{icon}</span>
+      <div style={{ minWidth: 0 }}>
+        <div className="cond" style={{ fontWeight: 800, fontSize: 24, color, lineHeight: 1 }}>{val ?? '–'}</div>
+        <div style={{ fontSize: 11.5, color: '#8aa093', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3 }}>{label}</div>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+      {chip('📡', 'Online agora', s?.online, GREEN)}
+      {chip('🔔', 'Com notificações', s?.push, '#2563eb')}
+      {chip('👁️', 'Visitas (total)', s?.visits, DGREEN)}
     </div>
   );
 }

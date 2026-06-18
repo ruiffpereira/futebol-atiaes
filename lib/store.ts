@@ -9,11 +9,13 @@ import { detectEvents, sendPushToAll, type PushSub } from './push';
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
 const SUBS_FILE = path.join(DATA_DIR, 'subscriptions.json');
+const STATS_FILE = path.join(DATA_DIR, 'stats.json');
 
 type Store = {
   state: TournamentState;
   subscribers: Set<(s: TournamentState) => void>;   // SSE
   pushSubs: PushSub[];                               // Web Push
+  visits: number;                                    // total de aberturas da página
   saveTimer: ReturnType<typeof setTimeout> | null;
 };
 
@@ -21,7 +23,7 @@ function readJSON<T>(file: string, fallback: T): T {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }
 }
 function init(): Store {
-  return { state: readJSON(STATE_FILE, defaultState()), subscribers: new Set(), pushSubs: readJSON(SUBS_FILE, [] as PushSub[]), saveTimer: null };
+  return { state: readJSON(STATE_FILE, defaultState()), subscribers: new Set(), pushSubs: readJSON(SUBS_FILE, [] as PushSub[]), visits: readJSON(STATS_FILE, { visits: 0 }).visits || 0, saveTimer: null };
 }
 
 const g = globalThis as unknown as { __torneioStore?: Store };
@@ -50,6 +52,13 @@ export function setState(next: TournamentState): void {
 export function subscribe(fn: (s: TournamentState) => void): () => void {
   store.subscribers.add(fn);
   return () => { store.subscribers.delete(fn); };
+}
+
+// ---- estatísticas / observabilidade ----
+function persistStats() { try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(STATS_FILE, JSON.stringify({ visits: store.visits })); } catch {} }
+export function bumpVisits(): void { store.visits++; persistStats(); }
+export function getLiveStats(): { online: number; push: number; visits: number } {
+  return { online: store.subscribers.size, push: store.pushSubs.length, visits: store.visits };
 }
 
 // ---- Web Push subscriptions ----

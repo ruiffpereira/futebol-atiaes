@@ -25,13 +25,18 @@ const GREEN = "#15803d",
 type Tab = "standings" | "live" | "schedule" | "stats" | "profile";
 
 export default function PublicPage() {
-  const { state } = useTournament();
+  const { state, loading } = useTournament();
   const { on, supported, enable } = useNotifications();
   const [tab, setTab] = useState<Tab>("standings");
   const [rules, setRules] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
+
+  // conta uma visita por abertura da página
+  useEffect(() => {
+    fetch("/api/visit", { method: "POST" }).catch(() => {});
+  }, []);
 
   const tn = (id: string | null) => state.teams.find((t) => t.id === id);
   const nameOf = (m: Match, side: "a" | "b") => {
@@ -113,6 +118,8 @@ export default function PublicPage() {
       <span style={{ fontSize: 10, fontWeight: 700 }}>{label}</span>
     </button>
   );
+
+  if (loading) return <LoadingScreen />;
 
   return (
     <div style={{ minHeight: "100vh" }}>
@@ -418,6 +425,61 @@ export default function PublicPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 18,
+        background: "linear-gradient(180deg,#0f4d2e,#15803d 75%,#1a9e4b)",
+      }}
+    >
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 18,
+          background: "#bef264",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 34,
+          animation: "bob 1.1s ease-in-out infinite",
+        }}
+      >
+        ⚽
+      </div>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          border: "3px solid rgba(255,255,255,.25)",
+          borderTopColor: "#fff",
+          borderRadius: "50%",
+          animation: "spin 0.8s linear infinite",
+        }}
+      />
+      <div
+        className="cond"
+        style={{
+          color: "#eafff1",
+          fontWeight: 700,
+          fontSize: 15,
+          letterSpacing: 1,
+          textTransform: "uppercase",
+        }}
+      >
+        A carregar…
+      </div>
     </div>
   );
 }

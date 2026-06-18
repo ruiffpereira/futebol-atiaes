@@ -45,5 +45,8 @@ export function useTournament() {
     mutation.mutate(next as TournamentState);
   };
 
-  return { state: (query.data || defaultState()) as TournamentState, apply, refetch: () => qc.invalidateQueries({ queryKey: KEY }) };
+  // a mostrar o placeholder = ainda não chegou o estado real do servidor
+  const loading = query.isPlaceholderData && !query.isError;
+
+  return { state: (query.data || defaultState()) as TournamentState, apply, loading, refetch: () => qc.invalidateQueries({ queryKey: KEY }) };
 }
