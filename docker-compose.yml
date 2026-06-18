@@ -12,7 +12,7 @@ services:
       - "3000"
     environment:
       # Coolify injeta o domínio aqui e cria a rota + Let's Encrypt automaticamente.
-      - SERVICE_FQDN_TORNEIO_3000
+      - SERVICE_FQDN_TORNEIO_3000=https://atiaesfutebol5.rufvision.com
       - NODE_ENV=production
       - DATA_DIR=/data
       # ⚠️ MUDA ESTES VALORES no Coolify (Environment Variables):
