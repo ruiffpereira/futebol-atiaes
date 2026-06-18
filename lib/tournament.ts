@@ -132,9 +132,23 @@ export function topGoalkeepers(d: TournamentState): KeeperRow[] {
 }
 
 // ---- fase final automática ----
+// Grupo só está 100% concluído quando TODAS as equipas jogaram entre si (round-robin)
+// e todos esses jogos terminaram. Assim a classificação final é certa.
 export function groupComplete(d: TournamentState, g: string): boolean {
+  const teams = d.teams.filter((t) => t.group === g);
+  if (teams.length < 2) return false;
   const gm = d.matches.filter((m) => m.phase === 'group' && m.group === g);
-  return gm.length > 0 && gm.every((m) => m.status === 'done');
+  // nenhum jogo do grupo pode estar por terminar
+  if (gm.some((m) => m.status !== 'done')) return false;
+  // cada par de equipas tem de ter um jogo terminado entre si
+  for (let i = 0; i < teams.length; i++) {
+    for (let j = i + 1; j < teams.length; j++) {
+      const a = teams[i].id, b = teams[j].id;
+      const played = gm.some((m) => m.status === 'done' && ((m.a === a && m.b === b) || (m.a === b && m.b === a)));
+      if (!played) return false;
+    }
+  }
+  return true;
 }
 export function koWinner(m?: Match | null): string | null {
   if (!m || m.status !== 'done' || !m.a || !m.b) return null;
