@@ -849,8 +849,13 @@ function Profile({
       textDecoration: "none",
       cursor: "pointer",
     };
+    const external = !!href && /^https?:\/\//.test(href);
     return href ? (
-      <a href={href} style={base}>
+      <a
+        href={href}
+        style={base}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
         {inner}
       </a>
     ) : (
@@ -901,6 +906,67 @@ function Profile({
       </div>
 
       {rowLink("📋", "Regulamento do torneio", onRules)}
+      {rowLink("📍", "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
+
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e4ece0",
+          borderRadius: 16,
+          padding: "16px 18px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <span style={{ fontSize: 20 }}>👨‍💼</span>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: "#13241b" }}>
+            Organizador do torneio
+          </div>
+          <div style={{ fontSize: 13, color: "#8aa093" }}>Ricardo Cunha</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <a
+            href="https://wa.me/351911103505"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#25d366",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 13.5,
+              padding: "9px 14px",
+              borderRadius: 10,
+              textDecoration: "none",
+            }}
+          >
+            WhatsApp
+          </a>
+          <a
+            href="sms:+351911103505"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#eef2ec",
+              color: DGREEN,
+              fontWeight: 700,
+              fontSize: 13.5,
+              padding: "9px 14px",
+              borderRadius: 10,
+              textDecoration: "none",
+            }}
+          >
+            SMS
+          </a>
+        </div>
+      </div>
+
       {rowLink("🔐", "Backoffice", undefined, "/admin")}
     </div>
   );
