@@ -238,6 +238,9 @@ export default function PublicPage() {
               <Section title="Fase final">
                 <div
                   style={{
+                    maxWidth: 620,
+                    margin: "0 auto",
+                    width: "100%",
                     display: "grid",
                     gridTemplateColumns:
                       "repeat(auto-fit,minmax(min(100%,240px),1fr))",
@@ -245,30 +248,47 @@ export default function PublicPage() {
                     alignItems: "start",
                   }}
                 >
-                  <div>
-                    <H sm>Meias-finais</H>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <H sm center>
+                      Meias-finais
+                    </H>
                     <KoCard
                       m={ko("sf", 1)}
                       nameOf={nameOf}
                       onClick={setDetail}
                     />
-                    <div style={{ height: 12 }} />
                     <KoCard
                       m={ko("sf", 2)}
                       nameOf={nameOf}
                       onClick={setDetail}
                     />
                   </div>
-                  <div>
-                    <H sm>Final</H>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    <H sm center>
+                      3º e 4º lugar
+                    </H>
                     <KoCard
-                      m={ko("final")}
+                      m={ko("third")}
                       nameOf={nameOf}
                       onClick={setDetail}
                     />
-                    <H sm>3º e 4º lugar</H>
+                    <H sm center>
+                      Final
+                    </H>
                     <KoCard
-                      m={ko("third")}
+                      m={ko("final")}
                       nameOf={nameOf}
                       onClick={setDetail}
                     />
@@ -1325,7 +1345,15 @@ function Line({
   );
 }
 
-const H = ({ children, sm }: { children: React.ReactNode; sm?: boolean }) => (
+const H = ({
+  children,
+  sm,
+  center,
+}: {
+  children: React.ReactNode;
+  sm?: boolean;
+  center?: boolean;
+}) => (
   <div
     className="cond"
     style={{
@@ -1333,7 +1361,8 @@ const H = ({ children, sm }: { children: React.ReactNode; sm?: boolean }) => (
       fontSize: sm ? 16 : 22,
       color: DGREEN,
       textTransform: "uppercase",
-      margin: sm ? "0 0 10px" : "0 0 12px",
+      textAlign: center ? "center" : "left",
+      margin: center ? 0 : sm ? "0 0 10px" : "0 0 12px",
     }}
   >
     {children}
