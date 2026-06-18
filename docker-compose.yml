@@ -6,9 +6,13 @@ services:
     build: .
     # imagem alternativa se preferires CI próprio:
     # image: ghcr.io/teu-utilizador/torneio-atiaes:latest
-    ports:
-      - "3000:3000"
+    # NÃO publicar a porta com "ports:" no Coolify — deixa o proxy (Traefik)
+    # encaminhar e gerar SSL. Usa "expose" para a porta interna do container.
+    expose:
+      - "3000"
     environment:
+      # Coolify injeta o domínio aqui e cria a rota + Let's Encrypt automaticamente.
+      - SERVICE_FQDN_TORNEIO_3000
       - NODE_ENV=production
       - DATA_DIR=/data
       # ⚠️ MUDA ESTES VALORES no Coolify (Environment Variables):
