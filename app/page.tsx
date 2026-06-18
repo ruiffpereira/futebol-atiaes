@@ -1201,6 +1201,22 @@ function KoCard({
         cursor: "pointer",
       }}
     >
+      {(m.date || m.time) && (
+        <div
+          className="cond"
+          style={{
+            padding: "6px 14px",
+            background: "#f6faf4",
+            borderBottom: "1px solid #f0f4ee",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#5b7163",
+            textAlign: "center",
+          }}
+        >
+          {[fmtDate(m.date), m.time].filter(Boolean).join(" · ")}
+        </div>
+      )}
       {cell(nameOf(m, "a"), sa, aw, !m.a)}
       <div style={{ height: 1, background: "#f0f4ee" }} />
       {cell(nameOf(m, "b"), sb, bw, !m.b)}
