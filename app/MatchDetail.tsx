@@ -1,6 +1,6 @@
 'use client';
 import { useTournament } from '@/lib/useTournament';
-import { scoreOf, phaseLabel, liveBadge } from '@/lib/tournament';
+import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 
 const DGREEN = '#0f4d2e', GREEN = '#15803d';
@@ -45,7 +45,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)' }}>
         <div style={{ background: 'linear-gradient(135deg,#0c2a1c,#15803d)', padding: '16px 18px', color: '#fff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#bbf7d0', textTransform: 'uppercase' }}>{phaseLabel(m)}{m.time ? ' · ' + m.time : ''}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#bbf7d0', textTransform: 'uppercase' }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>
             <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,.2)', color: '#fff', width: 30, height: 30, borderRadius: 9, fontSize: 17 }}>×</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 10 }}>

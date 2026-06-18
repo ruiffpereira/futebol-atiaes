@@ -42,16 +42,17 @@ export const actions = {
   },
 
   // ---- calendário (manual) ----
-  addMatch: (d: TournamentState, g: string, a: string, b: string, time: string): TournamentState | { error: string } => {
+  addMatch: (d: TournamentState, g: string, a: string, b: string, time: string, date = ''): TournamentState | { error: string } => {
     if (!a || !b || a === b) return { error: 'Escolhe duas equipas diferentes.' };
     const friendly = g === '__friendly__';
     if (!friendly && pairExists(d, g, a, b)) return { error: 'Essas equipas já têm um jogo neste grupo.' };
     const n = clone(d);
-    n.matches.push(newMatch(friendly ? { phase: 'friendly', group: '', a, b, time: time || '' } : { group: g, a, b, time: time || '' }));
+    n.matches.push(newMatch(friendly ? { phase: 'friendly', group: '', a, b, time: time || '', date: date || '' } : { group: g, a, b, time: time || '', date: date || '' }));
     return done(n);
   },
   removeMatch: (d: TournamentState, id: string) => { const n = clone(d); n.matches = n.matches.filter((m) => m.id !== id); return done(n, true); },
   setMatchTime: (d: TournamentState, id: string, time: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.time = time; return done(n, true); },
+  setMatchDate: (d: TournamentState, id: string, date: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.date = date; return done(n, true); },
   moveMatch: (d: TournamentState, id: string, dir: number) => {
     const n = clone(d);
     const list = n.matches.filter((m) => m.phase === 'group' || m.phase === 'friendly');

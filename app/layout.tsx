@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: { icon: '/icon.png', apple: '/icon.png' },
 };
-export const viewport: Viewport = { themeColor: '#15803d', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#0f4d2e', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

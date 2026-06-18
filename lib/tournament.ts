@@ -16,7 +16,7 @@ export function defaultState(): TournamentState {
 
 export function newMatch(extra: Partial<Match>): Match {
   return Object.assign({
-    id: uid(), phase: 'group', group: '', a: null, b: null, time: '',
+    id: uid(), phase: 'group', group: '', a: null, b: null, date: '', time: '',
     scorers: [], cards: [], status: 'scheduled', livePhase: 'first',
     finishedAt: 0, penA: 0, penB: 0,
   } as Match, extra);
@@ -30,6 +30,14 @@ export function scoreOf(m: Match, teamId: string | null): number {
 export function cardsOf(m: Match, teamId: string | null, type: 'yellow' | 'red'): number {
   let n = 0; (m.cards || []).forEach((c) => { if (c.team === teamId && c.type === type) n++; });
   return n;
+}
+
+// "YYYY-MM-DD" -> "DD/MM" (vazio se não definido)
+export function fmtDate(date?: string): string {
+  if (!date) return '';
+  const [y, mo, d] = date.split('-');
+  if (!y || !mo || !d) return date;
+  return d + '/' + mo;
 }
 
 export function phaseLabel(m: Match): string {

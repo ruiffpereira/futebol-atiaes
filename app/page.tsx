@@ -13,10 +13,12 @@ import {
   liveBadge,
   liveText,
   srcLabel,
+  fmtDate,
 } from "@/lib/tournament";
 import type { Match, TournamentState } from "@/lib/types";
 import Rules from "./Rules";
 import MatchDetail from "./MatchDetail";
+import TeamDetail from "./TeamDetail";
 
 const GREEN = "#15803d",
   DGREEN = "#0f4d2e";
@@ -29,6 +31,7 @@ export default function PublicPage() {
   const [rules, setRules] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
+  const [teamId, setTeamId] = useState<string | null>(null);
 
   const tn = (id: string | null) => state.teams.find((t) => t.id === id);
   const nameOf = (m: Match, side: "a" | "b") => {
@@ -50,6 +53,9 @@ export default function PublicPage() {
     );
   const detailMatch = detail
     ? state.matches.find((m) => m.id === detail)
+    : null;
+  const detailTeam = teamId
+    ? state.teams.find((t) => t.id === teamId)
     : null;
 
   const tabBtn = (id: Tab, label: string) => (
@@ -148,7 +154,7 @@ export default function PublicPage() {
               }}
             >
               {state.groups.map((g) => (
-                <GroupCard key={g} g={g} state={state} />
+                <GroupCard key={g} g={g} state={state} onTeam={setTeamId} />
               ))}
             </div>
           ) : (
@@ -355,6 +361,21 @@ export default function PublicPage() {
           onClose={() => setDetail(null)}
         />
       )}
+      {detailTeam && (
+        <TeamDetail
+          team={detailTeam}
+          state={state}
+          onClose={() => setTeamId(null)}
+          onMatch={(id) => {
+            setTeamId(null);
+            setDetail(id);
+          }}
+          onLive={() => {
+            setTeamId(null);
+            setTab("live");
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -378,7 +399,7 @@ function Header({
         position: "sticky",
         top: 0,
         zIndex: 40,
-        background: "linear-gradient(120deg,#0f4d2e,#15803d 60%,#1a9e4b)",
+        background: "linear-gradient(180deg,#0f4d2e,#15803d 75%,#1a9e4b)",
         boxShadow: "0 2px 18px rgba(8,46,28,.35)",
       }}
     >
@@ -900,7 +921,7 @@ function Profile({
   );
 }
 
-function GroupCard({ g, state }: { g: string; state: TournamentState }) {
+function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; onTeam: (id: string) => void }) {
   const rows = standings(state, g);
   const liveIds = new Set<string>();
   const liveInfo: Record<string, string> = {};
@@ -918,7 +939,7 @@ function GroupCard({ g, state }: { g: string; state: TournamentState }) {
         liveInfo[m.b] = scoreOf(m, m.b) + "–" + scoreOf(m, m.a) + " vs " + an;
       }
     });
-  const cols = "26px 1fr 30px 30px 30px 30px 44px 38px";
+  const cols = "24px 1fr 28px 28px 28px 28px 30px 30px 38px 34px";
   return (
     <div
       style={{
@@ -949,6 +970,7 @@ function GroupCard({ g, state }: { g: string; state: TournamentState }) {
       </div>
       <div style={{ padding: "6px 8px 10px" }}>
         <div
+          className="stand-grid"
           style={{
             display: "grid",
             gridTemplateColumns: cols,
@@ -966,12 +988,18 @@ function GroupCard({ g, state }: { g: string; state: TournamentState }) {
           <span style={{ textAlign: "center" }}>V</span>
           <span style={{ textAlign: "center" }}>E</span>
           <span style={{ textAlign: "center" }}>D</span>
+          <span style={{ textAlign: "center" }}>GM</span>
+          <span style={{ textAlign: "center" }}>GS</span>
           <span style={{ textAlign: "center" }}>DG</span>
           <span style={{ textAlign: "center" }}>Pts</span>
         </div>
         {rows.map((r, i) => (
           <div
             key={r.team.id}
+            className="stand-grid"
+            onClick={() => onTeam(r.team.id)}
+            role="button"
+            title="Ver ficha da equipa"
             style={{
               display: "grid",
               gridTemplateColumns: cols,
@@ -980,6 +1008,7 @@ function GroupCard({ g, state }: { g: string; state: TournamentState }) {
               padding: "9px 8px",
               borderLeft: `4px solid ${i < 2 ? "#bef264" : "transparent"}`,
               background: liveIds.has(r.team.id) ? "#fff7f5" : "transparent",
+              cursor: "pointer",
             }}
           >
             <span
@@ -1027,15 +1056,16 @@ function GroupCard({ g, state }: { g: string; state: TournamentState }) {
             <span style={{ textAlign: "center", color: "#5b7163" }}>{r.W}</span>
             <span style={{ textAlign: "center", color: "#5b7163" }}>{r.D}</span>
             <span style={{ textAlign: "center", color: "#5b7163" }}>{r.L}</span>
+            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.GF}</span>
+            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.GA}</span>
             <span style={{ textAlign: "center", fontWeight: 600 }}>
               {(r.GF - r.GA > 0 ? "+" : "") + (r.GF - r.GA)}
             </span>
             <span
-              className="cond"
+              className="cond pts"
               style={{
                 textAlign: "center",
                 fontWeight: 800,
-                fontSize: 15,
                 color: DGREEN,
               }}
             >
@@ -1257,7 +1287,7 @@ function Line({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {m.time ? (
+        {m.date || m.time ? (
           <span
             className="cond"
             style={{
@@ -1269,7 +1299,7 @@ function Line({
               borderRadius: 6,
             }}
           >
-            {m.time}
+            {[fmtDate(m.date), m.time].filter(Boolean).join(" · ")}
           </span>
         ) : null}
         {m.phase === "friendly" ? (

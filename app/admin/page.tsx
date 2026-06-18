@@ -73,9 +73,13 @@ export default function AdminPage() {
           </div>
           {state.knockoutCreated ? <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{koList.map((m) => (
             <div key={m.id} style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #e4ece0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                 <span style={{ fontSize: 12, fontWeight: 800, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>
-                <button onClick={() => openMatch(m.id)} style={btn(13)}>Registar</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
+                  <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
+                  <button onClick={() => openMatch(m.id)} style={btn(13)}>Registar</button>
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 8 }}>
                 <span style={{ textAlign: 'right', fontWeight: 600, color: m.a ? '#13241b' : '#9bb0a3', fontStyle: m.a ? 'normal' : 'italic' }}>{nameOf(m, 'a')}</span>
@@ -93,7 +97,7 @@ export default function AdminPage() {
 }
 
 function TeamsTab({ state, apply }: { state: TournamentState; apply: (s: TournamentState) => void }) {
-  const [name, setName] = useState(''); const [group, setGroup] = useState(state.groups[0] || 'A'); const [pin, setPin] = useState<Record<string, string>>({});
+  const [name, setName] = useState(''); const [group, setGroup] = useState(state.groups[0] || 'A');
   const groupOpts = [...state.groups.map((g) => ({ v: g, l: 'Grupo ' + g })), { v: '', l: '— Sem grupo (amigável) —' }];
   return (
     <div>
@@ -111,46 +115,78 @@ function TeamsTab({ state, apply }: { state: TournamentState; apply: (s: Tournam
         </div>
       </Box>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,290px),1fr))', gap: 14, marginTop: 16 }}>
-        {state.teams.map((t) => (
-          <div key={t.id} style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #e4ece0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <input value={t.name} onChange={(e) => apply(actions.renameTeam(state, t.id, e.target.value))} className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, border: '1px solid transparent', background: 'transparent', padding: '3px 7px', borderRadius: 7, outline: 'none' }} />
-              <select value={t.group} onChange={(e) => apply(actions.setTeamGroup(state, t.id, e.target.value))} style={{ padding: '5px 8px', border: '1px solid #d3e0d0', borderRadius: 8, fontSize: 12.5 }}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>
-              <button onClick={() => apply(actions.removeTeam(state, t.id))} style={{ border: 'none', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 12, padding: '6px 10px', borderRadius: 8 }}>Remover</button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
-              {t.players.map((p) => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6faf4', padding: '5px 7px 5px 9px', borderRadius: 8 }}>
-                  {t.captain === p.id && <span style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>©</span>}
-                  <input value={p.name} onChange={(e) => apply(actions.renamePlayer(state, t.id, p.id, e.target.value))} style={{ flex: 1, minWidth: 0, border: '1px solid transparent', background: 'transparent', fontSize: 14, padding: '3px 6px', borderRadius: 6, outline: 'none' }} />
-                  <button onClick={() => apply(actions.toggleGK(state, t.id, p.id))} title="Guarda-redes" style={{ border: `1px solid ${p.gk ? '#2563eb' : '#d3e0d0'}`, background: p.gk ? '#2563eb' : '#fff', color: p.gk ? '#fff' : '#aebfb3', fontSize: 11, fontWeight: 800, padding: '5px 8px', borderRadius: 6 }}>GR</button>
-                  <button onClick={() => apply(actions.removePlayer(state, t.id, p.id))} style={{ border: 'none', background: 'transparent', color: '#b6c9b0', fontSize: 16 }}>×</button>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-              <input value={pin[t.id] || ''} onChange={(e) => setPin({ ...pin, [t.id]: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter' && (pin[t.id] || '').trim()) { apply(actions.addPlayer(state, t.id, pin[t.id].trim())); setPin({ ...pin, [t.id]: '' }); } }} placeholder="Nome do jogador" style={{ ...inp, flex: 1, fontSize: 13.5 }} />
-              <button onClick={() => { if ((pin[t.id] || '').trim()) { apply(actions.addPlayer(state, t.id, pin[t.id].trim())); setPin({ ...pin, [t.id]: '' }); } }} style={{ border: 'none', background: '#dcfce7', color: GREEN, fontWeight: 700, fontSize: 13, padding: '9px 13px', borderRadius: 9 }}>+ Jogador</button>
-            </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid #f0f4ee' }}>
-              <select value={t.captain || ''} onChange={(e) => apply(actions.setCaptain(state, t.id, e.target.value))} style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }}>
-                <option value="">⊘ Capitão (opcional)</option>{t.players.map((p) => <option key={p.id} value={p.id}>© {p.name}</option>)}
-              </select>
-              <input value={t.coach || ''} onChange={(e) => apply(actions.setCoach(state, t.id, e.target.value))} placeholder="Treinador (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
-            </div>
-          </div>
-        ))}
+        {state.teams.map((t) => <TeamCard key={t.id} t={t} state={state} apply={apply} groupOpts={groupOpts} />)}
       </div>
     </div>
   );
 }
 
+function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][number]; state: TournamentState; apply: (s: TournamentState) => void; groupOpts: { v: string; l: string }[] }) {
+  const [edit, setEdit] = useState(false);
+  const [pin, setPin] = useState('');
+  const addPin = () => { if (pin.trim()) { apply(actions.addPlayer(state, t.id, pin.trim())); setPin(''); } };
+  const groupLabel = groupOpts.find((g) => g.v === t.group)?.l || (t.group ? 'Grupo ' + t.group : 'Sem grupo');
+
+  if (!edit) return (
+    <div style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #e4ece0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <span className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
+        <span style={{ background: '#eef2ec', color: DGREEN, fontWeight: 700, fontSize: 12, padding: '4px 9px', borderRadius: 8 }}>{groupLabel}</span>
+        <button onClick={() => setEdit(true)} title="Editar equipa" style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 13, padding: '6px 10px', borderRadius: 8 }}>✏️</button>
+      </div>
+      {t.players.length ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {t.players.map((p) => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6faf4', padding: '6px 9px', borderRadius: 8 }}>
+              {t.captain === p.id && <span style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>©</span>}
+              {p.gk && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#2563eb', padding: '1px 5px', borderRadius: 5 }}>GR</span>}
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+            </div>
+          ))}
+        </div>
+      ) : <div style={{ fontSize: 13, color: '#9bb0a3', fontStyle: 'italic' }}>Sem jogadores.</div>}
+      {t.coach && <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f0f4ee', fontSize: 13, color: '#5b7163' }}>Treinador: <b style={{ color: DGREEN }}>{t.coach}</b></div>}
+    </div>
+  );
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #bef264' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <input value={t.name} onChange={(e) => apply(actions.renameTeam(state, t.id, e.target.value))} className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, border: '1px solid #d3e0d0', background: '#fff', padding: '3px 7px', borderRadius: 7, outline: 'none' }} />
+        <select value={t.group} onChange={(e) => apply(actions.setTeamGroup(state, t.id, e.target.value))} style={{ padding: '5px 8px', border: '1px solid #d3e0d0', borderRadius: 8, fontSize: 12.5 }}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>
+        <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '7px 11px', borderRadius: 8 }}>✓</button>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+        {t.players.map((p) => (
+          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6faf4', padding: '5px 7px 5px 9px', borderRadius: 8 }}>
+            {t.captain === p.id && <span style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>©</span>}
+            <input value={p.name} onChange={(e) => apply(actions.renamePlayer(state, t.id, p.id, e.target.value))} style={{ flex: 1, minWidth: 0, border: '1px solid transparent', background: 'transparent', fontSize: 14, padding: '3px 6px', borderRadius: 6, outline: 'none' }} />
+            <button onClick={() => apply(actions.toggleGK(state, t.id, p.id))} title="Guarda-redes" style={{ border: `1px solid ${p.gk ? '#2563eb' : '#d3e0d0'}`, background: p.gk ? '#2563eb' : '#fff', color: p.gk ? '#fff' : '#aebfb3', fontSize: 11, fontWeight: 800, padding: '5px 8px', borderRadius: 6 }}>GR</button>
+            <button onClick={() => apply(actions.removePlayer(state, t.id, p.id))} style={{ border: 'none', background: 'transparent', color: '#b6c9b0', fontSize: 16 }}>×</button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+        <input value={pin} onChange={(e) => setPin(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') addPin(); }} placeholder="Nome do jogador" style={{ ...inp, flex: 1, fontSize: 13.5 }} />
+        <button onClick={addPin} style={{ border: 'none', background: '#dcfce7', color: GREEN, fontWeight: 700, fontSize: 13, padding: '9px 13px', borderRadius: 9 }}>+ Jogador</button>
+      </div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid #f0f4ee' }}>
+        <select value={t.captain || ''} onChange={(e) => apply(actions.setCaptain(state, t.id, e.target.value))} style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }}>
+          <option value="">⊘ Capitão (opcional)</option>{t.players.map((p) => <option key={p.id} value={p.id}>© {p.name}</option>)}
+        </select>
+        <input value={t.coach || ''} onChange={(e) => apply(actions.setCoach(state, t.id, e.target.value))} placeholder="Treinador (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
+      </div>
+      <button onClick={() => { if (confirm('Remover esta equipa?')) apply(actions.removeTeam(state, t.id)); }} style={{ width: '100%', marginTop: 10, border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 13, padding: '9px 10px', borderRadius: 8 }}>Remover equipa</button>
+    </div>
+  );
+}
+
 function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: TournamentState; apply: (s: TournamentState) => void; fixtures: Match[]; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
-  const [g, setG] = useState(state.groups[0] || 'A'); const [a, setA] = useState(''); const [b, setB] = useState(''); const [time, setTime] = useState('');
+  const [g, setG] = useState(state.groups[0] || 'A'); const [a, setA] = useState(''); const [b, setB] = useState(''); const [time, setTime] = useState(''); const [date, setDate] = useState('');
   const friendly = g === '__friendly__';
   const groupOpts = [...state.groups.map((x) => ({ v: x, l: 'Grupo ' + x })), { v: '__friendly__', l: '⚽ Amigável (avulso)' }];
   const teamOpts = friendly ? state.teams : state.teams.filter((t) => t.group === g);
-  const add = () => { const res = actions.addMatch(state, g, a, b, time); if ((res as { error?: string }).error) { alert((res as { error: string }).error); return; } apply(res as TournamentState); setA(''); setB(''); setTime(''); };
+  const add = () => { const res = actions.addMatch(state, g, a, b, time, date); if ((res as { error?: string }).error) { alert((res as { error: string }).error); return; } apply(res as TournamentState); setA(''); setB(''); setTime(''); setDate(''); };
   return (
     <div>
       <Box>
@@ -160,6 +196,7 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
           <select value={a} onChange={(e) => setA(e.target.value)} style={{ ...inp, flex: 1, minWidth: 120 }}><option value="">— equipa —</option>{teamOpts.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}</select>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#9bb0a3' }}>vs</span>
           <select value={b} onChange={(e) => setB(e.target.value)} style={{ ...inp, flex: 1, minWidth: 120 }}><option value="">— equipa —</option>{teamOpts.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}</select>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inp} />
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={inp} />
           <button onClick={add} style={btn()}>Adicionar</button>
         </div>
@@ -170,6 +207,7 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
           <div key={m.id} style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', border: '1px solid #e4ece0', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
                 <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
                 {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
                 {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}

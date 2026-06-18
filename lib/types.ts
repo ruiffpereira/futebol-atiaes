@@ -31,6 +31,7 @@ export type Match = {
   group?: string;
   a: string | null;
   b: string | null;
+  date?: string;        // "YYYY-MM-DD" definido pela organização
   time?: string;        // "HH:MM" definido pela organização
   scorers: Scorer[];
   cards: Card[];
