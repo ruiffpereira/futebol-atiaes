@@ -27,6 +27,7 @@ export default function PublicPage() {
   const { on, supported, enable } = useNotifications();
   const [tab, setTab] = useState<Tab>("standings");
   const [rules, setRules] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
 
   const tn = (id: string | null) => state.teams.find((t) => t.id === id);
@@ -113,6 +114,8 @@ export default function PublicPage() {
         name={state.tournamentName}
         sub={state.subtitle}
         liveCount={live.length}
+        notifyOn={on}
+        onBell={() => setNotifyOpen(true)}
       />
       <div
         className="pub-pad"
@@ -337,6 +340,14 @@ export default function PublicPage() {
       </div>
 
       {rules && <Rules onClose={() => setRules(false)} />}
+      {notifyOpen && (
+        <NotifyModal
+          notifyOn={on}
+          supported={supported}
+          onNotify={enable}
+          onClose={() => setNotifyOpen(false)}
+        />
+      )}
       {detailMatch && (
         <MatchDetail
           m={detailMatch}
@@ -352,10 +363,14 @@ function Header({
   name,
   sub,
   liveCount,
+  notifyOn,
+  onBell,
 }: {
   name: string;
   sub: string;
   liveCount: number;
+  notifyOn: boolean;
+  onBell: () => void;
 }) {
   return (
     <div
@@ -420,104 +435,133 @@ function Header({
             {sub}
           </div>
         </div>
-        <a
-          href="https://rufvision.com"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            background: "rgba(255,255,255,.14)",
-            color: "#eafff1",
-            fontWeight: 600,
-            fontSize: 11.5,
-            padding: "6px 11px 6px 7px",
-            borderRadius: 10,
-            textDecoration: "none",
-            whiteSpace: "nowrap",
+            gap: 10,
+            marginLeft: "auto",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
           }}
         >
-          <span
+          <button
+            onClick={onBell}
+            aria-label="Notificações"
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 26,
-              height: 26,
-              borderRadius: 7,
-              background: "#fff",
+              width: 38,
+              height: 38,
+              border: "none",
+              borderRadius: 10,
+              background: notifyOn ? "#16a34a" : "rgba(255,255,255,.14)",
+              color: "#fff",
+              fontSize: 18,
+              cursor: "pointer",
               flexShrink: 0,
             }}
           >
-            <svg width="22" height="16" viewBox="0 0 44 32" aria-hidden="true">
-              <text
-                x="0"
-                y="25"
-                fontFamily="Arial, sans-serif"
-                fontWeight="800"
-                fontSize="28"
-                fill="#14274a"
-              >
-                R
-              </text>
-              <text
-                x="20"
-                y="25"
-                fontFamily="Arial, sans-serif"
-                fontWeight="800"
-                fontSize="28"
-                fill="#ed1c24"
-              >
-                V
-              </text>
-            </svg>
-          </span>
-          <span>
-            App desenvolvida por <b style={{ color: "#bef264" }}>RufVision</b>
-          </span>
-        </a>
-        {liveCount > 0 && (
-          <div
+            {notifyOn ? "🔔" : "🔕"}
+          </button>
+          <a
+            href="https://rufvision.com"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 7,
-              background: "#dc2626",
-              color: "#fff",
-              padding: "8px 12px",
+              gap: 8,
+              background: "rgba(255,255,255,.14)",
+              color: "#eafff1",
+              fontWeight: 600,
+              fontSize: 11.5,
+              padding: "6px 11px 6px 7px",
               borderRadius: 10,
-              fontWeight: 800,
-              fontSize: 12,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
             }}
           >
             <span
               style={{
-                width: 9,
-                height: 9,
-                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 26,
+                height: 26,
+                borderRadius: 7,
                 background: "#fff",
-                animation: "pulse 1.1s infinite",
+                flexShrink: 0,
               }}
-            />
-            {liveCount}
-          </div>
-        )}
+            >
+              <svg width="22" height="16" viewBox="0 0 44 32" aria-hidden="true">
+                <text
+                  x="0"
+                  y="25"
+                  fontFamily="Arial, sans-serif"
+                  fontWeight="800"
+                  fontSize="28"
+                  fill="#14274a"
+                >
+                  R
+                </text>
+                <text
+                  x="20"
+                  y="25"
+                  fontFamily="Arial, sans-serif"
+                  fontWeight="800"
+                  fontSize="28"
+                  fill="#ed1c24"
+                >
+                  V
+                </text>
+              </svg>
+            </span>
+            <span>
+              App desenvolvida por <b style={{ color: "#bef264" }}>RufVision</b>
+            </span>
+          </a>
+          {liveCount > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                background: "#dc2626",
+                color: "#fff",
+                padding: "8px 12px",
+                borderRadius: 10,
+                fontWeight: 800,
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  background: "#fff",
+                  animation: "pulse 1.1s infinite",
+                }}
+              />
+              {liveCount}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function Profile({
+function NotificationsPanel({
   notifyOn,
   supported,
   onNotify,
-  onRules,
 }: {
   notifyOn: boolean;
   supported: boolean;
   onNotify: () => void;
-  onRules: () => void;
 }) {
   const [ios, setIos] = useState(false);
   const [standalone, setStandalone] = useState(false);
@@ -534,6 +578,242 @@ function Profile({
     );
   }, []);
 
+  return (
+    <div style={{ padding: "16px 18px" }}>
+      {!supported && !standalone && (
+        <div
+          style={{
+            background: "#fdeaea",
+            border: "1px solid #f3c9c9",
+            color: "#b91c1c",
+            borderRadius: 11,
+            padding: "11px 14px",
+            fontSize: 13.5,
+            marginBottom: 14,
+          }}
+        >
+          Este navegador não suporta notificações. No iPhone, adiciona primeiro o
+          site ao ecrã principal (passos abaixo).
+        </div>
+      )}
+      {notifyOn ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: GREEN,
+            fontWeight: 700,
+            fontSize: 14.5,
+          }}
+        >
+          ✓ Notificações ativadas neste dispositivo.
+        </div>
+      ) : (
+        <button
+          onClick={onNotify}
+          style={{
+            width: "100%",
+            border: "none",
+            background: GREEN,
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 15,
+            padding: "12px",
+            borderRadius: 11,
+          }}
+        >
+          Ativar notificações
+        </button>
+      )}
+
+      {!notifyOn && (
+        <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+          {/* Android */}
+          <div
+            style={{
+              background: "#f6faf4",
+              border: `1px solid ${ios ? "#e1ece0" : "#bef264"}`,
+              borderRadius: 12,
+              padding: "12px 14px",
+            }}
+          >
+            <div
+              style={{
+                fontWeight: 700,
+                color: DGREEN,
+                marginBottom: 6,
+                fontSize: 14,
+              }}
+            >
+              🤖 Android (Chrome)
+            </div>
+            <div style={{ fontSize: 13.5, color: "#3a4a40", lineHeight: 1.5 }}>
+              Toca em <b>«Ativar notificações»</b> aqui em cima e aceita o pedido
+              do navegador. Está feito.
+            </div>
+          </div>
+          {/* iOS */}
+          <div
+            style={{
+              background: "#f6faf4",
+              border: `1px solid ${ios ? "#bef264" : "#e1ece0"}`,
+              borderRadius: 12,
+              padding: "12px 14px",
+            }}
+          >
+            <div
+              style={{
+                fontWeight: 700,
+                color: DGREEN,
+                marginBottom: 6,
+                fontSize: 14,
+              }}
+            >
+              🍎 iPhone / iPad (iOS 16.4 ou superior)
+            </div>
+            {ios && !standalone && (
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#b45309",
+                  fontWeight: 600,
+                  marginBottom: 8,
+                }}
+              >
+                No iPhone, o botão só funciona depois de adicionares o site ao
+                ecrã principal:
+              </div>
+            )}
+            <ol
+              style={{
+                margin: 0,
+                paddingLeft: 18,
+                fontSize: 13.5,
+                color: "#3a4a40",
+                lineHeight: 1.6,
+              }}
+            >
+              <li>
+                Abre este site no <b>Safari</b>.
+              </li>
+              <li>
+                Toca no botão <b>Partilhar</b> (o quadrado com a seta ↑).
+              </li>
+              <li>
+                Escolhe <b>«Adicionar ao ecrã principal»</b>.
+              </li>
+              <li>
+                Abre a app pelo <b>ícone</b> criado no ecrã principal.
+              </li>
+              <li>
+                Toca no sino aqui em cima (ou no Perfil) e em{" "}
+                <b>«Ativar notificações»</b>.
+              </li>
+            </ol>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotifyModal({
+  notifyOn,
+  supported,
+  onNotify,
+  onClose,
+}: {
+  notifyOn: boolean;
+  supported: boolean;
+  onNotify: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 80,
+        background: "rgba(8,30,18,.55)",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        padding: "18px 14px",
+        overflowY: "auto",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: 18,
+          width: "100%",
+          maxWidth: 460,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            background: "linear-gradient(135deg,#0c2a1c,#15803d)",
+            padding: "14px 18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 18 }}>🔔</span>
+            <span
+              className="cond"
+              style={{
+                fontWeight: 800,
+                fontSize: 18,
+                color: "#fff",
+                textTransform: "uppercase",
+              }}
+            >
+              Notificações
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              border: "none",
+              background: "rgba(255,255,255,.2)",
+              color: "#fff",
+              width: 32,
+              height: 32,
+              borderRadius: 9,
+              fontSize: 18,
+              cursor: "pointer",
+            }}
+          >
+            ×
+          </button>
+        </div>
+        <NotificationsPanel
+          notifyOn={notifyOn}
+          supported={supported}
+          onNotify={onNotify}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Profile({
+  notifyOn,
+  supported,
+  onNotify,
+  onRules,
+}: {
+  notifyOn: boolean;
+  supported: boolean;
+  onNotify: () => void;
+  onRules: () => void;
+}) {
   const rowLink = (
     icon: string,
     label: string,
@@ -607,144 +887,11 @@ function Profile({
             Notificações
           </span>
         </div>
-        <div style={{ padding: "16px 18px" }}>
-          {!supported && !standalone && (
-            <div
-              style={{
-                background: "#fdeaea",
-                border: "1px solid #f3c9c9",
-                color: "#b91c1c",
-                borderRadius: 11,
-                padding: "11px 14px",
-                fontSize: 13.5,
-                marginBottom: 14,
-              }}
-            >
-              Este navegador não suporta notificações. No iPhone, adiciona
-              primeiro o site ao ecrã principal (passos abaixo).
-            </div>
-          )}
-          {notifyOn ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                color: GREEN,
-                fontWeight: 700,
-                fontSize: 14.5,
-              }}
-            >
-              ✓ Notificações ativadas neste dispositivo.
-            </div>
-          ) : (
-            <button
-              onClick={onNotify}
-              style={{
-                width: "100%",
-                border: "none",
-                background: GREEN,
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 15,
-                padding: "12px",
-                borderRadius: 11,
-              }}
-            >
-              Ativar notificações
-            </button>
-          )}
-
-          {!notifyOn && (
-            <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-              {/* Android */}
-              <div
-                style={{
-                  background: "#f6faf4",
-                  border: `1px solid ${ios ? "#e1ece0" : "#bef264"}`,
-                  borderRadius: 12,
-                  padding: "12px 14px",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    color: DGREEN,
-                    marginBottom: 6,
-                    fontSize: 14,
-                  }}
-                >
-                  🤖 Android (Chrome)
-                </div>
-                <div
-                  style={{ fontSize: 13.5, color: "#3a4a40", lineHeight: 1.5 }}
-                >
-                  Toca em <b>«Ativar notificações»</b> aqui em cima e aceita o
-                  pedido do navegador. Está feito.
-                </div>
-              </div>
-              {/* iOS */}
-              <div
-                style={{
-                  background: "#f6faf4",
-                  border: `1px solid ${ios ? "#bef264" : "#e1ece0"}`,
-                  borderRadius: 12,
-                  padding: "12px 14px",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    color: DGREEN,
-                    marginBottom: 6,
-                    fontSize: 14,
-                  }}
-                >
-                  🍎 iPhone / iPad (iOS 16.4 ou superior)
-                </div>
-                {ios && !standalone && (
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: "#b45309",
-                      fontWeight: 600,
-                      marginBottom: 8,
-                    }}
-                  >
-                    No iPhone, o botão só funciona depois de adicionares o site
-                    ao ecrã principal:
-                  </div>
-                )}
-                <ol
-                  style={{
-                    margin: 0,
-                    paddingLeft: 18,
-                    fontSize: 13.5,
-                    color: "#3a4a40",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <li>
-                    Abre este site no <b>Safari</b>.
-                  </li>
-                  <li>
-                    Toca no botão <b>Partilhar</b> (o quadrado com a seta ↑).
-                  </li>
-                  <li>
-                    Escolhe <b>«Adicionar ao ecrã principal»</b>.
-                  </li>
-                  <li>
-                    Abre a app pelo <b>ícone</b> criado no ecrã principal.
-                  </li>
-                  <li>
-                    Volta a este separador <b>Perfil</b> e toca em{" "}
-                    <b>«Ativar notificações»</b>.
-                  </li>
-                </ol>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationsPanel
+          notifyOn={notifyOn}
+          supported={supported}
+          onNotify={onNotify}
+        />
       </div>
 
       {rowLink("📋", "Regulamento do torneio", onRules)}
