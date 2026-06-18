@@ -16,7 +16,7 @@ type Store = {
   subscribers: Set<(s: TournamentState) => void>;   // SSE
   pushSubs: PushSub[];                               // Web Push
   visits: number;                                    // total de aberturas da página
-  presence: Map<string, number>;                     // clientId (aba) -> último sinal (ms) — "online agora"
+  presence: Map<string, { conns: number; lastSeen: number }>;  // clientId (aba) -> ligações activas + último sinal — "online agora"
   saveTimer: ReturnType<typeof setTimeout> | null;
 };
 
@@ -60,14 +60,26 @@ function persistStats() { try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.
 export function bumpVisits(): void { store.visits++; persistStats(); }
 
 // Presença "online agora": cada aba tem um clientId estável (sobrevive ao refresh).
-// Conta-se por último sinal recente em vez de ligações cruas — assim o refresh não
-// duplica a contagem e abas que caiem (sem cancel() do stream) expiram pelo TTL.
-const ONLINE_TTL = 70_000; // ms — tolera 1 ping perdido (ping a cada 25s)
-export function touchPresence(clientId: string): void { if (clientId) store.presence.set(clientId, Date.now()); }
+// Refcount de ligações por aba — o refresh reabre com o mesmo cid (não duplica) e o
+// fecho remove logo (conns→0). O TTL é só rede de segurança p/ quedas sem cancel().
+const ONLINE_TTL = 40_000; // ms — tolera 1 ping perdido (ping a cada 15s)
+export function addPresence(clientId: string): void {
+  if (!clientId) return;
+  const p = store.presence.get(clientId);
+  if (p) { p.conns++; p.lastSeen = Date.now(); }
+  else store.presence.set(clientId, { conns: 1, lastSeen: Date.now() });
+}
+export function touchPresence(clientId: string): void {
+  const p = store.presence.get(clientId); if (p) p.lastSeen = Date.now();
+}
+export function removePresence(clientId: string): void {
+  const p = store.presence.get(clientId); if (!p) return;
+  if (--p.conns <= 0) store.presence.delete(clientId);
+}
 function countOnline(): number {
   const cutoff = Date.now() - ONLINE_TTL;
   let n = 0;
-  for (const [id, ts] of store.presence) { if (ts < cutoff) store.presence.delete(id); else n++; }
+  for (const [id, p] of store.presence) { if (p.lastSeen < cutoff) store.presence.delete(id); else n++; }
   return n;
 }
 export function getLiveStats(): { online: number; push: number; visits: number } {
