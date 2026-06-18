@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTournament } from '@/lib/useTournament';
 import { actions } from '@/lib/actions';
-import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel } from '@/lib/tournament';
+import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 
 const GREEN = '#15803d', DGREEN = '#0f4d2e';
@@ -186,7 +186,15 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
   const friendly = g === '__friendly__';
   const groupOpts = [...state.groups.map((x) => ({ v: x, l: 'Grupo ' + x })), { v: '__friendly__', l: '⚽ Amigável (avulso)' }];
   const teamOpts = friendly ? state.teams : state.teams.filter((t) => t.group === g);
-  const add = () => { const res = actions.addMatch(state, g, a, b, time, date); if ((res as { error?: string }).error) { alert((res as { error: string }).error); return; } apply(res as TournamentState); setA(''); setB(''); setTime(''); setDate(''); };
+  const ready = !!(a && b && date && time);
+  const add = () => {
+    if (!a || !b) { alert('Escolhe as duas equipas.'); return; }
+    if (!date) { alert('Define a data do jogo.'); return; }
+    if (!time) { alert('Define a hora do jogo.'); return; }
+    const res = actions.addMatch(state, g, a, b, time, date);
+    if ((res as { error?: string }).error) { alert((res as { error: string }).error); return; }
+    apply(res as TournamentState); setA(''); setB(''); setTime(''); setDate('');
+  };
   return (
     <div>
       <Box>
@@ -198,36 +206,49 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
           <select value={b} onChange={(e) => setB(e.target.value)} style={{ ...inp, flex: 1, minWidth: 120 }}><option value="">— equipa —</option>{teamOpts.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}</select>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inp} />
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={inp} />
-          <button onClick={add} style={btn()}>Adicionar</button>
+          <button onClick={add} disabled={!ready} style={{ ...btn(), opacity: ready ? 1 : 0.5, cursor: ready ? 'pointer' : 'not-allowed' }}>Adicionar</button>
         </div>
-        <div style={{ fontSize: 11.5, color: '#9bb0a3', marginTop: 10 }}>Cada par de equipas só pode ter um jogo por grupo. Usa ↑/↓ para reordenar.</div>
+        <div style={{ fontSize: 11.5, color: '#9bb0a3', marginTop: 10 }}>Equipas, data e hora são obrigatórias. Cada par de equipas só pode ter um jogo por grupo. Usa ↑/↓ para reordenar.</div>
       </Box>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
-        {fixtures.map((m, i) => (
-          <div key={m.id} style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', border: '1px solid #e4ece0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
-                <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
-                {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
-                {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
-                {m.status === 'done' && <span style={{ fontSize: 10, fontWeight: 800, color: '#5b7163', background: '#eef2ec', padding: '2px 7px', borderRadius: 6 }}>TERMINADO</span>}
-              </div>
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                <button onClick={() => apply(actions.moveMatch(state, m.id, -1))} style={{ ...iconBtn, color: i === 0 ? '#dde6d8' : GREEN }}>↑</button>
-                <button onClick={() => apply(actions.moveMatch(state, m.id, 1))} style={{ ...iconBtn, color: i === fixtures.length - 1 ? '#dde6d8' : GREEN }}>↓</button>
-                <button onClick={() => onOpen(m.id)} style={btn(13)}>Registar</button>
-                <button onClick={() => apply(actions.removeMatch(state, m.id))} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 14, padding: '8px 11px', borderRadius: 9 }}>×</button>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 10 }}>
-              <span style={{ textAlign: 'right', fontWeight: 600, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(m, 'a')}</span>
-              <span className="cond" style={{ fontWeight: 800, fontSize: 19, color: DGREEN, background: '#eef2ec', padding: '3px 11px', borderRadius: 7, minWidth: 54, textAlign: 'center' }}>{scoreOf(m, m.a)}:{scoreOf(m, m.b)}</span>
-              <span style={{ textAlign: 'left', fontWeight: 600, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(m, 'b')}</span>
-            </div>
-          </div>
-        ))}
+        {fixtures.map((m, i) => <FixtureRow key={m.id} m={m} i={i} total={fixtures.length} state={state} apply={apply} nameOf={nameOf} onOpen={onOpen} />)}
         {!fixtures.length && <div style={{ background: '#fff', borderRadius: 12, padding: 30, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>Sem jogos. Adiciona um jogo acima.</div>}
+      </div>
+    </div>
+  );
+}
+
+function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i: number; total: number; state: TournamentState; apply: (s: TournamentState) => void; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
+  const [edit, setEdit] = useState(false);
+  const when = [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', border: `1px solid ${edit ? '#bef264' : '#e4ece0'}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {edit ? <>
+            <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+          </> : <span style={{ fontSize: 12, fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '4px 9px', borderRadius: 7 }}>{when || 'Sem data/hora'}</span>}
+          {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
+          {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
+          {m.status === 'done' && <span style={{ fontSize: 10, fontWeight: 800, color: '#5b7163', background: '#eef2ec', padding: '2px 7px', borderRadius: 6 }}>TERMINADO</span>}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          {edit ? <>
+            <button onClick={() => { if (confirm('Remover este jogo?')) apply(actions.removeMatch(state, m.id)); }} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 14, padding: '8px 11px', borderRadius: 9 }}>×</button>
+            <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓</button>
+          </> : <>
+            <button onClick={() => apply(actions.moveMatch(state, m.id, -1))} style={{ ...iconBtn, color: i === 0 ? '#dde6d8' : GREEN }}>↑</button>
+            <button onClick={() => apply(actions.moveMatch(state, m.id, 1))} style={{ ...iconBtn, color: i === total - 1 ? '#dde6d8' : GREEN }}>↓</button>
+            <button onClick={() => setEdit(true)} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
+            <button onClick={() => onOpen(m.id)} style={btn(13)}>Registar</button>
+          </>}
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 10 }}>
+        <span style={{ textAlign: 'right', fontWeight: 600, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(m, 'a')}</span>
+        <span className="cond" style={{ fontWeight: 800, fontSize: 19, color: DGREEN, background: '#eef2ec', padding: '3px 11px', borderRadius: 7, minWidth: 54, textAlign: 'center' }}>{scoreOf(m, m.a)}:{scoreOf(m, m.b)}</span>
+        <span style={{ textAlign: 'left', fontWeight: 600, fontSize: 14.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(m, 'b')}</span>
       </div>
     </div>
   );
