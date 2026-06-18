@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  .scbar::-webkit-scrollbar{height:6px}
+  .scbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:3px}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  input,select,button{font-family:inherit}
+  .only-mobile{display:none}
+  @media(max-width:760px){
+    .only-mobile{display:flex}
+    .hide-mobile{display:none !important}
+    .pub-pad{padding-bottom:88px !important}
+  }
+</style>
+</helmet>
+
+<div style="font-family:'Barlow',system-ui,sans-serif;min-height:100vh;background:#eef2ec;color:#13241b">
+
+  <!-- ===== TOASTS ===== -->
+  <div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;width:calc(100% - 28px);max-width:380px;pointer-events:none">
+    <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+      <div style="display:flex;align-items:center;gap:11px;background:rgba(15,77,46,.97);color:#fff;padding:12px 15px;border-radius:13px;box-shadow:0 10px 30px rgba(8,46,28,.4);animation:pop .25s ease">
+        <span style="font-size:22px;flex-shrink:0">{{ t.icon }}</span>
+        <div style="min-width:0"><div style="font-weight:800;font-size:14px;letter-spacing:.2px">{{ t.title }}</div><div style="font-size:12.5px;color:#bbf7d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.body }}</div></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <div style="position:sticky;top:0;z-index:40;background:linear-gradient(120deg,#0f4d2e,#15803d 60%,#1a9e4b);box-shadow:0 2px 18px rgba(8,46,28,.35)">
+    <div style="max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+        <div style="width:42px;height:42px;border-radius:12px;background:#bef264;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.25)">
+          <span style="font-size:24px">⚽</span>
+        </div>
+        <div style="min-width:0">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;line-height:.95;color:#fff;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ brand }}</div>
+          <div style="font-size:12.5px;color:#bbf7d0;font-weight:600;letter-spacing:1.5px;text-transform:uppercase">{{ sub }}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onClick="{{ goPublic }}" style="position:relative;border:none;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px;letter-spacing:.5px;padding:9px 16px;border-radius:10px;cursor:pointer">PLACAR
+          <sc-if value="{{ isPublic }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:5px;height:3px;background:#bef264;border-radius:3px"></div></sc-if>
+        </button>
+        <button onClick="{{ goAdmin }}" style="border:none;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px;letter-spacing:.5px;padding:9px 16px;border-radius:10px;cursor:pointer">BACKOFFICE</button>
+        <button onClick="{{ enableNotify }}" title="{{ notifyLabel }}" style="display:flex;align-items:center;gap:6px;border:none;background:{{ notifyBtnBg }};color:#fff;font-weight:700;font-size:13px;padding:9px 13px;border-radius:10px;cursor:pointer">{{ notifyIcon }}<span style="font-size:12px">{{ notifyLabel }}</span></button>
+        <button onClick="{{ openRules }}" title="Regulamento" style="display:flex;align-items:center;gap:6px;border:none;background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px;padding:9px 13px;border-radius:10px;cursor:pointer">📋<span style="font-size:12px">Regras</span></button>
+        <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:7px;background:#dc2626;color:#fff;padding:8px 13px;border-radius:10px;font-weight:800;font-size:12px;letter-spacing:.8px">
+            <span style="width:9px;height:9px;border-radius:50%;background:#fff;animation:pulse 1.1s infinite"></span>AO VIVO · {{ liveCount }}
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div class="pub-pad" style="max-width:1180px;margin:0 auto;padding:22px 20px 60px">
+
+    <!-- ===== PUBLIC ===== -->
+    <sc-if value="{{ showPublic }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <!-- sub nav -->
+        <div class="scbar hide-mobile" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:6px">
+          <button onClick="{{ tabStandings }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;letter-spacing:.4px;padding:10px 16px;border-radius:11px;cursor:pointer">CLASSIFICAÇÃO
+            <sc-if value="{{ showStandings }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if>
+          </button>
+          <button onClick="{{ tabLive }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;letter-spacing:.4px;padding:10px 16px;border-radius:11px;cursor:pointer">AO VIVO
+            <sc-if value="{{ showLive }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if>
+          </button>
+          <button onClick="{{ tabSchedule }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;letter-spacing:.4px;padding:10px 16px;border-radius:11px;cursor:pointer">CALENDÁRIO
+            <sc-if value="{{ showSchedule }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if>
+          </button>
+          <button onClick="{{ tabStats }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;letter-spacing:.4px;padding:10px 16px;border-radius:11px;cursor:pointer">ESTATÍSTICAS
+            <sc-if value="{{ showStats }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if>
+          </button>
+          <button onClick="{{ tabBracket }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;letter-spacing:.4px;padding:10px 16px;border-radius:11px;cursor:pointer">FASE FINAL
+            <sc-if value="{{ showBracket }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if>
+          </button>
+        </div>
+
+        <!-- STANDINGS -->
+        <sc-if value="{{ showStandings }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <sc-if value="{{ hasGroups }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px">
+                <sc-for list="{{ groupsVM }}" as="grp" hint-placeholder-count="2">
+                  <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(8,46,28,.1);border:1px solid #e4ece0">
+                    <div style="background:#0f4d2e;padding:12px 18px;display:flex;align-items:center;justify-content:space-between">
+                      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:#fff;letter-spacing:.5px">GRUPO {{ grp.name }}</span>
+                      <span style="font-size:12px;color:#bbf7d0;font-weight:600">{{ grp.teamCount }} equipas</span>
+                    </div>
+                    <div style="padding:6px 8px 10px">
+                      <div style="display:grid;grid-template-columns:26px 1fr 30px 30px 30px 30px 44px 38px;gap:2px;padding:8px 8px;font-size:11px;font-weight:700;color:#6b8475;letter-spacing:.3px;text-transform:uppercase">
+                        <span></span><span></span><span style="text-align:center">J</span><span style="text-align:center">V</span><span style="text-align:center">E</span><span style="text-align:center">D</span><span style="text-align:center">DG</span><span style="text-align:center">Pts</span>
+                      </div>
+                      <sc-for list="{{ grp.rows }}" as="r" hint-placeholder-count="4">
+                        <div style="display:grid;grid-template-columns:26px 1fr 30px 30px 30px 30px 44px 38px;gap:2px;align-items:center;padding:9px 8px;border-radius:9px;border-left:4px solid transparent;background:{{ r.rowBg }}">
+                          <span style="font-weight:800;font-size:14px;text-align:center;color:#15803d">{{ r.pos }}</span>
+                          <div style="min-width:0">
+                            <span style="font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">{{ r.name }}</span>
+                            <sc-if value="{{ r.live }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#dc2626;letter-spacing:.2px;margin-top:1px"><span style="width:6px;height:6px;border-radius:50%;background:#dc2626;animation:pulse 1.1s infinite"></span>AO VIVO {{ r.liveScore }} · vs {{ r.liveVs }}</div></sc-if>
+                          </div>
+                          <span style="text-align:center;font-size:13px;color:#5b7163">{{ r.P }}</span>
+                          <span style="text-align:center;font-size:13px;color:#5b7163">{{ r.W }}</span>
+                          <span style="text-align:center;font-size:13px;color:#5b7163">{{ r.D }}</span>
+                          <span style="text-align:center;font-size:13px;color:#5b7163">{{ r.L }}</span>
+                          <span style="text-align:center;font-size:13px;font-weight:600">{{ r.GD }}</span>
+                          <span style="text-align:center;font-weight:800;font-size:15px;color:#0f4d2e">{{ r.Pts }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="padding:6px 16px 13px;font-size:11px;color:#8aa093;display:flex;align-items:center;gap:6px">
+                      <span style="width:10px;height:10px;border-radius:3px;background:#bef264;display:inline-block"></span> Top 2 apuram-se para a fase final
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noGroups }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:70px 20px;color:#8aa093">
+                <div style="font-size:42px;margin-bottom:10px">📋</div>
+                <div style="font-size:17px;font-weight:600">Ainda sem equipas.</div>
+                <div style="font-size:14px;margin-top:4px">Adiciona equipas no Backoffice para ver as tabelas.</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- LIVE -->
+        <sc-if value="{{ showLive }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+                <sc-for list="{{ liveVM }}" as="m" hint-placeholder-count="1">
+                  <div onClick="{{ m.onDetail }}" style="background:linear-gradient(150deg,#0c2a1c,#103d28);border-radius:18px;padding:18px 20px;color:#fff;box-shadow:0 8px 26px rgba(8,46,28,.3);position:relative;overflow:hidden;cursor:pointer">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                      <span style="font-size:12px;font-weight:700;color:#bbf7d0;letter-spacing:1px;text-transform:uppercase">{{ m.label }}</span>
+                      <sc-if value="{{ m.liveActive }}" hint-placeholder-val="{{ true }}"><span style="display:flex;align-items:center;gap:6px;background:#dc2626;padding:5px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.6px"><span style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.1s infinite"></span>{{ m.liveBadge }}</span></sc-if>
+                      <sc-if value="{{ m.isHalftime }}" hint-placeholder-val="{{ false }}"><span style="background:#d97706;padding:5px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.8px">{{ m.liveBadge }}</span></sc-if>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+                      <div style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;line-height:1.05">{{ m.aName }}</div>
+                      <div style="display:flex;align-items:center;gap:10px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:40px"><span>{{ m.aScore }}</span><span style="color:#4d6b58;font-size:24px">:</span><span>{{ m.bScore }}</span></div>
+                      <div style="text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;line-height:1.05">{{ m.bName }}</div>
+                    </div>
+                    <sc-if value="{{ m.hasCards }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-top:10px;font-size:11px;color:#9fc3ad">
+                        <div style="text-align:right">🟨 {{ m.aYellow }} · 🟥 {{ m.aRed }}</div>
+                        <div></div>
+                        <div style="text-align:left">🟨 {{ m.bYellow }} · 🟥 {{ m.bRed }}</div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noLive }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:70px 20px;color:#8aa093">
+                <div style="font-size:42px;margin-bottom:10px">🕐</div>
+                <div style="font-size:17px;font-weight:600">Nenhum jogo a decorrer.</div>
+                <div style="font-size:14px;margin-top:4px">Os jogos ao vivo aparecem aqui assim que arrancarem.</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SCHEDULE -->
+        <sc-if value="{{ showSchedule }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr;gap:24px">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.5px;color:#0f4d2e;margin-bottom:10px;text-transform:uppercase">Próximos jogos</div>
+              <sc-if value="{{ hasUpcoming }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ upcomingVM }}" as="m" hint-placeholder-count="3">
+                    <div style="background:#fff;border-radius:12px;padding:12px 16px;border:1px solid #e4ece0;display:flex;flex-direction:column;gap:8px">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <sc-if value="{{ m.hasTime }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:#fff;background:#15803d;padding:2px 9px;border-radius:6px;letter-spacing:.5px">{{ m.time }}</span></sc-if>
+                        <sc-if value="{{ m.isFriendly }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#7c3aed;padding:2px 8px;border-radius:6px;letter-spacing:.4px">AMIGÁVEL</span></sc-if>
+                        <sc-if value="{{ m.notFriendly }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;font-weight:700;color:#15803d;letter-spacing:.4px;text-transform:uppercase">{{ m.label }}</span></sc-if>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+                        <span style="text-align:right;font-weight:600;font-size:15px">{{ m.aName }}</span>
+                        <span style="font-size:12px;font-weight:700;color:#9bb0a3;background:#eef2ec;padding:4px 9px;border-radius:7px">vs</span>
+                        <span style="text-align:left;font-weight:600;font-size:15px">{{ m.bName }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noUpcoming }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Sem jogos agendados. Gera o calendário no Backoffice.</div>
+              </sc-if>
+            </div>
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.5px;color:#0f4d2e;margin-bottom:10px;text-transform:uppercase">Resultados</div>
+              <sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ recentVM }}" as="m" hint-placeholder-count="2">
+                    <div style="background:#fff;border-radius:12px;padding:12px 16px;border:1px solid #e4ece0;display:flex;flex-direction:column;gap:8px">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <sc-if value="{{ m.isFriendly }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#7c3aed;padding:2px 8px;border-radius:6px;letter-spacing:.4px">AMIGÁVEL</span></sc-if>
+                        <sc-if value="{{ m.notFriendly }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;font-weight:700;color:#9bb0a3;letter-spacing:.4px;text-transform:uppercase">{{ m.label }}</span></sc-if>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+                        <span style="text-align:right;font-weight:600;font-size:15px">{{ m.aName }}</span>
+                        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:#0f4d2e;background:#eef2ec;padding:3px 12px;border-radius:8px">{{ m.aScore }} : {{ m.bScore }}</span>
+                        <span style="text-align:left;font-weight:600;font-size:15px">{{ m.bName }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noRecent }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Ainda sem resultados.</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- STATS (marcadores + guarda-redes) -->
+        <sc-if value="{{ showStats }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px;align-items:start">
+            <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:26px">🏆</span>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:.5px;color:#0f4d2e;text-transform:uppercase">Melhores marcadores</div>
+            </div>
+            <sc-if value="{{ hasScorers }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e4ece0">
+                <sc-for list="{{ scorersVM }}" as="p" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #f0f4ee">
+                    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#15803d;text-align:center">{{ $index }}</span>
+                    <div><div style="font-weight:600;font-size:15px">{{ p.name }}</div><div style="font-size:12px;color:#8aa093">{{ p.team }}</div></div>
+                    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:#0f4d2e">{{ p.goals }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noScorers }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Sem golos registados. Regista os marcadores no Backoffice ao adicionar golos.</div>
+            </sc-if>
+            </div>
+
+            <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span style="font-size:26px">🧤</span>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:.5px;color:#0f4d2e;text-transform:uppercase">Melhores guarda-redes</div>
+            </div>
+            <div style="font-size:12.5px;color:#8aa093;margin-bottom:12px">Ordenados por menos golos sofridos pela equipa.</div>
+            <sc-if value="{{ hasKeepers }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e4ece0">
+                <div style="display:grid;grid-template-columns:34px 1fr 54px 54px;align-items:center;gap:10px;padding:9px 18px;font-size:11px;font-weight:700;color:#6b8475;letter-spacing:.3px;text-transform:uppercase;background:#f6faf4">
+                  <span></span><span></span><span style="text-align:center">JC</span><span style="text-align:center">Sof.</span>
+                </div>
+                <sc-for list="{{ keepersVM }}" as="p" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:34px 1fr 54px 54px;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid #f0f4ee">
+                    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#1d4ed8;text-align:center">{{ $index }}</span>
+                    <div style="min-width:0"><div style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div><div style="font-size:12px;color:#8aa093">{{ p.team }}</div></div>
+                    <span style="text-align:center;font-size:14px;color:#5b7163;font-weight:600">{{ p.games }}</span>
+                    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:#0f4d2e;text-align:center">{{ p.conceded }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:#9bb0a3;margin-top:8px">JC = jogos contabilizados · Sof. = golos sofridos</div>
+            </sc-if>
+            <sc-if value="{{ noKeepers }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Sem guarda-redes definidos. No Backoffice, marca o guarda-redes com o botão <b>GR</b> ao lado de cada jogador.</div>
+            </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BRACKET -->
+        <sc-if value="{{ showBracket }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <sc-if value="{{ hasBracket }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px;align-items:start">
+                <div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#0f4d2e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Meias-finais</div>
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <dc-import name="KnockoutCard" m="{{ bracketVM.sf1 }}" hint-size="100%,86px"></dc-import>
+                    <dc-import name="KnockoutCard" m="{{ bracketVM.sf2 }}" hint-size="100%,86px"></dc-import>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#0f4d2e;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Final</div>
+                  <dc-import name="KnockoutCard" m="{{ bracketVM.final }}" hint-size="100%,86px"></dc-import>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#0f4d2e;letter-spacing:.5px;text-transform:uppercase;margin:18px 0 10px">3º e 4º lugar</div>
+                  <dc-import name="KnockoutCard" m="{{ bracketVM.third }}" hint-size="100%,86px"></dc-import>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noBracket }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:70px 20px;color:#8aa093">
+                <div style="font-size:42px;margin-bottom:10px">🥇</div>
+                <div style="font-size:17px;font-weight:600">A fase final ainda não foi criada.</div>
+                <div style="font-size:14px;margin-top:4px">Gera-a no Backoffice quando a fase de grupos terminar.</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- BOTTOM NAV (mobile) -->
+        <div class="only-mobile" style="position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid #e1e8dd;box-shadow:0 -4px 16px rgba(8,46,28,.08);padding:5px 4px;justify-content:space-around;align-items:stretch">
+          <button onClick="{{ tabStandings }}" style="flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;color:{{ navStand }}">
+            <span style="font-size:19px">🏆</span><span style="font-size:10px;font-weight:700;letter-spacing:.2px">Classif.</span>
+          </button>
+          <button onClick="{{ tabLive }}" style="position:relative;flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;color:{{ navLive }}">
+            <span style="font-size:19px">📺</span><span style="font-size:10px;font-weight:700;letter-spacing:.2px">Ao Vivo</span>
+            <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:3px;right:50%;margin-right:-16px;width:8px;height:8px;border-radius:50%;background:#dc2626;animation:pulse 1.1s infinite"></span></sc-if>
+          </button>
+          <button onClick="{{ tabSchedule }}" style="flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;color:{{ navSched }}">
+            <span style="font-size:19px">📅</span><span style="font-size:10px;font-weight:700;letter-spacing:.2px">Calend.</span>
+          </button>
+          <button onClick="{{ tabStats }}" style="flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;color:{{ navStats }}">
+            <span style="font-size:19px">📊</span><span style="font-size:10px;font-weight:700;letter-spacing:.2px">Estat.</span>
+          </button>
+          <button onClick="{{ tabBracket }}" style="flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;color:{{ navFinal }}">
+            <span style="font-size:19px">🥇</span><span style="font-size:10px;font-weight:700;letter-spacing:.2px">Final</span>
+          </button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== LOGIN ===== -->
+    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:380px;margin:50px auto;background:#fff;border-radius:18px;padding:34px 30px;box-shadow:0 10px 30px rgba(8,46,28,.12);border:1px solid #e4ece0">
+        <div style="text-align:center;margin-bottom:22px">
+          <div style="font-size:38px;margin-bottom:6px">🔒</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.5px">Backoffice</div>
+          <div style="font-size:13.5px;color:#8aa093;margin-top:4px">Área reservada à organização</div>
+        </div>
+        <label style="display:block;font-size:13px;font-weight:600;color:#5b7163;margin-bottom:6px">Palavra-passe</label>
+        <input type="password" value="{{ pwValue }}" onChange="{{ onPw }}" onKeyDown="{{ onPwKey }}" placeholder="••••••" style="width:100%;padding:13px 14px;border:1.5px solid #d3e0d0;border-radius:11px;font-size:15px;outline:none;margin-bottom:6px" />
+        <sc-if value="{{ pwError }}" hint-placeholder-val="{{ false }}"><div style="color:#dc2626;font-size:13px;font-weight:600;margin-bottom:8px">Palavra-passe incorreta.</div></sc-if>
+        <button onClick="{{ doLogin }}" style="width:100%;margin-top:8px;border:none;background:#15803d;color:#fff;font-weight:700;font-size:15px;letter-spacing:.5px;padding:13px;border-radius:11px;cursor:pointer">ENTRAR</button>
+        <div style="text-align:center;font-size:12px;color:#9bb0a3;margin-top:14px">Por defeito a palavra-passe é <b>atiaes</b> — muda-a nas Definições.</div>
+      </div>
+    </sc-if>
+
+    <!-- ===== ADMIN ===== -->
+    <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <!-- admin header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.5px">Backoffice</span>
+            <sc-if value="{{ serverMode }}" hint-placeholder-val="{{ false }}"><span style="background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;letter-spacing:.4px">SERVIDOR LIGADO</span></sc-if>
+            <sc-if value="{{ localMode }}" hint-placeholder-val="{{ true }}"><span style="background:#fef3c7;color:#92660a;font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;letter-spacing:.4px">MODO LOCAL</span></sc-if>
+          </div>
+          <button onClick="{{ logout }}" style="border:1px solid #d3e0d0;background:#fff;color:#5b7163;font-weight:600;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer">Sair</button>
+        </div>
+
+        <!-- admin tabs -->
+        <div class="scbar" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px">
+          <button onClick="{{ atTeams }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:11px;cursor:pointer">EQUIPAS<sc-if value="{{ showTeams }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if></button>
+          <button onClick="{{ atFixtures }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:11px;cursor:pointer">CALENDÁRIO<sc-if value="{{ showFixtures }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if></button>
+          <button onClick="{{ atKnockout }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:11px;cursor:pointer">FASE FINAL<sc-if value="{{ showKnockout }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if></button>
+          <button onClick="{{ atSettings }}" style="position:relative;flex-shrink:0;border:1px solid #d3e0d0;background:#fff;color:#13241b;font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:11px;cursor:pointer">DEFINIÇÕES<sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:14px;right:14px;bottom:4px;height:3px;background:#15803d;border-radius:3px"></div></sc-if></button>
+        </div>
+
+        <!-- TEAMS TAB -->
+        <sc-if value="{{ showTeams }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <!-- add team + groups -->
+            <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #e4ece0;margin-bottom:16px">
+              <div style="font-weight:700;font-size:14px;color:#0f4d2e;margin-bottom:12px">Adicionar equipa</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <input value="{{ newTeamValue }}" onChange="{{ onNewTeam }}" onKeyDown="{{ onNewTeamKey }}" placeholder="Nome da equipa" style="flex:1;min-width:160px;padding:11px 13px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14.5px;outline:none" />
+                <select value="{{ newGroupValue }}" onChange="{{ onNewGroup }}" style="padding:11px 13px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14.5px;background:#fff;outline:none">
+                  <sc-for list="{{ teamGroupOptions }}" as="g" hint-placeholder-count="2"><option value="{{ g.value }}">{{ g.label }}</option></sc-for>
+                </select>
+                <button onClick="{{ addTeam }}" style="border:none;background:#15803d;color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:10px;cursor:pointer">Adicionar</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #f0f4ee">
+                <span style="font-size:13px;font-weight:600;color:#5b7163">Grupos:</span>
+                <sc-for list="{{ groupOptions }}" as="g" hint-placeholder-count="2">
+                  <span style="display:inline-flex;align-items:center;gap:6px;background:#eef2ec;padding:5px 6px 5px 11px;border-radius:8px;font-size:13px;font-weight:700;color:#0f4d2e">{{ g.label }}<button onClick="{{ g.onRemove }}" style="border:none;background:#d8e2d4;color:#5b7163;width:18px;height:18px;border-radius:5px;cursor:pointer;font-size:12px;line-height:1;padding:0">×</button></span>
+                </sc-for>
+                <button onClick="{{ addGroup }}" style="border:1px dashed #b6c9b0;background:#fff;color:#15803d;font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer">+ Grupo</button>
+              </div>
+            </div>
+
+            <!-- teams list -->
+            <sc-if value="{{ hasTeams }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:14px">
+                <sc-for list="{{ teamsVM }}" as="t" hint-placeholder-count="2">
+                  <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid #e4ece0">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                      <input value="{{ t.name }}" onChange="{{ t.onRename }}" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;flex:1;min-width:0;border:1px solid transparent;background:transparent;color:#13241b;padding:3px 7px;border-radius:7px;outline:none" style-focus="border-color:#b6c9b0;background:#f6faf4" />
+                      <select value="{{ t.group }}" onChange="{{ t.setGroup }}" style="padding:5px 8px;border:1px solid #d3e0d0;border-radius:8px;font-size:12.5px;font-weight:600;background:#fff;outline:none">
+                        <sc-for list="{{ teamGroupOptions }}" as="g" hint-placeholder-count="2"><option value="{{ g.value }}">{{ g.label }}</option></sc-for>
+                      </select>
+                      <button onClick="{{ t.onRemove }}" style="border:none;background:#fdeaea;color:#dc2626;font-weight:700;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer">Remover</button>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px">
+                      <sc-for list="{{ t.players }}" as="p" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:6px;background:#f6faf4;padding:5px 7px 5px 9px;border-radius:8px">
+                          <sc-if value="{{ p.isCaptain }}" hint-placeholder-val="{{ false }}"><span title="Capitão" style="font-size:13px;font-weight:800;color:#15803d;flex-shrink:0">©</span></sc-if>
+                          <input value="{{ p.name }}" onChange="{{ p.onRename }}" style="flex:1;min-width:0;border:1px solid transparent;background:transparent;font-size:14px;font-weight:500;font-family:inherit;color:#13241b;padding:3px 6px;border-radius:6px;outline:none" style-focus="border-color:#b6c9b0;background:#fff" />
+                          <button onClick="{{ p.onToggleGK }}" title="Marcar como guarda-redes (só um por equipa)" style="border:1px solid {{ p.gkBorder }};background:{{ p.gkBg }};color:{{ p.gkColor }};cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.5px;line-height:1;padding:5px 8px;border-radius:6px;flex-shrink:0">GR</button>
+                          <button onClick="{{ p.onRemove }}" style="border:none;background:transparent;color:#b6c9b0;cursor:pointer;font-size:16px;line-height:1;padding:0 4px;flex-shrink:0">×</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;gap:6px;margin-bottom:10px">
+                      <input value="{{ t.playerInput }}" onChange="{{ t.onPlayerInput }}" onKeyDown="{{ t.onPlayerKey }}" placeholder="Nome do jogador" style="flex:1;padding:9px 11px;border:1.5px solid #e4ece0;border-radius:9px;font-size:13.5px;outline:none" />
+                      <button onClick="{{ t.onAddPlayer }}" style="border:none;background:#dcfce7;color:#15803d;font-weight:700;font-size:13px;padding:9px 13px;border-radius:9px;cursor:pointer">+ Jogador</button>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #f0f4ee">
+                      <select value="{{ t.captainId }}" onChange="{{ t.onCaptain }}" style="flex:1;min-width:130px;padding:9px 10px;border:1.5px solid #e4ece0;border-radius:9px;font-size:13px;background:#fff;outline:none;color:#13241b">
+                        <option value="">⊘ Capitão (opcional)</option>
+                        <sc-for list="{{ t.players }}" as="p" hint-placeholder-count="3"><option value="{{ p.id }}">© {{ p.name }}</option></sc-for>
+                      </select>
+                      <input value="{{ t.coach }}" onChange="{{ t.onCoach }}" placeholder="Treinador (opcional)" style="flex:1;min-width:130px;padding:9px 11px;border:1.5px solid #e4ece0;border-radius:9px;font-size:13px;outline:none" />
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noTeams }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:12px;padding:30px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Adiciona a primeira equipa acima.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- FIXTURES TAB -->
+        <sc-if value="{{ showFixtures }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <!-- add match form -->
+            <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #e4ece0;margin-bottom:16px">
+              <div style="font-weight:700;font-size:14px;color:#0f4d2e;margin-bottom:12px">Adicionar jogo</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <select value="{{ fxGroup }}" onChange="{{ onFxGroup }}" style="padding:11px 12px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14px;background:#fff;outline:none;font-weight:600">
+                  <sc-for list="{{ fxGroupOptions }}" as="g" hint-placeholder-count="2"><option value="{{ g.value }}">{{ g.label }}</option></sc-for>
+                </select>
+                <select value="{{ fxA }}" onChange="{{ onFxA }}" style="flex:1;min-width:120px;padding:11px 12px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14px;background:#fff;outline:none">
+                  <sc-for list="{{ fxTeamOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+                </select>
+                <span style="font-size:12px;font-weight:700;color:#9bb0a3">vs</span>
+                <select value="{{ fxB }}" onChange="{{ onFxB }}" style="flex:1;min-width:120px;padding:11px 12px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14px;background:#fff;outline:none">
+                  <sc-for list="{{ fxTeamOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+                </select>
+                <input type="time" value="{{ fxTime }}" onChange="{{ onFxTime }}" title="Hora do jogo" style="padding:10px 12px;border:1.5px solid #d3e0d0;border-radius:10px;font-size:14px;outline:none" />
+                <button onClick="{{ addMatch }}" style="border:none;background:#15803d;color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:10px;cursor:pointer">Adicionar</button>
+              </div>
+              <sc-if value="{{ fxHasError }}" hint-placeholder-val="{{ false }}"><div style="color:#dc2626;font-size:13px;font-weight:600;margin-top:10px">{{ fxError }}</div></sc-if>
+              <div style="font-size:11.5px;color:#9bb0a3;margin-top:10px">Cada par de equipas só pode ter um jogo por grupo.</div>
+            </div>
+
+            <sc-if value="{{ hasFixtures }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ adminMatchesVM }}" as="m" hint-placeholder-count="4">
+                  <div draggable="true" onDragStart="{{ m.onDragStart }}" onDragOver="{{ m.onDragOver }}" onDrop="{{ m.onDrop }}" style="background:#fff;border-radius:12px;padding:12px 16px;border:1px solid #e4ece0;display:flex;flex-direction:column;gap:8px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                      <div style="display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap">
+                        <span title="Arrasta para reordenar" style="cursor:grab;color:#b6c9b0;font-size:15px;line-height:1;user-select:none">⠿</span>
+                        <sc-if value="{{ m.isFriendly }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#7c3aed;padding:2px 8px;border-radius:6px;letter-spacing:.4px">AMIGÁVEL</span></sc-if>
+                        <sc-if value="{{ m.notFriendly }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;font-weight:700;color:#15803d;letter-spacing:.3px;text-transform:uppercase">{{ m.label }}</span></sc-if>
+                        <input type="time" value="{{ m.time }}" onChange="{{ m.onTime }}" title="Hora do jogo" style="font-size:12px;font-weight:700;color:#0f4d2e;border:1px solid #d3e0d0;border-radius:7px;padding:3px 7px;outline:none;background:#f6faf4" />
+                        <sc-if value="{{ m.liveActive }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#dc2626;padding:2px 7px;border-radius:6px;letter-spacing:.4px">{{ m.liveBadge }}</span></sc-if>
+                        <sc-if value="{{ m.isHalftime }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#d97706;padding:2px 7px;border-radius:6px;letter-spacing:.4px">{{ m.liveBadge }}</span></sc-if>
+                        <sc-if value="{{ m.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#5b7163;background:#eef2ec;padding:2px 7px;border-radius:6px;letter-spacing:.4px">TERMINADO</span></sc-if>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                        <button onClick="{{ m.onUp }}" title="Mover para cima" style="border:1px solid #d3e0d0;background:#fff;color:{{ m.upColor }};font-weight:800;font-size:14px;line-height:1;padding:8px 10px;border-radius:9px;cursor:pointer">↑</button>
+                        <button onClick="{{ m.onDown }}" title="Mover para baixo" style="border:1px solid #d3e0d0;background:#fff;color:{{ m.downColor }};font-weight:800;font-size:14px;line-height:1;padding:8px 10px;border-radius:9px;cursor:pointer">↓</button>
+                        <button onClick="{{ m.onOpen }}" style="border:none;background:#15803d;color:#fff;font-weight:700;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer">Registar</button>
+                        <button onClick="{{ m.onRemove }}" title="Remover jogo" style="border:1px solid #f3d6d6;background:#fdeaea;color:#dc2626;font-weight:700;font-size:14px;line-height:1;padding:8px 11px;border-radius:9px;cursor:pointer">×</button>
+                      </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+                      <span style="text-align:right;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.aName }}</span>
+                      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:19px;color:#0f4d2e;background:#eef2ec;padding:3px 11px;border-radius:7px;min-width:54px;text-align:center">{{ m.aScore }}:{{ m.bScore }}</span>
+                      <span style="text-align:left;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.bName }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noFixtures }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:12px;padding:30px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">Sem jogos ainda. Adiciona um jogo acima.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- KNOCKOUT TAB -->
+        <sc-if value="{{ showKnockout }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="background:#eef2ec;border:1px solid #dce6d7;border-radius:14px;padding:13px 16px;margin-bottom:16px;font-size:12.5px;color:#5b7163;line-height:1.5">
+              <b style="color:#0f4d2e">Fase final automática.</b> MF1: 1º Grupo A vs 2º Grupo B · MF2: 1º Grupo B vs 2º Grupo A · 3º/4º: perdedores das meias · Final: vencedores. As equipas preenchem-se sozinhas quando cada grupo terminar.
+            </div>
+            <sc-if value="{{ noKnockout }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:12px;padding:26px;text-align:center;color:#8aa093;border:1px solid #e4ece0;font-size:14px">A fase final aparece automaticamente quando tiveres pelo menos 2 grupos com equipas.</div>
+            </sc-if>
+            <sc-if value="{{ knockoutCreated }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ koVM }}" as="m" hint-placeholder-count="4">
+                  <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e4ece0">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                      <span style="font-size:12px;font-weight:800;color:#15803d;letter-spacing:.4px;text-transform:uppercase">{{ m.label }}</span>
+                      <button onClick="{{ m.onOpen }}" style="border:none;background:#15803d;color:#fff;font-weight:700;font-size:13px;padding:8px 13px;border-radius:9px;cursor:pointer">Registar</button>
+                    </div>
+                    <sc-if value="{{ m.canAssign }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:grid;grid-template-columns:1fr 30px 1fr;align-items:center;gap:8px">
+                        <select value="{{ m.aId }}" onChange="{{ m.onSetA }}" style="padding:9px 11px;border:1.5px solid #d3e0d0;border-radius:9px;font-size:13.5px;background:#fff;outline:none">
+                          <sc-for list="{{ koTeamOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+                        </select>
+                        <span style="text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#0f4d2e">{{ m.aScore }}:{{ m.bScore }}</span>
+                        <select value="{{ m.bId }}" onChange="{{ m.onSetB }}" style="padding:9px 11px;border:1.5px solid #d3e0d0;border-radius:9px;font-size:13.5px;background:#fff;outline:none">
+                          <sc-for list="{{ koTeamOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}">{{ o.name }}</option></sc-for>
+                        </select>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.cannotAssign }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+                        <span style="text-align:right;font-weight:600;font-size:14.5px">{{ m.aName }}</span>
+                        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:19px;color:#0f4d2e;background:#eef2ec;padding:3px 11px;border-radius:7px">{{ m.aScore }}:{{ m.bScore }}</span>
+                        <span style="text-align:left;font-weight:600;font-size:14.5px">{{ m.bName }}</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SETTINGS TAB -->
+        <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px">
+            <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #e4ece0">
+              <div style="font-weight:700;font-size:14px;color:#0f4d2e;margin-bottom:4px">Palavra-passe do backoffice</div>
+              <div style="font-size:12.5px;color:#8aa093;margin-bottom:12px">Atual: <b>{{ currentPassword }}</b></div>
+              <div style="display:flex;gap:8px">
+                <input value="{{ pwFieldValue }}" onChange="{{ onPwField }}" placeholder="Nova palavra-passe" style="flex:1;padding:10px 12px;border:1.5px solid #d3e0d0;border-radius:9px;font-size:14px;outline:none" />
+                <button onClick="{{ savePassword }}" style="border:none;background:#15803d;color:#fff;font-weight:700;font-size:13px;padding:10px 15px;border-radius:9px;cursor:pointer">Guardar</button>
+              </div>
+            </div>
+            <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #e4ece0">
+              <div style="font-weight:700;font-size:14px;color:#0f4d2e;margin-bottom:4px">Link do placar (QR)</div>
+              <div style="font-size:12.5px;color:#8aa093;margin-bottom:12px">Partilha este link / QR para o público ver o placar.</div>
+              <div style="display:flex;gap:8px">
+                <input value="{{ shareUrl }}" readonly style="flex:1;padding:10px 12px;border:1.5px solid #e4ece0;border-radius:9px;font-size:12.5px;color:#5b7163;outline:none;background:#f6faf4" />
+                <button onClick="{{ copyShare }}" style="border:none;background:#dcfce7;color:#15803d;font-weight:700;font-size:13px;padding:10px 15px;border-radius:9px;cursor:pointer">Copiar</button>
+              </div>
+              <div style="font-size:11.5px;color:#9bb0a3;margin-top:10px">Modo de dados: <b>{{ serverUrl }}</b></div>
+            </div>
+            <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #f3d6d6">
+              <div style="font-weight:700;font-size:14px;color:#dc2626;margin-bottom:4px">Reiniciar torneio</div>
+              <div style="font-size:12.5px;color:#8aa093;margin-bottom:12px">Apaga equipas, jogos e resultados. Não pode ser desfeito.</div>
+              <button onClick="{{ resetData }}" style="border:1px solid #f3d6d6;background:#fdeaea;color:#dc2626;font-weight:700;font-size:13px;padding:10px 15px;border-radius:9px;cursor:pointer">Apagar tudo</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- SCORING OVERLAY -->
+        <sc-if value="{{ openMatch }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;z-index:60;background:rgba(8,30,18,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto">
+            <div style="background:#fff;border-radius:18px;width:100%;max-width:620px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:calc(100vh - 48px)">
+              <div style="background:linear-gradient(120deg,#0f4d2e,#15803d);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#fff;text-transform:uppercase;letter-spacing:.5px">{{ openMatch.label }}</span>
+                  <sc-if value="{{ openMatch.isLive }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:800;padding:5px 11px;border-radius:7px;letter-spacing:.4px">{{ openMatch.liveText }}</span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                  <sc-if value="{{ openMatch.showEditToggle }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ openMatch.onToggleEdit }}" title="Editar jogo parado/terminado" style="border:none;background:{{ openMatch.editToggleBg }};color:{{ openMatch.editToggleColor }};font-weight:800;font-size:12px;padding:7px 11px;border-radius:9px;cursor:pointer">{{ openMatch.editToggleLabel }}</button>
+                  </sc-if>
+                  <button onClick="{{ openMatch.onClose }}" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:18px;line-height:1;padding:0">×</button>
+                </div>
+              </div>
+
+              <div style="padding:18px 20px;overflow-y:auto;flex:1;min-height:0">
+                <!-- scoreboard -->
+                <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:18px">
+                  <div style="text-align:center"><div style="font-weight:700;font-size:16px;margin-bottom:6px">{{ openMatch.a.name }}</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:50px;line-height:1;color:#0f4d2e">{{ openMatch.a.score }}</div></div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:28px;color:#c3d4bd">:</div>
+                  <div style="text-align:center"><div style="font-weight:700;font-size:16px;margin-bottom:6px">{{ openMatch.b.name }}</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:50px;line-height:1;color:#0f4d2e">{{ openMatch.b.score }}</div></div>
+                </div>
+
+                <!-- edit lock / warning banners -->
+                <sc-if value="{{ openMatch.showLockBanner }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:10px;background:#eef2ec;border:1px solid #dce6d7;border-radius:11px;padding:11px 14px;margin-bottom:14px">
+                    <span style="font-size:18px">🔒</span>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;color:#0f4d2e">Edição bloqueada</div><div style="font-size:12px;color:#7a9184">O jogo não está a decorrer. Carrega em <b>✏️ Editar</b> para corrigir golos/cartões.</div></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ openMatch.showEditBanner }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:10px;background:#fef3c7;border:1px solid #fadf8b;border-radius:11px;padding:11px 14px;margin-bottom:14px">
+                    <span style="font-size:18px">⚠️</span>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;color:#92660a">Modo de edição</div><div style="font-size:12px;color:#9a7a1e">Estas alterações <b>não notificam ninguém</b> (sem aviso nem vibração).</div></div>
+                  </div>
+                </sc-if>
+
+                <!-- editable region -->
+                <div style="pointer-events:{{ openMatch.editPointer }};opacity:{{ openMatch.editOpacity }}">
+
+                <!-- goal buttons -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div>
+                    <div style="font-size:12px;font-weight:700;color:#5b7163;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Golos · {{ openMatch.a.name }}</div>
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <sc-for list="{{ openMatch.a.players }}" as="p" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:5px">
+                          <button onClick="{{ p.onGoal }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1.5px solid #e4ece0;background:#fff;padding:9px 11px;border-radius:10px;cursor:pointer;text-align:left;font-size:14px;font-weight:500"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span><span style="background:#dcfce7;color:#15803d;font-weight:800;font-size:13px;min-width:24px;text-align:center;padding:2px 6px;border-radius:6px;flex-shrink:0">⚽{{ p.goals }}</span></button>
+                          <button onClick="{{ p.onYellow }}" title="Cartão amarelo" style="display:flex;align-items:center;gap:3px;border:1px solid #eab308;background:#fef9c3;color:#854d0e;font-weight:800;font-size:12px;padding:7px 8px;border-radius:8px;cursor:pointer;flex-shrink:0"><span style="width:8px;height:12px;border-radius:2px;background:#eab308;display:inline-block"></span>{{ p.yellow }}</button>
+                          <button onClick="{{ p.onRed }}" title="Cartão vermelho" style="display:flex;align-items:center;gap:3px;border:1px solid #dc2626;background:#fee2e2;color:#b91c1c;font-weight:800;font-size:12px;padding:7px 8px;border-radius:8px;cursor:pointer;flex-shrink:0"><span style="width:8px;height:12px;border-radius:2px;background:#dc2626;display:inline-block"></span>{{ p.red }}</button>
+                        </div>
+                      </sc-for>
+                      <button onClick="{{ openMatch.a.onOwnGoal }}" title="Auto-golo: conta para o adversário" style="border:1px dashed #c8a2a2;background:#fdf3f3;color:#b91c1c;font-weight:600;font-size:13px;padding:8px;border-radius:9px;cursor:pointer">+ Auto-golo (p/ adversário)</button>
+                      <div style="display:flex;gap:6px">
+                        <button onClick="{{ openMatch.a.onUndo }}" style="flex:1;border:none;background:transparent;color:#b08a8a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Golo</button>
+                        <button onClick="{{ openMatch.a.onUndoYellow }}" style="flex:1;border:none;background:transparent;color:#a08a3a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Amarelo</button>
+                        <button onClick="{{ openMatch.a.onUndoRed }}" style="flex:1;border:none;background:transparent;color:#b08a8a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Vermelho</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:12px;font-weight:700;color:#5b7163;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Golos · {{ openMatch.b.name }}</div>
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <sc-for list="{{ openMatch.b.players }}" as="p" hint-placeholder-count="3">
+                        <div style="display:flex;align-items:center;gap:5px">
+                          <button onClick="{{ p.onGoal }}" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1.5px solid #e4ece0;background:#fff;padding:9px 11px;border-radius:10px;cursor:pointer;text-align:left;font-size:14px;font-weight:500"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span><span style="background:#dcfce7;color:#15803d;font-weight:800;font-size:13px;min-width:24px;text-align:center;padding:2px 6px;border-radius:6px;flex-shrink:0">⚽{{ p.goals }}</span></button>
+                          <button onClick="{{ p.onYellow }}" title="Cartão amarelo" style="display:flex;align-items:center;gap:3px;border:1px solid #eab308;background:#fef9c3;color:#854d0e;font-weight:800;font-size:12px;padding:7px 8px;border-radius:8px;cursor:pointer;flex-shrink:0"><span style="width:8px;height:12px;border-radius:2px;background:#eab308;display:inline-block"></span>{{ p.yellow }}</button>
+                          <button onClick="{{ p.onRed }}" title="Cartão vermelho" style="display:flex;align-items:center;gap:3px;border:1px solid #dc2626;background:#fee2e2;color:#b91c1c;font-weight:800;font-size:12px;padding:7px 8px;border-radius:8px;cursor:pointer;flex-shrink:0"><span style="width:8px;height:12px;border-radius:2px;background:#dc2626;display:inline-block"></span>{{ p.red }}</button>
+                        </div>
+                      </sc-for>
+                      <button onClick="{{ openMatch.b.onOwnGoal }}" title="Auto-golo: conta para o adversário" style="border:1px dashed #c8a2a2;background:#fdf3f3;color:#b91c1c;font-weight:600;font-size:13px;padding:8px;border-radius:9px;cursor:pointer">+ Auto-golo (p/ adversário)</button>
+                      <div style="display:flex;gap:6px">
+                        <button onClick="{{ openMatch.b.onUndo }}" style="flex:1;border:none;background:transparent;color:#b08a8a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Golo</button>
+                        <button onClick="{{ openMatch.b.onUndoYellow }}" style="flex:1;border:none;background:transparent;color:#a08a3a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Amarelo</button>
+                        <button onClick="{{ openMatch.b.onUndoRed }}" style="flex:1;border:none;background:transparent;color:#b08a8a;font-weight:600;font-size:12px;padding:4px;cursor:pointer">− Vermelho</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- registered goals (editable) -->
+                <sc-if value="{{ openMatch.hasGoals }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:16px;padding-top:14px;border-top:1px solid #f0f4ee">
+                    <div style="font-size:12px;font-weight:700;color:#5b7163;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Golos registados · toca no × para corrigir</div>
+                    <div style="display:flex;flex-direction:column;gap:5px">
+                      <sc-for list="{{ openMatch.goals }}" as="g" hint-placeholder-count="2">
+                        <div style="display:flex;align-items:center;gap:8px;background:#f6faf4;padding:7px 11px;border-radius:9px">
+                          <span style="width:8px;height:8px;border-radius:50%;background:{{ g.dot }};flex-shrink:0"></span>
+                          <span style="font-weight:700;font-size:13px;color:#0f4d2e;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.teamName }}</span>
+                          <span style="font-size:13px;color:#5b7163;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.label }}</span>
+                          <button onClick="{{ g.onRemove }}" title="Remover este golo" style="border:none;background:#fdeaea;color:#dc2626;font-weight:700;font-size:14px;line-height:1;padding:4px 9px;border-radius:7px;cursor:pointer;flex-shrink:0">×</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <!-- penalties (knockout) -->
+                <sc-if value="{{ openMatch.showPens }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:16px;padding:12px 14px;background:#f6faf4;border-radius:11px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <span style="font-size:12.5px;font-weight:700;color:#5b7163">Penáltis (desempate):</span>
+                    <input type="number" value="{{ openMatch.penA }}" onChange="{{ openMatch.onPenA }}" style="width:60px;padding:8px;border:1.5px solid #d3e0d0;border-radius:8px;font-size:15px;text-align:center;outline:none" />
+                    <span style="font-weight:700">–</span>
+                    <input type="number" value="{{ openMatch.penB }}" onChange="{{ openMatch.onPenB }}" style="width:60px;padding:8px;border:1.5px solid #d3e0d0;border-radius:8px;font-size:15px;text-align:center;outline:none" />
+                  </div>
+                </sc-if>
+
+                </div><!-- /editable region -->
+
+              </div>
+
+              <!-- status controls (footer fixo) -->
+              <div style="display:flex;gap:10px;padding:14px 20px;border-top:1px solid #eef2ec;flex-wrap:wrap;background:#fff;flex-shrink:0">
+                  <sc-if value="{{ openMatch.isScheduled }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ openMatch.onStartFirst }}" style="flex:1;min-width:150px;border:none;background:#15803d;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">▶ Iniciar 1ª parte</button>
+                  </sc-if>
+                  <sc-if value="{{ openMatch.isFirst }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ openMatch.onHalftime }}" style="flex:1;min-width:140px;border:none;background:#d97706;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">⏸ Intervalo</button>
+                    <button onClick="{{ openMatch.onFinish }}" style="flex:1;min-width:140px;border:none;background:#0f4d2e;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">■ Terminar</button>
+                  </sc-if>
+                  <sc-if value="{{ openMatch.isHalf }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ openMatch.onStartSecond }}" style="flex:1;min-width:150px;border:none;background:#15803d;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">▶ Iniciar 2ª parte</button>
+                    <button onClick="{{ openMatch.onFinish }}" style="flex:1;min-width:140px;border:none;background:#0f4d2e;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">■ Terminar</button>
+                  </sc-if>
+                  <sc-if value="{{ openMatch.isSecond }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ openMatch.onFinish }}" style="flex:1;min-width:150px;border:none;background:#0f4d2e;color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">■ Terminar jogo</button>
+                  </sc-if>
+                  <sc-if value="{{ openMatch.isDone }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ openMatch.onReopen }}" style="flex:1;min-width:150px;border:1px solid #d3e0d0;background:#fff;color:#5b7163;font-weight:700;font-size:14px;padding:13px;border-radius:11px;cursor:pointer">Reabrir jogo</button>
+                  </sc-if>
+                  <button onClick="{{ openMatch.onClose }}" style="border:1px solid #d3e0d0;background:#fff;color:#5b7163;font-weight:700;font-size:14px;padding:13px 20px;border-radius:11px;cursor:pointer">Fechar</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ===== MATCH DETAIL (flashscore) ===== -->
+    <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ detail.onClose }}" style="position:fixed;inset:0;z-index:70;background:rgba(8,30,18,.55);display:flex;align-items:flex-start;justify-content:center;padding:18px 14px;overflow-y:auto">
+        <div onClick="{{ detail.stop }}" style="background:#fff;border-radius:18px;width:100%;max-width:560px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:calc(100vh - 36px)">
+          <!-- header -->
+          <div style="background:linear-gradient(135deg,#0c2a1c,#15803d);padding:16px 18px;flex-shrink:0;color:#fff">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:700;color:#bbf7d0;letter-spacing:.6px;text-transform:uppercase">{{ detail.label }}</span>
+                <sc-if value="{{ detail.hasTime }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:#bbf7d0">· {{ detail.time }}</span></sc-if>
+              </div>
+              <button onClick="{{ detail.onClose }}" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:9px;cursor:pointer;font-size:17px;line-height:1;padding:0">×</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+              <div style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1.05">{{ detail.aName }}</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:38px;line-height:1">{{ detail.aScore }} : {{ detail.bScore }}</div>
+              <div style="text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1.05">{{ detail.bName }}</div>
+            </div>
+            <div style="text-align:center;margin-top:8px">
+              <sc-if value="{{ detail.liveActive }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;padding:4px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.5px"><span style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.1s infinite"></span>{{ detail.liveBadge }}</span></sc-if>
+              <sc-if value="{{ detail.isHalftime }}" hint-placeholder-val="{{ false }}"><span style="background:#d97706;padding:4px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.5px">{{ detail.liveBadge }}</span></sc-if>
+              <sc-if value="{{ detail.isDone }}" hint-placeholder-val="{{ false }}"><span style="background:rgba(255,255,255,.2);padding:4px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.5px">TERMINADO</span></sc-if>
+              <sc-if value="{{ detail.isScheduled }}" hint-placeholder-val="{{ false }}"><span style="background:rgba(255,255,255,.2);padding:4px 11px;border-radius:8px;font-size:11px;font-weight:800;letter-spacing:.5px">POR COMEÇAR</span></sc-if>
+            </div>
+          </div>
+
+          <!-- body -->
+          <div style="padding:16px 18px;overflow-y:auto;flex:1;min-height:0">
+            <!-- timeline -->
+            <div style="font-size:11px;font-weight:800;color:#9bb0a3;letter-spacing:.5px;text-transform:uppercase;text-align:center;margin-bottom:10px">Lance a lance</div>
+            <sc-if value="{{ detail.hasEvents }}" hint-placeholder-val="{{ true }}">
+              <div style="position:relative">
+                <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:#eef2ec;transform:translateX(-50%)"></div>
+                <sc-for list="{{ detail.events }}" as="e" hint-placeholder-count="3">
+                  <div style="position:relative;display:grid;grid-template-columns:1fr 36px 1fr;align-items:center;gap:8px;padding:6px 0">
+                    <div style="text-align:right;min-width:0">
+                      <sc-if value="{{ e.isA }}" hint-placeholder-val="{{ true }}">
+                        <div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.who }}</div>
+                        <sc-if value="{{ e.isGoal }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#15803d;font-weight:800">{{ e.scoreText }}</div></sc-if>
+                      </sc-if>
+                    </div>
+                    <div style="text-align:center;font-size:16px;background:#fff;z-index:1">{{ e.icon }}</div>
+                    <div style="text-align:left;min-width:0">
+                      <sc-if value="{{ e.isB }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.who }}</div>
+                        <sc-if value="{{ e.isGoal }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#15803d;font-weight:800">{{ e.scoreText }}</div></sc-if>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ detail.noEvents }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;color:#9bb0a3;font-size:13px;padding:14px 0">Ainda sem golos nem cartões.</div>
+            </sc-if>
+
+            <!-- lineups -->
+            <div style="font-size:11px;font-weight:800;color:#9bb0a3;letter-spacing:.5px;text-transform:uppercase;text-align:center;margin:18px 0 10px">Equipas</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <div style="font-weight:800;font-size:13.5px;color:#0f4d2e;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detail.aName }}</div>
+                <sc-for list="{{ detail.aLineup }}" as="p" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid #f4f7f2">
+                    <sc-if value="{{ p.isCaptain }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:800;color:#15803d">©</span></sc-if>
+                    <sc-if value="{{ p.isGK }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:800;color:#fff;background:#2563eb;padding:1px 4px;border-radius:4px">GR</span></sc-if>
+                    <span style="flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                    <sc-if value="{{ p.gShow }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#0f4d2e">⚽{{ p.goals }}</span></sc-if>
+                    <sc-if value="{{ p.yShow }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:11px;border-radius:2px;background:#eab308;display:inline-block"></span></sc-if>
+                    <sc-if value="{{ p.rShow }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:11px;border-radius:2px;background:#dc2626;display:inline-block"></span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:13.5px;color:#0f4d2e;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detail.bName }}</div>
+                <sc-for list="{{ detail.bLineup }}" as="p" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid #f4f7f2">
+                    <sc-if value="{{ p.isCaptain }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:800;color:#15803d">©</span></sc-if>
+                    <sc-if value="{{ p.isGK }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:800;color:#fff;background:#2563eb;padding:1px 4px;border-radius:4px">GR</span></sc-if>
+                    <span style="flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                    <sc-if value="{{ p.gShow }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#0f4d2e">⚽{{ p.goals }}</span></sc-if>
+                    <sc-if value="{{ p.yShow }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:11px;border-radius:2px;background:#eab308;display:inline-block"></span></sc-if>
+                    <sc-if value="{{ p.rShow }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:11px;border-radius:2px;background:#dc2626;display:inline-block"></span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== REGRAS (regulamento) ===== -->
+    <sc-if value="{{ showRules }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeRules }}" style="position:fixed;inset:0;z-index:80;background:rgba(8,30,18,.55);display:flex;align-items:flex-start;justify-content:center;padding:18px 14px;overflow-y:auto">
+        <div onClick="{{ stopRules }}" style="background:#fff;border-radius:18px;width:100%;max-width:680px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:calc(100vh - 36px)">
+          <div style="background:linear-gradient(135deg,#0c2a1c,#15803d);padding:16px 20px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:#fff;letter-spacing:.5px;text-transform:uppercase;line-height:1">Regulamento</div>
+              <div style="font-size:12px;color:#bbf7d0;font-weight:600;margin-top:2px">Torneio Futebol 5 · Atiães em Movimento</div>
+            </div>
+            <button onClick="{{ closeRules }}" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:18px;line-height:1;padding:0;flex-shrink:0">×</button>
+          </div>
+          <div style="padding:20px 22px 26px;overflow-y:auto;flex:1;min-height:0;color:#22332b;font-size:14px;line-height:1.6">
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Participação de equipas e atletas</div>
+            <ul style="margin:0 0 18px;padding-left:20px">
+              <li>Inscrição feita através da organização e homologada por esta.</li>
+              <li>Todos os jogadores entregam o «Termo de responsabilidade» preenchido e assinado.</li>
+              <li>Ter conhecimento deste regulamento.</li>
+            </ul>
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Regras gerais</div>
+            <ol style="margin:0 0 18px;padding-left:20px">
+              <li>Inscrição: 75€ (equipas novas) ou 50€ (equipas da edição anterior).</li>
+              <li>Inscrição de equipas até 15 de junho de 2025.</li>
+              <li>Inscrição de atletas até 25 de junho de 2025.</li>
+              <li>Mínimo de 5 atletas por equipa.</li>
+              <li>Substituições junto ao banco e ilimitadas.</li>
+              <li>Todos os atletas têm de constar na ficha de jogo.</li>
+              <li>Cada equipa é obrigada a ter um capitão.</li>
+              <li>Todos os termos de responsabilidade entregues antes do 1º jogo da equipa.</li>
+              <li>Um atleta não pode participar por mais do que uma equipa.</li>
+              <li>Atrasados só entram até ao fim do 1º tempo (e se estiverem na ficha); após o início do 2º tempo não entram nem ficam no banco.</li>
+            </ol>
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Datas e local</div>
+            <ul style="margin:0 0 18px;padding-left:20px">
+              <li>28/06/2025 — jogos das 8h30 às 23h50, no campo de futebol 5 em Atiães.</li>
+              <li>29/06/2025 — jogos das 9h00 às 12h35.</li>
+              <li>Sorteio: 22/05 às 18h00, no café «O Madeirense», junto ao campo.</li>
+            </ul>
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Disciplina</div>
+            <ul style="margin:0 0 18px;padding-left:20px">
+              <li>Perde o jogo (derrota por 3 golos) a equipa que não comparecer, ou cujo atleta agrida outro atleta, árbitro ou organização.</li>
+              <li>Máximo de 5 jogadores por equipa em campo, um como guarda-redes devidamente equipado.</li>
+              <li>Mínimo de 4 atletas para começar; 10 min de tolerância, senão derrota por 3-0.</li>
+              <li>Dois tempos de 15 minutos, com intervalo de 5 minutos.</li>
+              <li>Cartão vermelho: jogador não regressa; equipa fica com menos um durante 2 minutos (ou até sofrer golo).</li>
+              <li>Agressão = expulsão automática do torneio.</li>
+              <li>Cores coincidentes: a equipa visitante veste coletes. Sem equipamento, veste coletes.</li>
+            </ul>
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Critérios técnicos</div>
+            <ul style="margin:0 0 10px;padding-left:20px">
+              <li>Regras de futebol 5; lançamentos laterais com o pé.</li>
+              <li>O guarda-redes não joga com as mãos uma bola pontapeada propositadamente por um colega.</li>
+            </ul>
+            <div style="background:#f6faf4;border:1px solid #e1ece0;border-radius:11px;padding:12px 14px;margin-bottom:12px">
+              <div style="font-weight:700;color:#0f4d2e;margin-bottom:4px">Desempate na fase de grupos (por ordem):</div>
+              <div>1) Confronto direto · 2) Diferença de golos · 3) Mais golos marcados · 4) Menor média de idades</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <span style="background:#dcfce7;color:#15803d;font-weight:700;padding:5px 11px;border-radius:8px;font-size:13px">Vitória = 3 pts</span>
+              <span style="background:#eef2ec;color:#5b7163;font-weight:700;padding:5px 11px;border-radius:8px;font-size:13px">Empate = 1 pt</span>
+              <span style="background:#fdeaea;color:#dc2626;font-weight:700;padding:5px 11px;border-radius:8px;font-size:13px">Derrota/ausência = 0 pts</span>
+            </div>
+            <p style="margin:0 0 18px;color:#5b7163">Nas fases a eliminar, empate é decidido por <b>penáltis em séries de 3</b>.</p>
+
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;color:#0f4d2e;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px">Prémios</div>
+            <ul style="margin:0;padding-left:20px">
+              <li>Troféus para 1º, 2º e 3º lugar.</li>
+              <li>Troféu para o melhor guarda-redes (eleito pela organização).</li>
+              <li>Troféu para o melhor marcador.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:860},&quot;serverUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tournamentName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Atiães em Movimento&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;adminPassword&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;atiaes&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  KEY = 'atiaes_torneio_v1';
+  CH = 'atiaes_torneio';
+
+  state = {
+    data: null,
+    view: 'public',
+    isAdmin: false,
+    pwInput: '',
+    pwError: false,
+    ui: { pubTab: 'standings', adminTab: 'teams', newTeam: '', newGroup: 'A', playerInputs: {}, openMatchId: null, editUnlock: false, detailMatchId: null, pwField: '' },
+    now: Date.now(),
+    toasts: [],
+    notify: false,
+  };
+
+  get serverUrl() {
+    let u = (this.props.serverUrl || '') + '';
+    try { const q = new URLSearchParams(location.search).get('serverUrl'); if (q) u = q; } catch (e) {}
+    return u.trim().replace(/\/+$/, '');
+  }
+
+  defaultData() {
+    return {
+      tournamentName: this.props.tournamentName || 'Atiães em Movimento',
+      subtitle: 'Torneio Futebol 5',
+      password: this.props.adminPassword || 'atiaes',
+      groups: ['A', 'B'],
+      teams: [],
+      matches: [],
+      knockoutCreated: false,
+    };
+  }
+
+  componentDidMount() {
+    if (this.serverUrl) this.connectServer(); else this.load();
+    try { this.bc = new BroadcastChannel(this.CH); this.bc.onmessage = (e) => { if (e.data && e.data.type === 'sync') this.setState({ data: e.data.data }); }; } catch (e) {}
+    this.onStorage = (e) => { if (e.key === this.KEY && e.newValue) { try { this.setState({ data: JSON.parse(e.newValue) }); } catch (_) {} } };
+    window.addEventListener('storage', this.onStorage);
+    try { if (sessionStorage.getItem('atiaes_admin') === '1') this.setState({ isAdmin: true }); } catch (e) {}
+  }
+  componentDidUpdate() {
+    const d = this.state.data;
+    if (!d) return;
+    if (this._lastData && this._lastData !== d) this.detectEvents(this._lastData, d);
+    this._lastData = d;
+    // fase final cria-se sozinha quando há ≥2 grupos com equipas (só admin escreve)
+    if (this.state.isAdmin && !d.knockoutCreated && (d.groups || []).length >= 2 && (d.teams || []).filter(t => t.group).length >= 2 && !this._ensuring) {
+      this._ensuring = true; setTimeout(() => { this._ensuring = false; this.genKnockout(); }, 0);
+    }
+  }
+
+  detectEvents(prev, next) {
+    if (next && next._notify === false) return;
+    const prevById = {}; prev.matches.forEach(m => { prevById[m.id] = m; });
+    const tn = (id) => { const t = next.teams.find(x => x.id === id); return t ? t.name : '?'; };
+    const out = [];
+    next.matches.forEach(m => {
+      const p = prevById[m.id]; if (!p) return;
+      const sa = this.scoreOf(m, m.a), sb = this.scoreOf(m, m.b);
+      const sc = (m.scorers || []).length, psc = (p.scorers || []).length;
+      if (sc > psc) { const last = m.scorers[m.scorers.length - 1]; out.push({ icon: '⚽', title: 'GOLO! ' + tn(last.team), body: tn(m.a) + ' ' + sa + '–' + sb + ' ' + tn(m.b) }); }
+      if (p.status !== m.status || p.livePhase !== m.livePhase) {
+        if (m.status === 'live' && m.livePhase === 'first' && p.status !== 'live') out.push({ icon: '🟢', title: 'Começou o jogo', body: tn(m.a) + ' vs ' + tn(m.b) });
+        else if (m.status === 'live' && m.livePhase === 'half') out.push({ icon: '⏸️', title: 'Intervalo', body: tn(m.a) + ' ' + sa + '–' + sb + ' ' + tn(m.b) });
+        else if (m.status === 'live' && m.livePhase === 'second' && p.livePhase === 'half') out.push({ icon: '🟢', title: 'Recomeço · 2ª parte', body: tn(m.a) + ' vs ' + tn(m.b) });
+        else if (m.status === 'done') out.push({ icon: '🏁', title: 'Fim do jogo', body: tn(m.a) + ' ' + sa + '–' + sb + ' ' + tn(m.b) });
+      }
+      const cc = (m.cards || []).length, pcc = (p.cards || []).length;
+      if (cc > pcc) { const last = m.cards[m.cards.length - 1]; out.push({ icon: last.type === 'red' ? '🟥' : '🟨', title: (last.type === 'red' ? 'Cartão vermelho' : 'Cartão amarelo') + ' · ' + tn(last.team), body: tn(m.a) + ' vs ' + tn(m.b) }); }
+    });
+    if (out.length) this.pushToasts(out);
+  }
+
+  pushToasts(list) {
+    const items = list.map(t => Object.assign({ id: this.uid() }, t));
+    this.setState(s => ({ toasts: s.toasts.concat(items).slice(-4) }));
+    // vibração do telemóvel (Android; iOS não suporta) + notificação do sistema
+    try { if (this.state.notify && navigator.vibrate) navigator.vibrate([130, 60, 130]); } catch (e) {}
+    items.forEach(it => {
+      setTimeout(() => this.setState(s => ({ toasts: s.toasts.filter(x => x.id !== it.id) })), 5400);
+      try {
+        if (this.state.notify && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          if (this._sw && this._sw.showNotification) this._sw.showNotification(it.icon + ' ' + it.title, { body: it.body, tag: it.id, renotify: true, vibrate: [130, 60, 130], icon: this.notifIcon, badge: this.notifIcon });
+          else new Notification(it.icon + ' ' + it.title, { body: it.body, tag: it.id });
+        }
+      } catch (e) {}
+    });
+  }
+  get notifIcon() { return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="14" fill="%2315803d"/><text x="32" y="46" font-size="38" text-anchor="middle">⚽</text></svg>'); }
+
+  enableNotify() {
+    if (typeof Notification === 'undefined') { this.pushToasts([{ icon: '⚠️', title: 'Sem suporte', body: 'Este navegador não permite notificações.' }]); return; }
+    const done = (p) => {
+      this.setState({ notify: p === 'granted' });
+      if (p === 'granted') { try { if (navigator.vibrate) navigator.vibrate([130, 60, 130]); } catch (e) {} this.pushToasts([{ icon: '🔔', title: 'Notificações ativadas', body: 'Golos, resultados e cartões — com vibração no Android.' }]); }
+    };
+    if (Notification.permission === 'granted') { this.setState({ notify: !this.state.notify }); return; }
+    Notification.requestPermission().then(done);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    window.removeEventListener('storage', this.onStorage);
+    if (this.bc) this.bc.close();
+    if (this.es) this.es.close();
+  }
+
+  connectServer() {
+    fetch(this.serverUrl + '/api/state').then(r => r.json())
+      .then(d => this.setState({ data: Object.assign(this.defaultData(), d) }))
+      .catch(() => this.load());
+    try {
+      this.es = new EventSource(this.serverUrl + '/api/events');
+      this.es.onmessage = (e) => { try { this.setState({ data: Object.assign(this.defaultData(), JSON.parse(e.data)) }); } catch (_) {} };
+    } catch (e) {}
+  }
+
+  load() {
+    let data = null;
+    try { const raw = localStorage.getItem(this.KEY); if (raw) data = JSON.parse(raw); } catch (e) {}
+    if (!data) data = this.defaultData();
+    data = Object.assign(this.defaultData(), data);
+    this.setState({ data });
+  }
+
+  save(updater) {
+    this.setState(s => {
+      const data = typeof updater === 'function' ? updater(s.data) : updater;
+      if (this.serverUrl) {
+        clearTimeout(this._pt);
+        this._pt = setTimeout(() => {
+          fetch(this.serverUrl + '/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(() => {});
+        }, 120);
+      } else {
+        try { localStorage.setItem(this.KEY, JSON.stringify(data)); } catch (e) {}
+        try { if (this.bc) this.bc.postMessage({ type: 'sync', data }); } catch (e) {}
+      }
+      return { data };
+    });
+  }
+  mutate(fn) { this.save(d => { const nd = JSON.parse(JSON.stringify(d)); fn(nd); this.propagate(nd); nd._notify = !this._pendingSilent; this._pendingSilent = false; return nd; }); }
+  uid() { return Math.random().toString(36).slice(2, 9); }
+  setUi(patch) { this.setState(s => ({ ui: Object.assign({}, s.ui, patch) })); }
+
+  // ---- auth / nav ----
+  goPublic() { this.setState({ view: 'public' }); }
+  goAdmin() { this.setState({ view: 'admin' }); }
+  doLogin() {
+    if (this.state.pwInput.trim() === (this.state.data ? this.state.data.password : '')) {
+      this.setState({ isAdmin: true, pwError: false, pwInput: '' });
+      try { sessionStorage.setItem('atiaes_admin', '1'); } catch (e) {}
+    } else this.setState({ pwError: true });
+  }
+  logout() { this.setState({ isAdmin: false, view: 'public' }); try { sessionStorage.removeItem('atiaes_admin'); } catch (e) {} }
+
+  // ---- teams / players / groups ----
+  addTeam() { const n = this.state.ui.newTeam.trim(); if (!n) return; const g = this.state.ui.newGroup; this.mutate(d => { d.teams.push({ id: this.uid(), name: n, group: g, players: [], captain: '', coach: '' }); }); this.setUi({ newTeam: '' }); }
+  removeTeam(id) { this.mutate(d => { d.teams = d.teams.filter(t => t.id !== id); d.matches = d.matches.filter(m => m.a !== id && m.b !== id); }); }
+  setTeamGroup(id, g) { this.mutate(d => { const t = d.teams.find(x => x.id === id); if (t) t.group = g; }); }
+  renameTeam(id, name) { this.mutate(d => { const t = d.teams.find(x => x.id === id); if (t) t.name = name; }); }
+  setCaptain(id, pid) { this.mutate(d => { const t = d.teams.find(x => x.id === id); if (t) t.captain = pid || ''; }); }
+  setCoach(id, v) { this.mutate(d => { const t = d.teams.find(x => x.id === id); if (t) t.coach = v; }); }
+  addPlayer(teamId) { const name = (this.state.ui.playerInputs[teamId] || '').trim(); if (!name) return; this.mutate(d => { const t = d.teams.find(x => x.id === teamId); if (t) t.players.push({ id: this.uid(), name }); }); const pi = Object.assign({}, this.state.ui.playerInputs); pi[teamId] = ''; this.setUi({ playerInputs: pi }); }
+  setPlayerInput(teamId, v) { const pi = Object.assign({}, this.state.ui.playerInputs); pi[teamId] = v; this.setUi({ playerInputs: pi }); }
+  removePlayer(teamId, pid) { this.mutate(d => { const t = d.teams.find(x => x.id === teamId); if (t) t.players = t.players.filter(p => p.id !== pid); d.matches.forEach(m => m.scorers = m.scorers.filter(s => s.player !== pid)); }); }
+  renamePlayer(teamId, pid, name) { this.mutate(d => { const t = d.teams.find(x => x.id === teamId); if (t) { const p = t.players.find(x => x.id === pid); if (p) p.name = name; } }); }
+  toggleGK(teamId, pid) { this.mutate(d => { const t = d.teams.find(x => x.id === teamId); if (!t) return; const target = t.players.find(x => x.id === pid); if (!target) return; const turnOn = !target.gk; t.players.forEach(p => { p.gk = false; }); target.gk = turnOn; }); }
+  addGroup() { this.mutate(d => { d.groups.push(String.fromCharCode(65 + d.groups.length)); }); }
+  removeGroup(g) { this.mutate(d => { if (d.groups.length <= 1) return; d.groups = d.groups.filter(x => x !== g); d.teams.forEach(t => { if (t.group === g) t.group = d.groups[0]; }); d.matches = d.matches.filter(m => m.group !== g); }); }
+
+  // ---- fixtures ----
+  pairExists(d, g, x, y) { return d.matches.some(m => m.phase === 'group' && m.group === g && ((m.a === x && m.b === y) || (m.a === y && m.b === x))); }
+  newMatch(extra) { return Object.assign({ id: this.uid(), phase: 'group', group: '', a: null, b: null, time: '', scorers: [], cards: [], status: 'scheduled', livePhase: 'first', finishedAt: 0, penA: 0, penB: 0 }, extra); }
+  addMatch(g, a, b, time) {
+    if (!a || !b || a === b) { this.setUi({ fxError: 'Escolhe duas equipas diferentes.' }); return; }
+    const friendly = g === '__friendly__';
+    if (!friendly && this.pairExists(this.state.data, g, a, b)) { this.setUi({ fxError: 'Essas equipas já têm um jogo neste grupo.' }); return; }
+    this.mutate(d => { d.matches.push(this.newMatch(friendly ? { phase: 'friendly', group: '', a, b, time: time || '' } : { group: g, a, b, time: time || '' })); });
+    this.setUi({ fxA: '', fxB: '', fxTime: '', fxError: '' });
+  }
+  removeMatch(id) { this.mutate(d => { d.matches = d.matches.filter(m => m.id !== id); }); }
+  setMatchTime(id, time) { this.mutate(d => { const m = d.matches.find(x => x.id === id); if (m) m.time = time; }); }
+  moveMatch(id, dir) {
+    this.mutate(d => {
+      const list = d.matches.filter(m => m.phase === 'group' || m.phase === 'friendly');
+      const idx = list.findIndex(m => m.id === id), sw = idx + dir;
+      if (idx < 0 || sw < 0 || sw >= list.length) return;
+      const ai = d.matches.findIndex(m => m.id === list[idx].id), bi = d.matches.findIndex(m => m.id === list[sw].id);
+      const tmp = d.matches[ai]; d.matches[ai] = d.matches[bi]; d.matches[bi] = tmp;
+    });
+  }
+  reorderMatch(dragId, dropId) {
+    if (!dragId || dragId === dropId) return;
+    this.mutate(d => {
+      const fi = d.matches.findIndex(m => m.id === dragId);
+      const di = d.matches.findIndex(m => m.id === dropId);
+      if (fi < 0 || di < 0) return;
+      const down = fi < di;
+      const [moved] = d.matches.splice(fi, 1);
+      let ti = d.matches.findIndex(m => m.id === dropId);
+      if (down) ti += 1;
+      d.matches.splice(ti, 0, moved);
+    });
+  }
+  generateFixtures() {
+    this.mutate(d => {
+      const old = {};
+      d.matches.filter(m => m.phase === 'group').forEach(m => { const k = m.group + '|' + [m.a, m.b].sort().join('|'); old[k] = m.time || ''; });
+      d.matches = d.matches.filter(m => m.phase !== 'group');
+      d.groups.forEach(g => {
+        const ts = d.teams.filter(t => t.group === g);
+        for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) {
+          const k = g + '|' + [ts[i].id, ts[j].id].sort().join('|');
+          d.matches.push(this.newMatch({ group: g, a: ts[i].id, b: ts[j].id, time: old[k] || '' }));
+        }
+      });
+    });
+  }
+
+  // ---- scoring ----
+  scoreOf(m, teamId) { let n = 0; (m.scorers || []).forEach(s => { if (s.team === teamId) n++; }); return n; }
+  addGoal(matchId, teamId, playerId) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (m) m.scorers.push({ id: this.uid(), team: teamId, player: playerId || null, own: false, ts: Date.now() }); }); }
+  addOwnGoal(matchId, benefitTeamId) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (m) m.scorers.push({ id: this.uid(), team: benefitTeamId, player: null, own: true, ts: Date.now() }); }); }
+  removeGoal(matchId, goalId) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (!m) return; const i = m.scorers.findIndex(s => s.id === goalId); if (i >= 0) m.scorers.splice(i, 1); }); }
+  removeLastGoal(matchId, teamId) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (!m) return; for (let i = m.scorers.length - 1; i >= 0; i--) { if (m.scorers[i].team === teamId) { m.scorers.splice(i, 1); break; } } }); }
+  cardsOf(m, teamId, type) { let n = 0; (m.cards || []).forEach(c => { if (c.team === teamId && c.type === type) n++; }); return n; }
+  addCard(matchId, teamId, playerId, type) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (m) { if (!m.cards) m.cards = []; m.cards.push({ team: teamId, player: playerId || null, type, ts: Date.now() }); } }); }
+  removeLastCard(matchId, teamId, type) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (!m || !m.cards) return; for (let i = m.cards.length - 1; i >= 0; i--) { if (m.cards[i].team === teamId && m.cards[i].type === type) { m.cards.splice(i, 1); break; } } }); }
+  startMatch(id) { this.mutate(d => { const m = d.matches.find(x => x.id === id); if (m) { m.status = 'live'; m.livePhase = 'first'; } }); }
+  setLivePhase(id, phase) { this.mutate(d => { const m = d.matches.find(x => x.id === id); if (m) { m.status = 'live'; m.livePhase = phase; } }); }
+  finishMatch(id) { this.mutate(d => { const m = d.matches.find(x => x.id === id); if (m) { m.status = 'done'; m.finishedAt = Date.now(); } }); }
+  reopenMatch(id) { this.mutate(d => { const m = d.matches.find(x => x.id === id); if (m) { m.status = 'live'; m.livePhase = m.livePhase || 'second'; } }); }
+  setPen(matchId, side, v) { this.mutate(d => { const m = d.matches.find(x => x.id === matchId); if (m) m[side] = Math.max(0, parseInt(v) || 0); }); }
+  openMatch(id) { this.setUi({ openMatchId: id, editUnlock: false }); }
+  closeMatch() { this.setUi({ openMatchId: null, editUnlock: false }); }
+  toggleEditUnlock() { this.setUi({ editUnlock: !this.state.ui.editUnlock }); }
+  openDetail(id) { this.setUi({ detailMatchId: id }); }
+  closeDetail() { this.setUi({ detailMatchId: null }); }
+  openRules() { this.setUi({ showRules: true }); }
+  closeRules() { this.setUi({ showRules: false }); }
+
+  // ---- knockout ----
+  genKnockout() {
+    this.mutate(d => {
+      d.matches = d.matches.filter(m => m.phase === 'group' || m.phase === 'friendly');
+      const g0 = d.groups[0] || 'A', g1 = d.groups[1] || 'B';
+      const mk = (phase, slot, srcA, srcB) => this.newMatch({ phase, slot: slot || 0, group: '', a: null, b: null, srcA, srcB });
+      d.matches.push(mk('sf', 1, { kind: 'group', group: g0, pos: 1 }, { kind: 'group', group: g1, pos: 2 }));
+      d.matches.push(mk('sf', 2, { kind: 'group', group: g1, pos: 1 }, { kind: 'group', group: g0, pos: 2 }));
+      d.matches.push(mk('third', 0, { kind: 'loser', ref: 'sf1' }, { kind: 'loser', ref: 'sf2' }));
+      d.matches.push(mk('final', 0, { kind: 'winner', ref: 'sf1' }, { kind: 'winner', ref: 'sf2' }));
+      d.knockoutCreated = true;
+    });
+  }
+
+  // um grupo só está "decidido" quando todos os seus jogos terminaram
+  groupComplete(d, g) { const gm = d.matches.filter(m => m.phase === 'group' && m.group === g); return gm.length > 0 && gm.every(m => m.status === 'done'); }
+  koWinner(m) { if (!m || m.status !== 'done' || !m.a || !m.b) return null; const sa = this.scoreOf(m, m.a), sb = this.scoreOf(m, m.b); if (sa > sb) return m.a; if (sb > sa) return m.b; if ((m.penA || 0) > (m.penB || 0)) return m.a; if ((m.penB || 0) > (m.penA || 0)) return m.b; return null; }
+  koLoser(m) { const w = this.koWinner(m); if (!w) return null; return w === m.a ? m.b : m.a; }
+  refMatch(d, ref) { const slot = ref === 'sf1' ? 1 : (ref === 'sf2' ? 2 : 0); return d.matches.find(m => m.phase === 'sf' && m.slot === slot); }
+  // devolve o id da equipa só quando 100% certo; senão null
+  resolveSrc(d, src) {
+    if (!src) return null;
+    if (src.kind === 'group') {
+      if (!this.groupComplete(d, src.group)) return null;
+      const st = this.standings(d, src.group);
+      return st[src.pos - 1] ? st[src.pos - 1].team.id : null;
+    }
+    if (src.kind === 'winner') return this.koWinner(this.refMatch(d, src.ref));
+    if (src.kind === 'loser') return this.koLoser(this.refMatch(d, src.ref));
+    return null;
+  }
+  srcLabel(src) {
+    if (!src) return 'A definir';
+    if (src.kind === 'group') return src.pos + 'º Grupo ' + src.group;
+    if (src.kind === 'winner') return 'Vencedor ' + (src.ref === 'sf1' ? 'Meia-final 1' : 'Meia-final 2');
+    if (src.kind === 'loser') return 'Perdedor ' + (src.ref === 'sf1' ? 'Meia-final 1' : 'Meia-final 2');
+    return 'A definir';
+  }
+
+  propagate(d) {
+    // resolve cada slot só quando a origem é 100% certa; não mexe se o jogo já começou
+    const order = ['sf', 'third', 'final'];
+    order.forEach(ph => d.matches.filter(m => m.phase === ph).forEach(m => {
+      if (m.status !== 'scheduled' || (m.scorers || []).length > 0) return;
+      if (m.srcA !== undefined) m.a = this.resolveSrc(d, m.srcA);
+      if (m.srcB !== undefined) m.b = this.resolveSrc(d, m.srcB);
+    }));
+  }
+
+  // ---- computed ----
+  phaseLabel(m) { if (m.phase === 'group') return 'Grupo ' + m.group; if (m.phase === 'friendly') return 'Amigável'; if (m.phase === 'sf') return 'Meia-final ' + (m.slot || ''); if (m.phase === 'final') return 'Final'; if (m.phase === 'third') return '3º e 4º lugar'; return ''; }
+  // estado do jogo ao vivo é controlado manualmente (sem cronómetro)
+
+  standings(d, g) {
+    const teams = d.teams.filter(t => t.group === g);
+    const row = {};
+    teams.forEach(t => row[t.id] = { team: t, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, Pts: 0 });
+    const gm = d.matches.filter(m => m.phase === 'group' && m.group === g && (m.status === 'done' || m.status === 'live'));
+    const self = this;
+    gm.forEach(m => {
+      const sa = self.scoreOf(m, m.a), sb = self.scoreOf(m, m.b), ra = row[m.a], rb = row[m.b];
+      if (!ra || !rb) return;
+      ra.P++; rb.P++; ra.GF += sa; ra.GA += sb; rb.GF += sb; rb.GA += sa;
+      if (sa > sb) { ra.W++; ra.Pts += 3; rb.L++; } else if (sb > sa) { rb.W++; rb.Pts += 3; ra.L++; } else { ra.D++; rb.D++; ra.Pts++; rb.Pts++; }
+    });
+    const directPts = (ta, tb) => { let p = 0; gm.forEach(m => { const inv = (m.a === ta && m.b === tb) || (m.a === tb && m.b === ta); if (!inv) return; const sa = self.scoreOf(m, m.a), sb = self.scoreOf(m, m.b); const my = m.a === ta ? sa : sb, th = m.a === ta ? sb : sa; if (my > th) p += 3; else if (my === th) p += 1; }); return p; };
+    const arr = Object.keys(row).map(k => row[k]);
+    arr.sort((x, y) => {
+      if (y.Pts !== x.Pts) return y.Pts - x.Pts;
+      const dpx = directPts(x.team.id, y.team.id), dpy = directPts(y.team.id, x.team.id);
+      if (dpy !== dpx) return dpy - dpx;
+      const gdx = x.GF - x.GA, gdy = y.GF - y.GA;
+      if (gdy !== gdx) return gdy - gdx;
+      if (y.GF !== x.GF) return y.GF - x.GF;
+      return x.team.name.localeCompare(y.team.name);
+    });
+    return arr;
+  }
+
+  topScorers(d) {
+    const map = {};
+    d.matches.forEach(m => { if (m.phase === 'friendly') return; (m.scorers || []).forEach(s => {
+      if (!s.player) return;
+      const t = d.teams.find(x => x.id === s.team); if (!t) return;
+      const pl = t.players.find(p => p.id === s.player); if (!pl) return;
+      if (!map[s.player]) map[s.player] = { id: s.player, name: pl.name, team: t.name, goals: 0 };
+      map[s.player].goals++;
+    }); });
+    return Object.keys(map).map(k => map[k]).sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
+  }
+
+  topGoalkeepers(d) {
+    const done = d.matches.filter(m => m.status === 'done' && m.a && m.b && m.phase !== 'friendly');
+    const ts = {};
+    d.teams.forEach(t => { ts[t.id] = { ga: 0, games: 0, cs: 0 }; });
+    done.forEach(m => {
+      const sa = this.scoreOf(m, m.a), sb = this.scoreOf(m, m.b);
+      if (ts[m.a]) { ts[m.a].ga += sb; ts[m.a].games++; if (sb === 0) ts[m.a].cs++; }
+      if (ts[m.b]) { ts[m.b].ga += sa; ts[m.b].games++; if (sa === 0) ts[m.b].cs++; }
+    });
+    const rows = [];
+    d.teams.forEach(t => t.players.forEach(p => {
+      if (!p.gk) return;
+      const st = ts[t.id] || { ga: 0, games: 0, cs: 0 };
+      rows.push({ id: p.id, name: p.name, team: t.name, conceded: st.ga, games: st.games, cleanSheets: st.cs });
+    }));
+    return rows.sort((a, b) => a.conceded - b.conceded || b.cleanSheets - a.cleanSheets || b.games - a.games || a.name.localeCompare(b.name));
+  }
+
+  mvm(d, m) {
+    const ta = d.teams.find(t => t.id === m.a), tb = d.teams.find(t => t.id === m.b);
+    const sa = this.scoreOf(m, m.a), sb = this.scoreOf(m, m.b);
+    let aWinner = false, bWinner = false;
+    if (m.status === 'done' && m.a && m.b) {
+      if (sa > sb) aWinner = true; else if (sb > sa) bWinner = true;
+      else { if ((m.penA || 0) > (m.penB || 0)) aWinner = true; else if ((m.penB || 0) > (m.penA || 0)) bWinner = true; }
+    }
+    const hasPens = m.phase !== 'group' && m.status === 'done' && sa === sb && !!(m.a && m.b);
+    return {
+      id: m.id, phase: m.phase, slot: m.slot, label: this.phaseLabel(m), group: m.group || '',
+      aName: ta ? ta.name : this.srcLabel(m.srcA), bName: tb ? tb.name : this.srcLabel(m.srcB), aId: m.a, bId: m.b,
+      aPending: !ta, bPending: !tb,
+      aNameColor: ta ? '#13241b' : '#9bb0a3', bNameColor: tb ? '#13241b' : '#9bb0a3',
+      aNameStyle: ta ? 'normal' : 'italic', bNameStyle: tb ? 'normal' : 'italic',
+      aScore: sa, bScore: sb, status: m.status, isLive: m.status === 'live', isDone: m.status === 'done', isScheduled: m.status === 'scheduled',
+      isHalftime: m.status === 'live' && m.livePhase === 'half',
+      liveActive: m.status === 'live' && m.livePhase !== 'half',
+      liveText: m.status !== 'live' ? '' : (m.livePhase === 'half' ? 'Intervalo' : (m.livePhase === 'second' ? '2ª parte' : '1ª parte')),
+      liveBadge: m.status !== 'live' ? '' : (m.livePhase === 'half' ? 'INTERVALO' : ('AO VIVO · ' + (m.livePhase === 'second' ? '2ª PARTE' : '1ª PARTE'))),
+      penA: m.penA || 0, penB: m.penB || 0,
+      showPens: hasPens, penText: hasPens ? ('Penáltis ' + (m.penA || 0) + '–' + (m.penB || 0)) : '',
+      aWinner, bWinner, decided: m.status === 'done' && (aWinner || bWinner),
+      time: m.time || '', hasTime: !!(m.time && m.time.trim()),
+      isFriendly: m.phase === 'friendly', notFriendly: m.phase !== 'friendly',
+      aYellow: this.cardsOf(m, m.a, 'yellow'), aRed: this.cardsOf(m, m.a, 'red'),
+      bYellow: this.cardsOf(m, m.b, 'yellow'), bRed: this.cardsOf(m, m.b, 'red'),
+      hasCards: (m.cards || []).length > 0,
+      ready: !!(m.a && m.b),
+      hasEvents: (m.scorers || []).length > 0 || (m.cards || []).length > 0,
+      onTime: (e) => this.setMatchTime(m.id, e.target.value),
+      onRemove: () => this.removeMatch(m.id),
+      onOpen: () => this.openMatch(m.id),
+      onDetail: () => this.openDetail(m.id),
+    };
+  }
+
+  renderVals() {
+    const d = this.state.data;
+    if (!d) return { loading: true, brand: (this.props.tournamentName || 'Atiães em Movimento'), sub: 'Torneio Futebol 5', showPublic: false, showLogin: false, showAdmin: false };
+    const ui = this.state.ui;
+    const self = this;
+
+    const tname = (id) => { const t = d.teams.find(x => x.id === id); return t ? t.name : '?'; };
+    const liveByTeam = {};
+    d.matches.filter(m => m.phase === 'group' && m.status === 'live').forEach(m => {
+      liveByTeam[m.a] = { opp: tname(m.b), score: this.scoreOf(m, m.a) + '–' + this.scoreOf(m, m.b) };
+      liveByTeam[m.b] = { opp: tname(m.a), score: this.scoreOf(m, m.b) + '–' + this.scoreOf(m, m.a) };
+    });
+    const groupsVM = d.groups.map(g => ({
+      name: g,
+      teamCount: d.teams.filter(t => t.group === g).length,
+      rows: this.standings(d, g).map((r, i) => {
+        const lv = liveByTeam[r.team.id];
+        return {
+          pos: i + 1, name: r.team.name, P: r.P, W: r.W, D: r.D, L: r.L, GF: r.GF, GA: r.GA,
+          GD: (r.GF - r.GA > 0 ? '+' : '') + (r.GF - r.GA), Pts: r.Pts, qualified: i < 2,
+          live: !!lv, liveVs: lv ? lv.opp : '', liveScore: lv ? lv.score : '', rowBg: lv ? '#fff7f5' : 'transparent',
+        };
+      }),
+    }));
+
+    const allM = d.matches.map(m => this.mvm(d, m));
+    const liveVM = allM.filter(m => m.isLive);
+    const order = { group: 0, sf: 1, third: 2, final: 3 };
+    const upcomingVM = allM.filter(m => m.isScheduled && m.ready);
+    const recentVM = d.matches.filter(m => m.status === 'done').sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0)).map(m => this.mvm(d, m));
+    const scorersVM = this.topScorers(d);
+    const keepersVM = this.topGoalkeepers(d);
+
+    const findKo = (phase, slot) => { const m = d.matches.find(x => x.phase === phase && (slot ? x.slot === slot : true)); return m ? this.mvm(d, m) : null; };
+    const bracketVM = { sf1: findKo('sf', 1), sf2: findKo('sf', 2), final: findKo('final', 0), third: findKo('third', 0) };
+    const hasBracket = !!(bracketVM.sf1 || bracketVM.sf2);
+
+    // admin: teams
+    const teamsVM = d.teams.map(t => ({
+      id: t.id, name: t.name, group: t.group, playerInput: ui.playerInputs[t.id] || '',
+      captainId: t.captain || '', coach: t.coach || '',
+      players: t.players.map(p => ({ id: p.id, name: p.name, isCaptain: t.captain === p.id, isGK: !!p.gk, gkBg: p.gk ? '#2563eb' : '#fff', gkColor: p.gk ? '#fff' : '#aebfb3', gkBorder: p.gk ? '#2563eb' : '#d3e0d0', onToggleGK: () => self.toggleGK(t.id, p.id), onRename: (e) => self.renamePlayer(t.id, p.id, e.target.value), onRemove: () => self.removePlayer(t.id, p.id) })),
+      playerCount: t.players.length,
+      onRename: (e) => self.renameTeam(t.id, e.target.value),
+      onCaptain: (e) => self.setCaptain(t.id, e.target.value),
+      onCoach: (e) => self.setCoach(t.id, e.target.value),
+      onAddPlayer: () => self.addPlayer(t.id),
+      onPlayerInput: (e) => self.setPlayerInput(t.id, e.target.value),
+      onPlayerKey: (e) => { if (e.key === 'Enter') self.addPlayer(t.id); },
+      onRemove: () => self.removeTeam(t.id),
+      setGroup: (e) => self.setTeamGroup(t.id, e.target.value),
+    }));
+    const groupOptions = d.groups.map(g => ({ value: g, label: 'Grupo ' + g, onRemove: () => self.removeGroup(g) }));
+    const teamGroupOptions = d.groups.map(g => ({ value: g, label: 'Grupo ' + g })).concat([{ value: '', label: '— Sem grupo (amigável) —' }]);
+    const koTeamOptions = [{ id: '', name: '— escolher —' }].concat(d.teams.map(t => ({ id: t.id, name: t.name + ' (' + t.group + ')' })));
+
+    const koVM = ['sf', 'third', 'final'].flatMap(ph => d.matches.filter(m => m.phase === ph).sort((a, b) => (a.slot || 0) - (b.slot || 0)).map(m => {
+      const vm = this.mvm(d, m);
+      vm.canAssign = false;
+      vm.cannotAssign = true;
+      return vm;
+    }));
+
+    // open match scoring panel
+    let openMatch = null;
+    if (ui.openMatchId) {
+      const m = d.matches.find(x => x.id === ui.openMatchId);
+      if (m) {
+        const ta = d.teams.find(t => t.id === m.a), tb = d.teams.find(t => t.id === m.b);
+        const isLiveM = m.status === 'live';
+        const canEdit = isLiveM || !!ui.editUnlock;
+        const silentEdit = !isLiveM;
+        const mark = () => { if (silentEdit) self._pendingSilent = true; };
+        const mkSide = (team, oppTeam) => ({
+          name: team ? team.name : 'A definir', score: team ? this.scoreOf(m, team.id) : 0,
+          players: team ? team.players.map(p => ({
+            id: p.id, name: p.name,
+            goals: (m.scorers || []).filter(s => s.player === p.id).length,
+            yellow: (m.cards || []).filter(c => c.player === p.id && c.type === 'yellow').length,
+            red: (m.cards || []).filter(c => c.player === p.id && c.type === 'red').length,
+            onGoal: () => { if (!canEdit) return; mark(); self.addGoal(m.id, team.id, p.id); },
+            onYellow: () => { if (!canEdit) return; mark(); self.addCard(m.id, team.id, p.id, 'yellow'); },
+            onRed: () => { if (!canEdit) return; mark(); self.addCard(m.id, team.id, p.id, 'red'); },
+          })) : [],
+          yellowTotal: team ? this.cardsOf(m, team.id, 'yellow') : 0,
+          redTotal: team ? this.cardsOf(m, team.id, 'red') : 0,
+          onOwnGoal: () => { if (!canEdit) return; mark(); oppTeam && self.addOwnGoal(m.id, oppTeam.id); },
+          onUndo: () => { if (!canEdit) return; mark(); team && self.removeLastGoal(m.id, team.id); },
+          onUndoYellow: () => { if (!canEdit) return; mark(); team && self.removeLastCard(m.id, team.id, 'yellow'); },
+          onUndoRed: () => { if (!canEdit) return; mark(); team && self.removeLastCard(m.id, team.id, 'red'); },
+        });
+        openMatch = {
+          id: m.id, label: this.phaseLabel(m), status: m.status,
+          isLive: m.status === 'live', isDone: m.status === 'done', isScheduled: m.status === 'scheduled',
+          isFirst: m.status === 'live' && (m.livePhase || 'first') === 'first',
+          isHalf: m.status === 'live' && m.livePhase === 'half',
+          isSecond: m.status === 'live' && m.livePhase === 'second',
+          liveText: m.status !== 'live' ? '' : (m.livePhase === 'half' ? 'Intervalo' : (m.livePhase === 'second' ? '2ª parte' : '1ª parte')),
+          ready: !!(m.a && m.b),
+          a: mkSide(ta, tb), b: mkSide(tb, ta),
+          goals: (m.scorers || []).map(s => {
+            const t = d.teams.find(x => x.id === s.team);
+            const pl = t && s.player ? t.players.find(p => p.id === s.player) : null;
+            return { id: s.id, side: s.team === m.a ? 'a' : 'b', teamName: t ? t.name : '?', isA: s.team === m.a,
+              dot: s.team === m.a ? '#15803d' : '#1d4ed8',
+              label: s.own ? 'Auto-golo' : (pl ? pl.name : 'Sem marcador'), own: !!s.own,
+              onRemove: () => { if (!canEdit) return; mark(); self.removeGoal(m.id, s.id); } };
+          }),
+          hasGoals: (m.scorers || []).length > 0,
+          canEdit, editPointer: canEdit ? 'auto' : 'none', editOpacity: canEdit ? '1' : '.45',
+          showLockBanner: !isLiveM && !ui.editUnlock, showEditBanner: !isLiveM && !!ui.editUnlock,
+          showEditToggle: !isLiveM, onToggleEdit: () => self.toggleEditUnlock(),
+          editToggleBg: ui.editUnlock ? '#bef264' : 'rgba(255,255,255,.2)', editToggleColor: ui.editUnlock ? '#0f4d2e' : '#fff',
+          editToggleLabel: ui.editUnlock ? '✏️ A editar' : '✏️ Editar',
+          showPens: m.phase !== 'group', penA: m.penA || 0, penB: m.penB || 0,
+          onPenA: (e) => { if (!canEdit) return; mark(); self.setPen(m.id, 'penA', e.target.value); }, onPenB: (e) => { if (!canEdit) return; mark(); self.setPen(m.id, 'penB', e.target.value); },
+          onStartFirst: () => self.startMatch(m.id), onHalftime: () => self.setLivePhase(m.id, 'half'), onStartSecond: () => self.setLivePhase(m.id, 'second'),
+          onFinish: () => self.finishMatch(m.id), onReopen: () => self.reopenMatch(m.id),
+          onClose: () => self.closeMatch(),
+        };
+      }
+    }
+
+    // match detail (estilo flashscore)
+    let detail = null;
+    if (ui.detailMatchId) {
+      const m = d.matches.find(x => x.id === ui.detailMatchId);
+      if (m) {
+        const ta = d.teams.find(t => t.id === m.a), tb = d.teams.find(t => t.id === m.b);
+        const pname = (team, pid) => { if (!team || !pid) return null; const p = team.players.find(x => x.id === pid); return p ? p.name : null; };
+        const evs = [];
+        (m.scorers || []).forEach(s => evs.push({ kind: 'goal', team: s.team, player: s.player, own: !!s.own, ts: s.ts || 0 }));
+        (m.cards || []).forEach(c => evs.push({ kind: c.type, team: c.team, player: c.player, ts: c.ts || 0 }));
+        evs.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+        let ra = 0, rb = 0;
+        const eventsVM = evs.map(e => {
+          const isA = e.team === m.a;
+          const team = isA ? ta : tb;
+          let scoreText = '';
+          if (e.kind === 'goal') { if (isA) ra++; else rb++; scoreText = ra + '–' + rb; }
+          const who = e.kind === 'goal' ? (e.own ? 'Auto-golo' : (pname(team, e.player) || 'Golo')) : (pname(team, e.player) || 'Cartão');
+          return {
+            isA, isB: !isA,
+            isGoal: e.kind === 'goal', isYellow: e.kind === 'yellow', isRed: e.kind === 'red',
+            icon: e.kind === 'goal' ? (e.own ? '⚽' : '⚽') : (e.kind === 'yellow' ? '🟨' : '🟥'),
+            who, scoreText, own: e.kind === 'goal' && e.own,
+            aWho: isA ? who : '', aScore: isA ? scoreText : '',
+            bWho: !isA ? who : '', bScore: !isA ? scoreText : '',
+          };
+        });
+        const lineup = (team) => team ? team.players.map(p => {
+          const goals = (m.scorers || []).filter(s => s.player === p.id).length;
+          const yellow = (m.cards || []).filter(c => c.player === p.id && c.type === 'yellow').length;
+          const red = (m.cards || []).filter(c => c.player === p.id && c.type === 'red').length;
+          return { name: p.name, isCaptain: team.captain === p.id, isGK: !!p.gk, goals, yellow, red, gShow: goals > 0, yShow: yellow > 0, rShow: red > 0 };
+        }) : [];
+        const vm0 = this.mvm(d, m);
+        detail = {
+          label: vm0.label, time: m.time || '', hasTime: !!(m.time && m.time.trim()),
+          aName: vm0.aName, bName: vm0.bName, aScore: vm0.aScore, bScore: vm0.bScore,
+          isLive: vm0.isLive, liveBadge: vm0.liveBadge, isHalftime: vm0.isHalftime, liveActive: vm0.liveActive,
+          isDone: vm0.isDone, isScheduled: vm0.isScheduled,
+          statusText: vm0.isDone ? 'Terminado' : (vm0.isLive ? vm0.liveBadge : 'Por começar'),
+          events: eventsVM, hasEvents: eventsVM.length > 0, noEvents: eventsVM.length === 0,
+          aLineup: lineup(ta), bLineup: lineup(tb), hasLineups: !!(ta || tb),
+          showPens: vm0.showPens, penText: vm0.penText,
+          onClose: () => this.closeDetail(), stop: (e) => e.stopPropagation(),
+        };
+      }
+    }
+
+    let shareUrl = ''; try { shareUrl = location.href; } catch (e) {}
+
+    return {
+      loading: false,
+      toasts: this.state.toasts, hasToasts: this.state.toasts.length > 0,
+      enableNotify: () => this.enableNotify(),
+      notifyOn: this.state.notify, notifyLabel: this.state.notify ? 'Notificações ON' : 'Notificações',
+      notifyIcon: this.state.notify ? '🔔' : '🔕', notifyBtnBg: this.state.notify ? '#16a34a' : 'rgba(255,255,255,.14)',
+      showRules: !!this.state.ui.showRules, openRules: () => this.openRules(), closeRules: () => this.closeRules(), stopRules: (e) => e.stopPropagation(),
+      brand: d.tournamentName, sub: d.subtitle,
+      view: this.state.view,
+      showPublic: this.state.view === 'public',
+      showLogin: this.state.view === 'admin' && !this.state.isAdmin,
+      showAdmin: this.state.view === 'admin' && this.state.isAdmin,
+      goPublic: () => this.goPublic(), goAdmin: () => this.goAdmin(), logout: () => this.logout(),
+      isPublic: this.state.view === 'public',
+
+      // public tabs
+      showStandings: ui.pubTab === 'standings', showLive: ui.pubTab === 'live', showSchedule: ui.pubTab === 'schedule', showStats: ui.pubTab === 'stats', showBracket: ui.pubTab === 'bracket',
+      tabStandings: () => this.setUi({ pubTab: 'standings' }), tabLive: () => this.setUi({ pubTab: 'live' }), tabSchedule: () => this.setUi({ pubTab: 'schedule' }), tabStats: () => this.setUi({ pubTab: 'stats' }), tabBracket: () => this.setUi({ pubTab: 'bracket' }),
+      navStand: ui.pubTab === 'standings' ? '#15803d' : '#9aa8a0', navLive: ui.pubTab === 'live' ? '#dc2626' : '#9aa8a0', navSched: ui.pubTab === 'schedule' ? '#15803d' : '#9aa8a0', navStats: ui.pubTab === 'stats' ? '#15803d' : '#9aa8a0', navFinal: ui.pubTab === 'bracket' ? '#15803d' : '#9aa8a0',
+      liveCount: liveVM.length, hasLive: liveVM.length > 0,
+
+      groupsVM, hasGroups: groupsVM.some(g => g.teamCount > 0), noGroups: !groupsVM.some(g => g.teamCount > 0),
+      liveVM, noLive: liveVM.length === 0,
+      upcomingVM, hasUpcoming: upcomingVM.length > 0, noUpcoming: upcomingVM.length === 0,
+      recentVM, hasRecent: recentVM.length > 0, noRecent: recentVM.length === 0,
+      scorersVM, hasScorers: scorersVM.length > 0, noScorers: scorersVM.length === 0,
+      keepersVM, hasKeepers: keepersVM.length > 0, noKeepers: keepersVM.length === 0,
+      bracketVM, hasBracket, noBracket: !hasBracket,
+
+      // login
+      pwValue: this.state.pwInput, pwError: this.state.pwError,
+      onPw: (e) => this.setState({ pwInput: e.target.value }), onPwKey: (e) => { if (e.key === 'Enter') this.doLogin(); }, doLogin: () => this.doLogin(),
+
+      // admin tabs
+      showTeams: ui.adminTab === 'teams', showFixtures: ui.adminTab === 'fixtures', showKnockout: ui.adminTab === 'knockout', showSettings: ui.adminTab === 'settings',
+      atTeams: () => this.setUi({ adminTab: 'teams' }), atFixtures: () => this.setUi({ adminTab: 'fixtures' }), atKnockout: () => this.setUi({ adminTab: 'knockout' }), atSettings: () => this.setUi({ adminTab: 'settings' }),
+
+      teamsVM, hasTeams: teamsVM.length > 0, noTeams: teamsVM.length === 0, groupOptions, teamGroupOptions,
+      newTeamValue: ui.newTeam, onNewTeam: (e) => this.setUi({ newTeam: e.target.value }), onNewTeamKey: (e) => { if (e.key === 'Enter') this.addTeam(); },
+      newGroupValue: ui.newGroup, onNewGroup: (e) => this.setUi({ newGroup: e.target.value }),
+      addTeam: () => this.addTeam(), addGroup: () => this.addGroup(),
+      generateFixtures: () => this.generateFixtures(),
+
+      adminMatchesVM: (() => { const fl = allM.filter(m => m.phase === 'group' || m.phase === 'friendly'); return fl.map((vm, i) => Object.assign(vm, {
+        isFirst: i === 0, isLast: i === fl.length - 1,
+        upColor: i === 0 ? '#dde6d8' : '#15803d', downColor: i === fl.length - 1 ? '#dde6d8' : '#15803d',
+        onUp: () => self.moveMatch(vm.id, -1), onDown: () => self.moveMatch(vm.id, 1),
+        onDragStart: (e) => { self._dragId = vm.id; try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
+        onDragOver: (e) => { e.preventDefault(); },
+        onDrop: (e) => { e.preventDefault(); self.reorderMatch(self._dragId, vm.id); self._dragId = null; },
+      })); })(), hasFixtures: allM.some(m => m.phase === 'group' || m.phase === 'friendly'), noFixtures: !allM.some(m => m.phase === 'group' || m.phase === 'friendly'),
+      // add-match form
+      fxGroup: ui.fxGroup || d.groups[0] || 'A', fxA: ui.fxA || '', fxB: ui.fxB || '', fxTime: ui.fxTime || '', fxError: ui.fxError || '', fxHasError: !!ui.fxError,
+      onFxGroup: (e) => this.setUi({ fxGroup: e.target.value, fxA: '', fxB: '', fxError: '' }),
+      onFxA: (e) => this.setUi({ fxA: e.target.value, fxError: '' }), onFxB: (e) => this.setUi({ fxB: e.target.value, fxError: '' }),
+      onFxTime: (e) => this.setUi({ fxTime: e.target.value }),
+      fxGroupOptions: d.groups.map(g => ({ value: g, label: 'Grupo ' + g })).concat([{ value: '__friendly__', label: '⚽ Amigável (avulso)' }]),
+      fxIsFriendly: (ui.fxGroup || d.groups[0]) === '__friendly__',
+      fxTeamOptions: [{ id: '', name: '— equipa —' }].concat(((ui.fxGroup || d.groups[0]) === '__friendly__' ? d.teams : d.teams.filter(t => t.group === (ui.fxGroup || d.groups[0]))).map(t => ({ id: t.id, name: t.name + (t.group ? ' (' + t.group + ')' : '') }))),
+      addMatch: () => this.addMatch(ui.fxGroup || d.groups[0], ui.fxA, ui.fxB, ui.fxTime),
+      generateFixtures: () => this.generateFixtures(),
+      genKnockout: () => this.genKnockout(), knockoutCreated: d.knockoutCreated, noKnockout: !d.knockoutCreated, koVM, koTeamOptions,
+
+      openMatch, detail,
+
+      // settings
+      pwFieldValue: ui.pwField, onPwField: (e) => this.setUi({ pwField: e.target.value }),
+      savePassword: () => { const v = this.state.ui.pwField.trim(); if (v) { this.mutate(dd => { dd.password = v; }); this.setUi({ pwField: '' }); } },
+      currentPassword: d.password,
+      shareUrl,
+      copyShare: () => { try { navigator.clipboard.writeText(shareUrl); } catch (e) {} },
+      resetData: () => { if (window.confirm('Apagar todos os dados do torneio?')) this.save(this.defaultData()); },
+      serverMode: !!this.serverUrl, localMode: !this.serverUrl, serverUrl: this.serverUrl || '(modo local — sem servidor)',
+    };
+  }
+}
+</script>
+</body>
+</html>

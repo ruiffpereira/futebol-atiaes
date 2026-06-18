@@ -1,0 +1,12 @@
+{
+  "name": "Atiães em Movimento — Torneio Futebol 5",
+  "short_name": "Torneio Atiães",
+  "description": "Placar ao vivo do Torneio Futebol 5 «Atiães em Movimento»",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f4d2e",
+  "theme_color": "#15803d",
+  "icons": [
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

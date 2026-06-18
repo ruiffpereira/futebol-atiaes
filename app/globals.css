@@ -1,0 +1,16 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: 'Barlow', system-ui, sans-serif; background: #eef2ec; color: #13241b; }
+.cond { font-family: 'Barlow Condensed', sans-serif; }
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+::-webkit-scrollbar { height: 6px; width: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 3px; }
+.only-mobile { display: none; }
+@media (max-width: 760px) {
+  .only-mobile { display: flex; }
+  .hide-mobile { display: none !important; }
+  .pub-pad { padding-bottom: 88px !important; }
+}

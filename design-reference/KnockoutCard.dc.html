@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="background:#fff;border:1px solid #e4ece0;border-radius:13px;overflow:hidden;box-shadow:0 1px 3px rgba(8,46,28,.08);font-family:'Barlow',system-ui,sans-serif">
+  <div style="display:grid;grid-template-columns:1fr 38px;align-items:center;padding:11px 14px;gap:8px">
+    <div style="display:flex;align-items:center;gap:7px;min-width:0">
+      <sc-if value="{{ m.aWinner }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px">🏆</span></sc-if>
+      <span style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ m.aNameColor }};font-style:{{ m.aNameStyle }}">{{ m.aName }}</span>
+    </div>
+    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-align:center;color:#0f4d2e">{{ m.aScore }}</span>
+  </div>
+  <div style="height:1px;background:#f0f4ee"></div>
+  <div style="display:grid;grid-template-columns:1fr 38px;align-items:center;padding:11px 14px;gap:8px">
+    <div style="display:flex;align-items:center;gap:7px;min-width:0">
+      <sc-if value="{{ m.bWinner }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px">🏆</span></sc-if>
+      <span style="font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ m.bNameColor }};font-style:{{ m.bNameStyle }}">{{ m.bName }}</span>
+    </div>
+    <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;text-align:center;color:#0f4d2e">{{ m.bScore }}</span>
+  </div>
+  <sc-if value="{{ m.showPens }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#f6faf4;padding:6px 14px;font-size:11.5px;font-weight:600;color:#15803d;border-top:1px solid #f0f4ee">{{ m.penText }}</div>
+  </sc-if>
+  <sc-if value="{{ m.liveActive }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#dc2626;padding:5px 14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.6px;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#fff"></span>{{ m.liveBadge }}</div>
+  </sc-if>
+  <sc-if value="{{ m.isHalftime }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#d97706;padding:5px 14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.8px">{{ m.liveBadge }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:300,&quot;height&quot;:90},&quot;m&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;}}"></script>
+</body>
+</html>

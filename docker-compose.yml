@@ -1,0 +1,32 @@
+# docker-compose pronto para Coolify.
+# No Coolify: New Resource → Docker Compose → cola este ficheiro.
+# Define as variáveis (Environment) e cria um Persistent Volume montado em /data.
+services:
+  torneio:
+    build: .
+    # imagem alternativa se preferires CI próprio:
+    # image: ghcr.io/teu-utilizador/torneio-atiaes:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATA_DIR=/data
+      # ⚠️ MUDA ESTES VALORES no Coolify (Environment Variables):
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-atiaes-troca-me}
+      - AUTH_SECRET=${AUTH_SECRET:-muda-me-string-aleatoria-longa}
+      # Web Push (gera com: npx web-push generate-vapid-keys)
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-}
+      - VAPID_SUBJECT=${VAPID_SUBJECT:-mailto:torneio@atiaes.pt}
+    volumes:
+      - torneio-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  torneio-data:
