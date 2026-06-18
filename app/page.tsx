@@ -420,6 +420,63 @@ function Header({
             {sub}
           </div>
         </div>
+        <a
+          href="https://rufvision.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: "rgba(255,255,255,.14)",
+            color: "#eafff1",
+            fontWeight: 600,
+            fontSize: 11.5,
+            padding: "6px 11px 6px 7px",
+            borderRadius: 10,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 26,
+              height: 26,
+              borderRadius: 7,
+              background: "#fff",
+              flexShrink: 0,
+            }}
+          >
+            <svg width="22" height="16" viewBox="0 0 44 32" aria-hidden="true">
+              <text
+                x="0"
+                y="25"
+                fontFamily="Arial, sans-serif"
+                fontWeight="800"
+                fontSize="28"
+                fill="#14274a"
+              >
+                R
+              </text>
+              <text
+                x="20"
+                y="25"
+                fontFamily="Arial, sans-serif"
+                fontWeight="800"
+                fontSize="28"
+                fill="#ed1c24"
+              >
+                V
+              </text>
+            </svg>
+          </span>
+          <span>
+            App desenvolvida por <b style={{ color: "#bef264" }}>RufVision</b>
+          </span>
+        </a>
         {liveCount > 0 && (
           <div
             style={{
@@ -1209,12 +1266,12 @@ const Empty = ({
 }: {
   icon: string;
   title: string;
-  sub: string;
+  sub?: string;
 }) => (
   <div style={{ textAlign: "center", padding: "70px 20px", color: "#8aa093" }}>
     <div style={{ fontSize: 42, marginBottom: 10 }}>{icon}</div>
     <div style={{ fontSize: 17, fontWeight: 600 }}>{title}</div>
-    <div style={{ fontSize: 14, marginTop: 4 }}>{sub}</div>
+    {sub && <div style={{ fontSize: 14, marginTop: 4 }}>{sub}</div>}
   </div>
 );
 const EmptyLine = ({ text }: { text: string }) => (
