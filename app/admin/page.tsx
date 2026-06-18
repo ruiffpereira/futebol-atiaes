@@ -1,6 +1,6 @@
 'use client';
 // BACKOFFICE — login + gestão + registo ao vivo. Escritas protegidas (cookie de admin).
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTournament } from '@/lib/useTournament';
 import { actions } from '@/lib/actions';
 import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } from '@/lib/tournament';
@@ -76,7 +76,7 @@ export default function AdminPage() {
 }
 
 function StatsBar() {
-  const [s, setS] = useState<{ online: number; push: number; visits: number } | null>(null);
+  const [s, setS] = useState<{ online: number; peakOnline: number; push: number; visits: number } | null>(null);
   useEffect(() => {
     let live = true;
     const load = () => fetch('/api/stats').then((r) => (r.ok ? r.json() : null)).then((d) => { if (live && d) setS(d); }).catch(() => {});
@@ -84,18 +84,19 @@ function StatsBar() {
     const id = setInterval(load, 10000);
     return () => { live = false; clearInterval(id); };
   }, []);
-  const chip = (icon: string, label: string, val: number | undefined, color: string) => (
+  const chip = (icon: string, label: string, val: number | undefined, color: string, badge?: ReactNode) => (
     <div style={{ flex: 1, minWidth: 130, background: '#fff', border: '1px solid #e4ece0', borderRadius: 12, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 11 }}>
       <span style={{ fontSize: 20 }}>{icon}</span>
-      <div style={{ minWidth: 0 }}>
-        <div className="cond" style={{ fontWeight: 800, fontSize: 24, color, lineHeight: 1 }}>{val ?? '–'}</div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div className="cond" style={{ fontWeight: 800, fontSize: 24, color, lineHeight: 1, display: 'flex', alignItems: 'baseline', gap: 8 }}>{val ?? '–'}{badge}</div>
         <div style={{ fontSize: 11.5, color: '#8aa093', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3 }}>{label}</div>
       </div>
     </div>
   );
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-      {chip('📡', 'Online agora', s?.online, GREEN)}
+      {chip('📡', 'Online agora', s?.online, GREEN,
+        s ? <span title="Máximo em simultâneo (recorde)" style={{ fontSize: 11, fontWeight: 700, color: '#8aa093', textTransform: 'none', letterSpacing: 0 }}>máx {s.peakOnline}</span> : undefined)}
       {chip('🔔', 'Com notificações', s?.push, '#2563eb')}
       {chip('👁️', 'Visitas (total)', s?.visits, DGREEN)}
     </div>
