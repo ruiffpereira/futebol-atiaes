@@ -820,6 +820,7 @@ function Profile({
   onNotify: () => void;
   onRules: () => void;
 }) {
+  const [notifOpen, setNotifOpen] = useState(false);
   const rowLink = (
     icon: string,
     label: string,
@@ -867,44 +868,6 @@ function Profile({
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 16 }}>
-      {/* Notificações */}
-      <div
-        style={{
-          background: "#fff",
-          border: "1px solid #e4ece0",
-          borderRadius: 16,
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            background: DGREEN,
-            padding: "12px 18px",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>🔔</span>
-          <span
-            className="cond"
-            style={{
-              fontWeight: 800,
-              fontSize: 18,
-              color: "#fff",
-              textTransform: "uppercase",
-            }}
-          >
-            Notificações
-          </span>
-        </div>
-        <NotificationsPanel
-          notifyOn={notifyOn}
-          supported={supported}
-          onNotify={onNotify}
-        />
-      </div>
-
       {rowLink("📋", "Regulamento do torneio", onRules)}
       {rowLink("📍", "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
 
@@ -965,6 +928,80 @@ function Profile({
             SMS
           </a>
         </div>
+      </div>
+
+      {/* Notificações — colapsável */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e4ece0",
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
+        <button
+          onClick={() => setNotifOpen(!notifOpen)}
+          style={{
+            width: "100%",
+            background: DGREEN,
+            padding: "12px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            border: "none",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          <span style={{ fontSize: 18 }}>🔔</span>
+          <span
+            className="cond"
+            style={{
+              fontWeight: 800,
+              fontSize: 18,
+              color: "#fff",
+              textTransform: "uppercase",
+            }}
+          >
+            Notificações
+          </span>
+          <span
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: notifyOn ? "#bbf7d0" : "rgba(255,255,255,.7)",
+              }}
+            >
+              {notifyOn ? "Ativadas" : "Desativadas"}
+            </span>
+            <span
+              style={{
+                color: "#fff",
+                fontSize: 18,
+                display: "inline-block",
+                transform: notifOpen ? "rotate(90deg)" : "none",
+                transition: "transform .15s",
+              }}
+            >
+              ›
+            </span>
+          </span>
+        </button>
+        {notifOpen && (
+          <NotificationsPanel
+            notifyOn={notifyOn}
+            supported={supported}
+            onNotify={onNotify}
+          />
+        )}
       </div>
 
       {rowLink("🔐", "Backoffice", undefined, "/admin")}
