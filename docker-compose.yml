@@ -3,6 +3,8 @@ services:
     build: .
     expose:
       - "3000"
+    labels:
+      - traefik.docker.network=edr2lnb85qn2gwkuhy7tcsoq
     environment:
       - SERVICE_FQDN_TORNEIO_3000=atiaesfutebol5.rufvision.com
       - NODE_ENV=production
