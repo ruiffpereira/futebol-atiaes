@@ -21,7 +21,10 @@ export function useTournament() {
 
   // SSE: empurra o estado novo para a cache do React Query
   useEffect(() => {
-    const es = new EventSource('/api/stream');
+    // id estável por aba (sobrevive ao refresh) → evita duplicar o "online agora".
+    let cid = '';
+    try { cid = sessionStorage.getItem('cid') || ''; if (!cid) { cid = crypto.randomUUID(); sessionStorage.setItem('cid', cid); } } catch {}
+    const es = new EventSource('/api/stream' + (cid ? `?cid=${cid}` : ''));
     es.onmessage = (e) => { try { qc.setQueryData(KEY, JSON.parse(e.data)); } catch {} };
     es.onerror = () => { /* o browser reconecta sozinho */ };
     esRef.current = es;
