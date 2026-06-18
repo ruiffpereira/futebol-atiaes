@@ -42,6 +42,7 @@ export type Match = {
   penB?: number;
   srcA?: Src;           // só fase final
   srcB?: Src;
+  lockTeams?: boolean;  // fase final: equipas definidas à mão → não auto-preencher
 };
 
 export type TournamentState = {
@@ -51,5 +52,6 @@ export type TournamentState = {
   teams: Team[];
   matches: Match[];
   knockoutCreated: boolean;
+  groupsConcluded?: boolean;  // equipas/grupos dados como concluídos → fase final calcula e aparece no placar
   _notify?: boolean;    // false = alteração silenciosa (edição), não notifica
 };

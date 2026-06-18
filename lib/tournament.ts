@@ -174,6 +174,7 @@ export function srcLabel(src?: Src): string {
 export function propagate(d: TournamentState): void {
   (['sf', 'third', 'final'] as const).forEach((ph) =>
     d.matches.filter((m) => m.phase === ph).forEach((m) => {
+      if (m.lockTeams) return;
       if (m.status !== 'scheduled' || (m.scorers || []).length > 0) return;
       if (m.srcA !== undefined) m.a = resolveSrc(d, m.srcA);
       if (m.srcB !== undefined) m.b = resolveSrc(d, m.srcB);

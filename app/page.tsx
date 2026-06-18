@@ -212,7 +212,7 @@ export default function PublicPage() {
                 <EmptyLine text="Ainda sem resultados." />
               )}
             </Section>
-            {state.knockoutCreated && (
+            {state.groupsConcluded && (
               <Section title="Fase final">
                 <div
                   style={{

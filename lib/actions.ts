@@ -90,6 +90,12 @@ export const actions = {
     n.knockoutCreated = true;
     return done(n);
   },
+  // marcar equipas/grupos como concluídos → fase final calcula e aparece no placar
+  setGroupsConcluded: (d: TournamentState, v: boolean) => { const n = clone(d); n.groupsConcluded = v; return done(n, true); },
+  // editar manualmente uma equipa de um jogo da fase final (bloqueia o auto-preenchimento)
+  setKoTeam: (d: TournamentState, matchId: string, side: 'a' | 'b', teamId: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === matchId); if (m) { m[side] = teamId || null; m.lockTeams = true; } return done(n, true); },
+  // voltar ao preenchimento automático de um jogo da fase final
+  setKoAuto: (d: TournamentState, matchId: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === matchId); if (m) m.lockTeams = false; return done(n, true); },
 
   // ---- definições ----
   setName: (d: TournamentState, name: string) => { const n = clone(d); n.tournamentName = name; return done(n, true); },

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkPassword, makeToken } from '@/lib/auth';
+import { logAccess } from '@/lib/accessLog';
 
 export const runtime = 'nodejs';
 
@@ -34,8 +35,10 @@ function registerFailure(ip: string): void {
 
 export async function POST(req: Request) {
   const ip = getIp(req);
+  const ua = req.headers.get('user-agent') || '';
 
   if (isRateLimited(ip)) {
+    logAccess({ ts: Date.now(), ip, ok: false, blocked: true, ua });
     return NextResponse.json(
       { ok: false, error: 'Demasiadas tentativas. Tenta novamente mais tarde.' },
       { status: 429, headers: { 'Retry-After': String(WINDOW_MS / 1000) } }
@@ -45,11 +48,13 @@ export async function POST(req: Request) {
   const { password } = await req.json().catch(() => ({ password: '' }));
   if (!checkPassword(password || '')) {
     registerFailure(ip);
+    logAccess({ ts: Date.now(), ip, ok: false, ua });
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
   // Login com sucesso: limpa o contador deste IP.
   attempts.delete(ip);
+  logAccess({ ts: Date.now(), ip, ok: true, ua });
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set('admin_token', makeToken(), { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 });

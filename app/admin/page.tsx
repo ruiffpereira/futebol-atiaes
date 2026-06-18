@@ -7,7 +7,7 @@ import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } 
 import type { Match, TournamentState } from '@/lib/types';
 
 const GREEN = '#15803d', DGREEN = '#0f4d2e';
-type Tab = 'teams' | 'fixtures' | 'knockout' | 'settings';
+type Tab = 'teams' | 'fixtures' | 'knockout' | 'settings' | 'access';
 
 export default function AdminPage() {
   const { state, apply } = useTournament();
@@ -62,35 +62,13 @@ export default function AdminPage() {
           <button onClick={logout} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>Sair</button>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}>{tabBtn('teams', 'EQUIPAS')}{tabBtn('fixtures', 'CALENDÁRIO')}{tabBtn('knockout', 'FASE FINAL')}{tabBtn('settings', 'DEFINIÇÕES')}</div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}>{tabBtn('teams', 'EQUIPAS')}{tabBtn('fixtures', 'CALENDÁRIO')}{tabBtn('knockout', 'FASE FINAL')}{tabBtn('settings', 'DEFINIÇÕES')}{tabBtn('access', 'ACESSOS')}</div>
 
       {tab === 'teams' && <TeamsTab state={state} apply={apply} />}
       {tab === 'fixtures' && <FixturesTab state={state} apply={apply} fixtures={fixtures} nameOf={nameOf} onOpen={openMatch} />}
-      {tab === 'knockout' && (
-        <div>
-          <div style={{ background: '#eef2ec', border: '1px solid #dce6d7', borderRadius: 14, padding: '13px 16px', marginBottom: 16, fontSize: 12.5, color: '#5b7163', lineHeight: 1.5 }}>
-            <b style={{ color: DGREEN }}>Fase final automática.</b> MF1: 1º A vs 2º B · MF2: 1º B vs 2º A · 3º/4º: perdedores · Final: vencedores. Preenche sozinha quando cada grupo terminar.
-          </div>
-          {state.knockoutCreated ? <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{koList.map((m) => (
-            <div key={m.id} style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: '1px solid #e4ece0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
-                  <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#f6faf4' }} />
-                  <button onClick={() => openMatch(m.id)} style={btn(13)}>Registar</button>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 8 }}>
-                <span style={{ textAlign: 'right', fontWeight: 600, color: m.a ? '#13241b' : '#9bb0a3', fontStyle: m.a ? 'normal' : 'italic' }}>{nameOf(m, 'a')}</span>
-                <span className="cond" style={{ fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '3px 11px', borderRadius: 7 }}>{scoreOf(m, m.a)}:{scoreOf(m, m.b)}</span>
-                <span style={{ textAlign: 'left', fontWeight: 600, color: m.b ? '#13241b' : '#9bb0a3', fontStyle: m.b ? 'normal' : 'italic' }}>{nameOf(m, 'b')}</span>
-              </div>
-            </div>
-          ))}</div> : <div style={{ background: '#fff', borderRadius: 12, padding: 26, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>Cria 2 grupos com equipas para a fase final aparecer.</div>}
-        </div>
-      )}
+      {tab === 'knockout' && <KnockoutTab state={state} apply={apply} koList={koList} nameOf={nameOf} onOpen={openMatch} />}
       {tab === 'settings' && <SettingsTab state={state} apply={apply} />}
+      {tab === 'access' && <AccessTab />}
       {open && <ScoringModal state={state} m={open} apply={apply} onClose={() => setOpenId(null)} editUnlock={editUnlock} setEditUnlock={setEditUnlock} />}
     </div>
   );
@@ -99,8 +77,17 @@ export default function AdminPage() {
 function TeamsTab({ state, apply }: { state: TournamentState; apply: (s: TournamentState) => void }) {
   const [name, setName] = useState(''); const [group, setGroup] = useState(state.groups[0] || 'A');
   const groupOpts = [...state.groups.map((g) => ({ v: g, l: 'Grupo ' + g })), { v: '', l: '— Sem grupo (amigável) —' }];
+  const concluded = !!state.groupsConcluded;
   return (
     <div>
+      <div style={{ background: '#fff', border: `1px solid ${concluded ? '#bbf7d0' : '#fadf8b'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 13, color: '#5b7163' }}>
+          {concluded
+            ? <><b style={{ color: GREEN }}>✓ Equipas concluídas.</b> A fase final calcula automaticamente e está visível no placar (cada lugar aparece quando estiver 100% certo).</>
+            : <><b style={{ color: '#92660a' }}>Equipas ainda em edição.</b> Quando terminares de criar equipas e grupos, marca como concluído para a fase final calcular e aparecer no placar.</>}
+        </div>
+        <button onClick={() => apply(actions.setGroupsConcluded(state, !concluded))} style={{ border: 'none', background: concluded ? '#fff' : GREEN, color: concluded ? '#5b7163' : '#fff', boxShadow: concluded ? 'inset 0 0 0 1px #d3e0d0' : 'none', fontWeight: 700, fontSize: 14, padding: '11px 18px', borderRadius: 10, flexShrink: 0 }}>{concluded ? 'Reabrir edição' : '✓ Concluído'}</button>
+      </div>
       <Box>
         <b style={{ color: DGREEN }}>Adicionar equipa</b>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
@@ -254,6 +241,70 @@ function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i
   );
 }
 
+function KnockoutTab({ state, apply, koList, nameOf, onOpen }: { state: TournamentState; apply: (s: TournamentState) => void; koList: Match[]; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
+  const concluded = !!state.groupsConcluded;
+  return (
+    <div>
+      <div style={{ background: '#eef2ec', border: '1px solid #dce6d7', borderRadius: 14, padding: '13px 16px', marginBottom: 16, fontSize: 12.5, color: '#5b7163', lineHeight: 1.5 }}>
+        <b style={{ color: DGREEN }}>Fase final automática.</b> MF1: 1º A vs 2º B · MF2: 1º B vs 2º A · 3º/4º: perdedores · Final: vencedores. Preenche sozinha quando cada grupo terminar. Usa ✏️ para corrigir horário ou equipas à mão.
+      </div>
+      {state.knockoutCreated ? <>
+        <div style={{ background: '#fff', border: `1px solid ${concluded ? '#bbf7d0' : '#fadf8b'}`, borderRadius: 14, padding: '13px 16px', marginBottom: 16, fontSize: 13, color: '#5b7163' }}>
+          {concluded
+            ? <><b style={{ color: GREEN }}>✓ Visível no placar.</b> As equipas estão concluídas — cada lugar preenche-se sozinho quando estiver 100% certo.</>
+            : <><b style={{ color: '#92660a' }}>Ainda não aparece no placar.</b> Marca as equipas como <b>Concluído</b> na aba <b>Equipas</b> para a fase final ficar visível.</>}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{koList.map((m) => <KoRow key={m.id} m={m} state={state} apply={apply} nameOf={nameOf} onOpen={onOpen} />)}</div>
+      </> : <div style={{ background: '#fff', borderRadius: 12, padding: 26, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>Cria 2 grupos com equipas para a fase final aparecer.</div>}
+    </div>
+  );
+}
+
+function KoRow({ m, state, apply, nameOf, onOpen }: { m: Match; state: TournamentState; apply: (s: TournamentState) => void; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
+  const [edit, setEdit] = useState(false);
+  const when = [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
+  const teamSel = (side: 'a' | 'b') => (
+    <select value={m[side] || ''} onChange={(e) => apply(actions.setKoTeam(state, m.id, side, e.target.value))} style={{ ...inp, width: '100%', fontSize: 13, padding: '8px 9px' }}>
+      <option value="">— A definir —</option>
+      {state.teams.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}
+    </select>
+  );
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', border: `1px solid ${edit ? '#bef264' : '#e4ece0'}` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {edit ? <>
+            <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓</button>
+          </> : <>
+            {when && <span style={{ fontSize: 12, fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '4px 9px', borderRadius: 7 }}>{when}</span>}
+            <button onClick={() => setEdit(true)} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
+            <button onClick={() => onOpen(m.id)} style={btn(13)}>Registar</button>
+          </>}
+        </div>
+      </div>
+      {edit ? (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 8 }}>
+            {teamSel('a')}
+            <span className="cond" style={{ fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '3px 11px', borderRadius: 7 }}>{scoreOf(m, m.a)}:{scoreOf(m, m.b)}</span>
+            {teamSel('b')}
+          </div>
+          {m.lockTeams && <button onClick={() => apply(actions.setKoAuto(state, m.id))} style={{ marginTop: 8, border: '1px dashed #b6c9b0', background: '#fff', color: GREEN, fontWeight: 600, fontSize: 12, padding: '6px 11px', borderRadius: 8 }}>🔄 Voltar a automático</button>}
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 8 }}>
+          <span style={{ textAlign: 'right', fontWeight: 600, color: m.a ? '#13241b' : '#9bb0a3', fontStyle: m.a ? 'normal' : 'italic' }}>{nameOf(m, 'a')}</span>
+          <span className="cond" style={{ fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '3px 11px', borderRadius: 7 }}>{scoreOf(m, m.a)}:{scoreOf(m, m.b)}</span>
+          <span style={{ textAlign: 'left', fontWeight: 600, color: m.b ? '#13241b' : '#9bb0a3', fontStyle: m.b ? 'normal' : 'italic' }}>{nameOf(m, 'b')}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SettingsTab({ state, apply }: { state: TournamentState; apply: (s: TournamentState) => void }) {
   const [name, setName] = useState(state.tournamentName);
   const url = typeof window !== 'undefined' ? window.location.origin : '';
@@ -262,6 +313,57 @@ function SettingsTab({ state, apply }: { state: TournamentState; apply: (s: Tour
       <Box><b style={{ color: DGREEN }}>Nome do torneio</b><div style={{ display: 'flex', gap: 8, marginTop: 10 }}><input value={name} onChange={(e) => setName(e.target.value)} style={{ ...inp, flex: 1 }} /><button onClick={() => apply(actions.setName(state, name))} style={btn()}>Guardar</button></div></Box>
       <Box><b style={{ color: DGREEN }}>Link do placar (QR)</b><p style={{ fontSize: 12.5, color: '#8aa093' }}>Gera o QR a apontar para este endereço.</p><input readOnly value={url} style={{ ...inp, width: '100%', background: '#f6faf4', color: '#5b7163' }} /></Box>
       <div style={{ background: '#fff', borderRadius: 14, padding: 18, border: '1px solid #f3d6d6' }}><b style={{ color: '#dc2626' }}>Reiniciar torneio</b><p style={{ fontSize: 12.5, color: '#8aa093' }}>Apaga equipas, jogos e resultados.</p><button onClick={() => { if (confirm('Apagar tudo?')) apply(actions.reset()); }} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 13, padding: '10px 15px', borderRadius: 9 }}>Apagar tudo</button></div>
+    </div>
+  );
+}
+
+type AccessEntry = { ts: number; ip: string; ok: boolean; blocked?: boolean; ua?: string };
+
+function AccessTab() {
+  const [entries, setEntries] = useState<AccessEntry[] | null>(null);
+  const load = () => { setEntries(null); fetch('/api/access-log').then((r) => r.json()).then((d) => setEntries(d.entries || [])).catch(() => setEntries([])); };
+  useEffect(load, []);
+  const clear = () => { if (!confirm('Apagar todo o histórico de acessos?')) return; fetch('/api/access-log', { method: 'DELETE' }).then(load); };
+
+  const fmt = (ts: number) => new Date(ts).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const failCount = (entries || []).filter((e) => !e.ok).length;
+
+  return (
+    <div>
+      <Box>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <b style={{ color: DGREEN }}>Histórico de acessos ao backoffice</b>
+            <div style={{ fontSize: 12.5, color: '#8aa093', marginTop: 4 }}>Cada tentativa de login: ✓ entrou, ✗ falhou (password errada), ⛔ bloqueado (muitas tentativas). Guarda as últimas 300.</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button onClick={load} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>↻ Atualizar</button>
+            <button onClick={clear} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>Limpar</button>
+          </div>
+        </div>
+        {entries && entries.length > 0 && (
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12.5 }}>
+            <span style={{ background: '#eef2ec', color: DGREEN, fontWeight: 700, padding: '4px 10px', borderRadius: 8 }}>{entries.length} registos</span>
+            {failCount > 0 && <span style={{ background: '#fdeaea', color: '#b91c1c', fontWeight: 700, padding: '4px 10px', borderRadius: 8 }}>{failCount} falhada{failCount === 1 ? '' : 's'}</span>}
+          </div>
+        )}
+      </Box>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 16 }}>
+        {entries === null && <div style={{ background: '#fff', borderRadius: 12, padding: 24, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>A carregar…</div>}
+        {entries && entries.length === 0 && <div style={{ background: '#fff', borderRadius: 12, padding: 30, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>Ainda sem registos de acesso.</div>}
+        {entries && entries.map((e, i) => {
+          const status = e.blocked ? { icon: '⛔', label: 'Bloqueado', col: '#92660a', bg: '#fef3c7', bd: '#fadf8b' } : e.ok ? { icon: '✓', label: 'Entrou', col: GREEN, bg: '#dcfce7', bd: '#bbf7d0' } : { icon: '✗', label: 'Falhou', col: '#b91c1c', bg: '#fdeaea', bd: '#f3d6d6' };
+          return (
+            <div key={i} style={{ background: '#fff', borderRadius: 11, padding: '10px 14px', border: '1px solid #e4ece0', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: status.col, background: status.bg, border: `1px solid ${status.bd}`, padding: '4px 9px', borderRadius: 7, flexShrink: 0 }}>{status.icon} {status.label}</span>
+              <span className="cond" style={{ fontWeight: 700, fontSize: 14, color: DGREEN, flexShrink: 0 }}>{fmt(e.ts)}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#5b7163', flexShrink: 0 }}>IP: {e.ip || 'desconhecido'}</span>
+              {e.ua && <span title={e.ua} style={{ fontSize: 11.5, color: '#9bb0a3', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.ua}</span>}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
