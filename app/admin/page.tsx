@@ -42,7 +42,7 @@ export default function AdminPage() {
 
   if (authed === null) return <div style={{ padding: 40 }}>A carregar…</div>;
   if (!authed) return (
-    <div style={{ maxWidth: 380, margin: '50px auto', background: '#fff', borderRadius: 18, padding: '34px 30px', border: '1px solid #e4ece0' }}>
+    <div className="admin-login" style={{ maxWidth: 380, margin: '50px auto', background: '#fff', borderRadius: 18, padding: '34px 30px', border: '1px solid #e4ece0' }}>
       <div style={{ fontSize: 38, textAlign: 'center' }}>🔒</div>
       <h2 className="cond" style={{ textAlign: 'center', color: DGREEN, textTransform: 'uppercase', margin: '6px 0 18px' }}>Backoffice</h2>
       <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} placeholder="Palavra-passe" style={{ width: '100%', padding: '13px 14px', border: '1.5px solid #d3e0d0', borderRadius: 11, fontSize: 15, outline: 'none' }} />
@@ -132,7 +132,7 @@ function TeamsTab({ state, apply }: { state: TournamentState; apply: (s: Tournam
       </div>
       <Box>
         <b style={{ color: DGREEN }}>Adicionar equipa</b>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+        <div className="admin-form" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome da equipa" style={{ ...inp, flex: 1, minWidth: 160 }} />
           <select value={group} onChange={(e) => setGroup(e.target.value)} style={inp}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>
           <button onClick={() => { if (name.trim()) { apply(actions.addTeam(state, name.trim(), group)); setName(''); } }} style={btn()}>Adicionar</button>
@@ -228,10 +228,10 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
     <div>
       <Box>
         <b style={{ color: DGREEN }}>Adicionar jogo</b>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
+        <div className="admin-form" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
           <select value={g} onChange={(e) => { setG(e.target.value); setA(''); setB(''); }} style={{ ...inp, fontWeight: 600 }}>{groupOpts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}</select>
           <select value={a} onChange={(e) => setA(e.target.value)} style={{ ...inp, flex: 1, minWidth: 120 }}><option value="">— equipa —</option>{teamOpts.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}</select>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#9bb0a3' }}>vs</span>
+          <span className="vs" style={{ fontSize: 12, fontWeight: 700, color: '#9bb0a3' }}>vs</span>
           <select value={b} onChange={(e) => setB(e.target.value)} style={{ ...inp, flex: 1, minWidth: 120 }}><option value="">— equipa —</option>{teamOpts.map((t) => <option key={t.id} value={t.id}>{t.name}{t.group ? ` (${t.group})` : ''}</option>)}</select>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inp} />
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={inp} />

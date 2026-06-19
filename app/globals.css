@@ -36,6 +36,14 @@ input, select { font-family: inherit; }
   .modal-inner { padding: 14px 13px; }
   .modal-foot { padding: 12px 13px; }
   .score-sides { grid-template-columns: 1fr; gap: 18px; }
+  /* Backoffice em telemóvel:
+     1) font-size 16px nos campos evita o zoom automático do iOS ao focar */
+  .admin-pad input, .admin-pad select, .admin-pad textarea,
+  .admin-login input { font-size: 16px; }
+  /* 2) formulários "Adicionar…" empilham os controlos a toda a largura */
+  .admin-form { flex-direction: column; align-items: stretch !important; }
+  .admin-form > * { width: 100%; flex: 1 1 auto !important; min-width: 0 !important; }
+  .admin-form .vs { text-align: center; padding: 2px 0; }
 }
 /* Tabela de classificação — colunas controladas aqui para responder em mobile */
 .stand-grid { font-size: 14px; }
