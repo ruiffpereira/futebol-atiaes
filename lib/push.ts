@@ -3,7 +3,7 @@
 // "push" para todos os dispositivos subscritos (funciona com o site fechado).
 import webpush from 'web-push';
 import type { TournamentState, Match } from './types';
-import { scoreOf } from './tournament';
+import { scoreOf, fmtDate } from './tournament';
 
 export type PushSub = { endpoint: string; keys: { p256dh: string; auth: string } };
 export type PushEvent = { icon: string; title: string; body: string };
@@ -20,13 +20,27 @@ function ensureVapid(): boolean {
 export function vapidPublicKey(): string { return process.env.VAPID_PUBLIC_KEY || ''; }
 
 const teamName = (d: TournamentState, id: string | null) => { const t = d.teams.find((x) => x.id === id); return t ? t.name : '?'; };
+const matchWhen = (m: Match) => [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
 
-// mesma lógica do protótipo: golos, início/intervalo/2ª/fim, cartões
+// golos, início/intervalo/2ª/fim, cartões, jogo novo e alteração de horário
 export function detectEvents(prev: TournamentState, next: TournamentState): PushEvent[] {
   const prevById: Record<string, Match> = {}; prev.matches.forEach((m) => { prevById[m.id] = m; });
   const out: PushEvent[] = [];
   next.matches.forEach((m) => {
-    const p = prevById[m.id]; if (!p) return;
+    const p = prevById[m.id];
+    // jogo novo (calendário/amigável, com as duas equipas definidas)
+    if (!p) {
+      if ((m.phase === 'group' || m.phase === 'friendly') && m.a && m.b) {
+        const when = matchWhen(m);
+        out.push({ icon: '📅', title: 'Novo jogo agendado', body: teamName(next, m.a) + ' vs ' + teamName(next, m.b) + (when ? ' · ' + when : '') });
+      }
+      return;
+    }
+    // alteração de data/hora de um jogo por jogar
+    if (m.status === 'scheduled' && (p.date !== m.date || p.time !== m.time)) {
+      const when = matchWhen(m);
+      out.push({ icon: '📅', title: 'Horário atualizado', body: teamName(next, m.a) + ' vs ' + teamName(next, m.b) + (when ? ' · ' + when : ' · por definir') });
+    }
     const sa = scoreOf(m, m.a), sb = scoreOf(m, m.b);
     if ((m.scorers || []).length > (p.scorers || []).length) {
       const last = m.scorers[m.scorers.length - 1];

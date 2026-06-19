@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Placar ao vivo do torneio',
   manifest: '/manifest.json',
   icons: { icon: '/icon.png', apple: '/icon.png' },
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Torneio Atiães' },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Atiães Futebol' },
 };
 // topbar branca a condizer com o header (browser + PWA standalone)
 export const viewport: Viewport = {
