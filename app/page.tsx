@@ -448,8 +448,7 @@ export default function PublicPage() {
           bottom: 0,
           zIndex: 50,
           background: "#fff",
-          borderTop: `1px solid ${LINE}`,
-          boxShadow: "0 -2px 14px rgba(18,40,28,.05)",
+          boxShadow: "0 -2px 16px rgba(18,40,28,.07)",
           padding: "7px 4px",
           paddingBottom: "max(7px, env(safe-area-inset-bottom))",
         }}
@@ -576,7 +575,8 @@ function Header({
         top: 0,
         zIndex: 40,
         background: "#fff",
-        borderBottom: `1px solid ${LINE}`,
+        paddingTop: "env(safe-area-inset-top)",
+        boxShadow: "0 1px 10px rgba(18,40,28,.05)",
       }}
     >
       <div
@@ -1357,11 +1357,11 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
         liveInfo[m.b] = scoreOf(m, m.b) + "–" + scoreOf(m, m.a) + " vs " + an;
       }
     });
-  const cols = "24px 1fr 30px 56px 48px 38px 32px";
+  const cols = "24px 1fr 18px 40px 30px 26px 22px";
   const head = {
     display: "grid",
     gridTemplateColumns: cols,
-    columnGap: 5,
+    columnGap: 0,
     alignItems: "center",
   } as const;
   const num = (v: React.ReactNode, extra?: React.CSSProperties) => (
@@ -1447,6 +1447,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                   alignItems: "center",
                   gap: 8,
                   minWidth: 0,
+                  paddingRight: 10,
                 }}
               >
                 <span className="tbadge" style={{ display: "inline-flex", marginLeft: 6 }}>
