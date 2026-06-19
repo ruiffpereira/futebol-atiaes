@@ -1,11 +1,11 @@
 'use client';
-import { useTournament } from '@/lib/useTournament';
 import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
+import { Ball, Card, TeamBadge } from './Icons';
 
-const DGREEN = '#0f4d2e', GREEN = '#15803d';
+const INK = '#16201b', MUTED = '#8a978f', LINE = '#edf0ec', GREEN = '#15803d';
 
-// Vista FlashScore (lance-a-lance + equipas) — só leitura.
+// Detalhe do jogo (lance-a-lance + equipas) — só leitura.
 export default function MatchDetail({ m, state, onClose }: { m: Match; state: TournamentState; onClose: () => void }) {
   const team = (id: string | null) => state.teams.find((t) => t.id === id);
   const ta = team(m.a), tb = team(m.b);
@@ -19,7 +19,9 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     const isA = e.team === m.a; const t = isA ? ta : tb;
     let sc = ''; if (e.kind === 'goal') { if (isA) ra++; else rb++; sc = ra + '–' + rb; }
     const who = e.kind === 'goal' ? (e.own ? 'Auto-golo' : pname(t, e.player) || 'Golo') : pname(t, e.player) || 'Cartão';
-    const icon = e.kind === 'goal' ? '⚽' : e.kind === 'yellow' ? '🟨' : '🟥';
+    const icon = e.kind === 'goal'
+      ? <Ball size={16} color={INK} />
+      : <Card size={15} color={e.kind === 'yellow' ? '#eab308' : '#dc2626'} />;
     return { i, isA, icon, who, sc, isGoal: e.kind === 'goal' };
   });
   const lineup = (t: typeof ta) => (t ? t.players.map((p) => ({
@@ -30,51 +32,59 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   })) : []);
 
   const playerRow = (p: { name: string; cap: boolean; gk: boolean; g: number; y: number; r: number }, k: number) => (
-    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: '1px solid #f4f7f2' }}>
+    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: `1px solid ${LINE}` }}>
       {p.cap && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
       {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#2563eb', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
-      {p.g > 0 && <span style={{ fontSize: 11.5, fontWeight: 700, color: DGREEN }}>⚽{p.g}</span>}
-      {p.y > 0 && <span style={{ width: 8, height: 11, borderRadius: 2, background: '#eab308', display: 'inline-block' }} />}
-      {p.r > 0 && <span style={{ width: 8, height: 11, borderRadius: 2, background: '#dc2626', display: 'inline-block' }} />}
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+      {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
+      {p.y > 0 && <Card size={12} color="#eab308" />}
+      {p.r > 0 && <Card size={12} color="#dc2626" />}
+    </div>
+  );
+
+  const teamCol = (label: string, side: 'a' | 'b') => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+      <TeamBadge name={label} seed={m[side] || side} size={48} />
+      <span style={{ fontWeight: 700, fontSize: 14.5, color: INK, textAlign: 'center', lineHeight: 1.15, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
     </div>
   );
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)' }}>
-        <div style={{ background: 'linear-gradient(135deg,#0c2a1c,#15803d)', padding: '16px 18px', color: '#fff' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#bbf7d0', textTransform: 'uppercase' }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>
-            <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,.2)', color: '#fff', width: 30, height: 30, borderRadius: 9, fontSize: 17 }}>×</button>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+        <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: 0.5 }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>
+            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: '#fff', color: '#5b7163', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 10 }}>
-            <div className="cond" style={{ textAlign: 'right', fontWeight: 700, fontSize: 22 }}>{ta?.name || 'A definir'}</div>
-            <div className="cond" style={{ fontWeight: 800, fontSize: 38 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</div>
-            <div className="cond" style={{ textAlign: 'left', fontWeight: 700, fontSize: 22 }}>{tb?.name || 'A definir'}</div>
-          </div>
-          <div style={{ textAlign: 'center', marginTop: 8 }}>
-            {m.status === 'live' && <span style={{ background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '4px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800 }}>{liveBadge(m)}</span>}
-            {m.status === 'done' && <span style={{ background: 'rgba(255,255,255,.2)', padding: '4px 11px', borderRadius: 8, fontSize: 11, fontWeight: 800 }}>TERMINADO</span>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
+            {teamCol(ta?.name || 'A definir', 'a')}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <span className="cond" style={{ fontWeight: 800, fontSize: 40, color: INK, lineHeight: 1 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</span>
+              {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? '#d97706' : '#dc2626', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
+              {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Terminado</span>}
+              {m.status === 'scheduled' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 700 }}>{m.time || 'Por jogar'}</span>}
+            </div>
+            {teamCol(tb?.name || 'A definir', 'b')}
           </div>
         </div>
         <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: '#9bb0a3', letterSpacing: .5, textTransform: 'uppercase', textAlign: 'center', marginBottom: 10 }}>Lance a lance</div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', marginBottom: 12 }}>Lance a lance</div>
           {rows.length ? <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: '#eef2ec', transform: 'translateX(-50%)' }} />
+            <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: LINE, transform: 'translateX(-50%)' }} />
             {rows.map((e) => (
               <div key={e.i} style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 36px 1fr', alignItems: 'center', gap: 8, padding: '6px 0' }}>
-                <div style={{ textAlign: 'right', minWidth: 0 }}>{e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
-                <div style={{ textAlign: 'center', fontSize: 16, background: '#fff', zIndex: 1 }}>{e.icon}</div>
-                <div style={{ textAlign: 'left', minWidth: 0 }}>{!e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
+                <div style={{ textAlign: 'right', minWidth: 0 }}>{e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fff', zIndex: 1 }}>{e.icon}</div>
+                <div style={{ textAlign: 'left', minWidth: 0 }}>{!e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
               </div>
             ))}
-          </div> : <div style={{ textAlign: 'center', color: '#9bb0a3', fontSize: 13, padding: '14px 0' }}>Ainda sem golos nem cartões.</div>}
+          </div> : <div style={{ textAlign: 'center', color: MUTED, fontSize: 13, padding: '14px 0' }}>Ainda sem golos nem cartões.</div>}
 
-          <div style={{ fontSize: 11, fontWeight: 800, color: '#9bb0a3', letterSpacing: .5, textTransform: 'uppercase', textAlign: 'center', margin: '18px 0 10px' }}>Equipas</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: DGREEN, marginBottom: 7 }}>{ta?.name || '—'}</div>{lineup(ta).map(playerRow)}</div>
-            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: DGREEN, marginBottom: 7 }}>{tb?.name || '—'}</div>{lineup(tb).map(playerRow)}</div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', margin: '20px 0 10px' }}>Equipas</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: INK, marginBottom: 7 }}>{ta?.name || '—'}</div>{lineup(ta).map(playerRow)}</div>
+            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: INK, marginBottom: 7 }}>{tb?.name || '—'}</div>{lineup(tb).map(playerRow)}</div>
           </div>
         </div>
       </div>

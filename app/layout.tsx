@@ -7,8 +7,15 @@ export const metadata: Metadata = {
   description: 'Placar ao vivo do torneio',
   manifest: '/manifest.json',
   icons: { icon: '/icon.png', apple: '/icon.png' },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Torneio Atiães' },
 };
-export const viewport: Viewport = { themeColor: '#0f4d2e', width: 'device-width', initialScale: 1 };
+// topbar branca a condizer com o header (browser + PWA standalone)
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

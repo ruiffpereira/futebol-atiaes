@@ -1,6 +1,6 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-body { font-family: 'Barlow', system-ui, sans-serif; background: #eef2ec; color: #13241b; }
+body { font-family: 'Barlow', system-ui, sans-serif; background: #f4f6f3; color: #16201b; }
 .cond { font-family: 'Barlow Condensed', sans-serif; }
 button { font-family: inherit; cursor: pointer; }
 input, select { font-family: inherit; }
@@ -11,6 +11,7 @@ input, select { font-family: inherit; }
 ::-webkit-scrollbar { height: 6px; width: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 3px; }
 .only-mobile { display: none; }
+.soft-card { background: #fff; border: 1px solid #edf0ec; border-radius: 16px; box-shadow: 0 1px 2px rgba(18,40,28,.04), 0 6px 16px rgba(18,40,28,.03); }
 /* Backoffice (admin) — responsivo para uso em telemóvel */
 .admin-pad { padding: 22px 20px 60px; }
 .modal-sheet { padding: 24px 16px; }
@@ -24,7 +25,7 @@ input, select { font-family: inherit; }
   .modal-foot { padding: 12px 13px; }
   .score-sides { grid-template-columns: 1fr; gap: 18px; }
 }
-/* Tabela de classificação — tamanhos controlados aqui para responder em mobile */
+/* Tabela de classificação — colunas controladas aqui para responder em mobile */
 .stand-grid { font-size: 14px; }
 .stand-grid .pts { font-size: 15px; }
 @media (max-width: 760px) {
@@ -32,11 +33,10 @@ input, select { font-family: inherit; }
   .hide-mobile { display: none !important; }
   .pub-pad { padding-bottom: 88px !important; }
   .stand-grid {
-    grid-template-columns: 16px 1fr 18px 18px 18px 18px 20px 20px 24px 22px !important;
-    gap: 1px !important;
-    padding-left: 5px !important;
-    padding-right: 5px !important;
-    font-size: 11px;
+    grid-template-columns: 24px 1fr 18px 42px 34px 28px 22px !important;
+    column-gap: 5px !important;
+    row-gap: 0 !important;
+    font-size: 12px;
   }
-  .stand-grid .pts { font-size: 12.5px; }
+  .stand-grid .pts { font-size: 13px; }
 }

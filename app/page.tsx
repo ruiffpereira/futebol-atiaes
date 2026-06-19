@@ -20,10 +20,42 @@ import type { Match, TournamentState } from "@/lib/types";
 import Rules from "./Rules";
 import MatchDetail from "./MatchDetail";
 import TeamDetail from "./TeamDetail";
+import {
+  Trophy,
+  Broadcast,
+  Calendar,
+  Chart,
+  User,
+  Bell,
+  BellOff,
+  Ball,
+  Shield,
+  Clock,
+  Document,
+  MapPin,
+  Chevron,
+  Check,
+  List,
+  Chat,
+  Send,
+  TeamBadge,
+} from "./Icons";
 
 const GREEN = "#15803d",
   DGREEN = "#0f4d2e";
+// paleta "clean & arejado"
+const INK = "#16201b",
+  MUTED = "#8a978f",
+  LINE = "#edf0ec",
+  SOFT = "0 1px 2px rgba(18,40,28,.04), 0 6px 16px rgba(18,40,28,.03)";
 type Tab = "standings" | "live" | "schedule" | "stats" | "profile";
+const TAB_TITLE: Record<Tab, string> = {
+  standings: "Classificação",
+  live: "Ao Vivo",
+  schedule: "Calendário",
+  stats: "Estatísticas",
+  profile: "Perfil",
+};
 
 export default function PublicPage() {
   const { state, loading } = useTournament();
@@ -65,40 +97,29 @@ export default function PublicPage() {
     ? state.teams.find((t) => t.id === teamId)
     : null;
 
-  const tabBtn = (id: Tab, label: string) => (
-    <button
-      onClick={() => setTab(id)}
-      style={{
-        position: "relative",
-        flexShrink: 0,
-        border: "1px solid #d3e0d0",
-        background: "#fff",
-        color: "#13241b",
-        fontWeight: 700,
-        fontSize: 13.5,
-        padding: "10px 16px",
-        borderRadius: 11,
-      }}
-    >
-      {label}
-      {tab === id && (
-        <div
-          style={{
-            position: "absolute",
-            left: 14,
-            right: 14,
-            bottom: 4,
-            height: 3,
-            background: GREEN,
-            borderRadius: 3,
-          }}
-        />
-      )}
-    </button>
-  );
+  const tabBtn = (id: Tab, label: string) => {
+    const active = tab === id;
+    return (
+      <button
+        onClick={() => setTab(id)}
+        style={{
+          flexShrink: 0,
+          border: "none",
+          background: active ? GREEN : "transparent",
+          color: active ? "#fff" : "#62736a",
+          fontWeight: 700,
+          fontSize: 13.5,
+          padding: "9px 16px",
+          borderRadius: 999,
+        }}
+      >
+        {label}
+      </button>
+    );
+  };
   const navBtn = (
     id: Tab,
-    icon: string,
+    icon: React.ReactNode,
     label: string,
     activeColor = GREEN,
   ) => (
@@ -111,13 +132,15 @@ export default function PublicPage() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 2,
+        gap: 3,
         padding: "6px 2px",
         color: tab === id ? activeColor : "#9aa8a0",
       }}
     >
-      <span style={{ fontSize: 19 }}>{icon}</span>
-      <span style={{ fontSize: 10, fontWeight: 700 }}>{label}</span>
+      <span style={{ display: "flex", height: 22, alignItems: "center" }}>
+        {icon}
+      </span>
+      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
     </button>
   );
 
@@ -127,6 +150,7 @@ export default function PublicPage() {
     <div style={{ minHeight: "100vh" }}>
       <Header
         name={state.tournamentName}
+        title={TAB_TITLE[tab]}
         sub={state.subtitle}
         liveCount={live.length}
         notifyOn={on}
@@ -162,16 +186,22 @@ export default function PublicPage() {
           className="hide-mobile"
           style={{
             display: "flex",
-            gap: 8,
+            gap: 4,
             overflowX: "auto",
-            paddingBottom: 14,
+            padding: 4,
+            marginBottom: 18,
+            background: "#fff",
+            border: `1px solid ${LINE}`,
+            borderRadius: 999,
+            width: "fit-content",
+            boxShadow: SOFT,
           }}
         >
-          {tabBtn("standings", "CLASSIFICAÇÃO")}
-          {tabBtn("live", "AO VIVO")}
-          {tabBtn("schedule", "CALENDÁRIO")}
-          {tabBtn("stats", "ESTATÍSTICAS")}
-          {tabBtn("profile", "PERFIL")}
+          {tabBtn("standings", "Classificação")}
+          {tabBtn("live", "Ao Vivo")}
+          {tabBtn("schedule", "Calendário")}
+          {tabBtn("stats", "Estatísticas")}
+          {tabBtn("profile", "Perfil")}
         </div>
 
         {tab === "standings" &&
@@ -189,7 +219,7 @@ export default function PublicPage() {
               ))}
             </div>
           ) : (
-            <Empty icon="📋" title="Ainda sem equipas." />
+            <Empty icon={<List size={44} />} title="Ainda sem equipas." />
           ))}
 
         {tab === "live" &&
@@ -213,7 +243,7 @@ export default function PublicPage() {
             </div>
           ) : (
             <Empty
-              icon="🕐"
+              icon={<Clock size={44} />}
               title="Nenhum jogo a decorrer."
               sub="Os jogos ao vivo aparecem aqui."
             />
@@ -319,9 +349,7 @@ export default function PublicPage() {
             }}
           >
             <div>
-              <H>
-                🏆 Melhores marcadores <TopNote />
-              </H>
+              <StatHead icon={<Trophy size={18} />} title="Melhores marcadores" />
               {scorers.length ? (
                 <Card>
                   {scorers.map((p, i) => (
@@ -332,6 +360,9 @@ export default function PublicPage() {
                       sub={p.team}
                       val={p.goals}
                       color={GREEN}
+                      barVal={p.goals}
+                      barMax={scorers[0].goals}
+                      last={i === scorers.length - 1}
                     />
                   ))}
                 </Card>
@@ -340,14 +371,11 @@ export default function PublicPage() {
               )}
             </div>
             <div>
-              <H>
-                ⚽ Melhor ataque <TopNote />
-              </H>
-              <div
-                style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
-              >
-                Equipas com mais golos marcados.
-              </div>
+              <StatHead
+                icon={<Ball size={18} />}
+                title="Melhor ataque"
+                sub="Equipas com mais golos marcados"
+              />
               {attack.length ? (
                 <Card>
                   {attack.map((t, i) => (
@@ -358,7 +386,11 @@ export default function PublicPage() {
                       sub={t.ga + " sofridos"}
                       val={t.gf}
                       color={GREEN}
+                      seed={t.id}
+                      barVal={t.gf}
+                      barMax={attack[0].gf}
                       extra={t.games + "J"}
+                      last={i === attack.length - 1}
                     />
                   ))}
                 </Card>
@@ -367,14 +399,11 @@ export default function PublicPage() {
               )}
             </div>
             <div>
-              <H>
-                🛡️ Melhor defesa <TopNote />
-              </H>
-              <div
-                style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
-              >
-                Equipas com menos golos sofridos.
-              </div>
+              <StatHead
+                icon={<Shield size={18} />}
+                title="Melhor defesa"
+                sub="Equipas com menos golos sofridos"
+              />
               {defense.length ? (
                 <Card>
                   {defense.map((t, i) => (
@@ -384,8 +413,12 @@ export default function PublicPage() {
                       name={t.name}
                       sub={t.gf + " marcados"}
                       val={t.ga}
-                      color="#1d4ed8"
+                      color="#2563eb"
+                      seed={t.id}
+                      barVal={defense[defense.length - 1].ga - t.ga}
+                      barMax={defense[defense.length - 1].ga - defense[0].ga}
                       extra={t.games + "J"}
+                      last={i === defense.length - 1}
                     />
                   ))}
                 </Card>
@@ -415,16 +448,17 @@ export default function PublicPage() {
           bottom: 0,
           zIndex: 50,
           background: "#fff",
-          borderTop: "1px solid #e1e8dd",
-          boxShadow: "0 -4px 16px rgba(8,46,28,.08)",
-          padding: "5px 4px",
+          borderTop: `1px solid ${LINE}`,
+          boxShadow: "0 -2px 14px rgba(18,40,28,.05)",
+          padding: "7px 4px",
+          paddingBottom: "max(7px, env(safe-area-inset-bottom))",
         }}
       >
-        {navBtn("standings", "🏆", "Classif.")}
-        {navBtn("live", "📺", "Ao Vivo", "#dc2626")}
-        {navBtn("schedule", "📅", "Calend.")}
-        {navBtn("stats", "📊", "Estat.")}
-        {navBtn("profile", "👤", "Perfil / Regras")}
+        {navBtn("standings", <List size={22} />, "Tabela")}
+        {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "#dc2626")}
+        {navBtn("schedule", <Calendar size={22} />, "Calend.")}
+        {navBtn("stats", <Chart size={22} />, "Estat.")}
+        {navBtn("profile", <User size={22} />, "Perfil")}
       </div>
 
       {rules && <Rules onClose={() => setRules(false)} />}
@@ -473,7 +507,7 @@ function LoadingScreen() {
         alignItems: "center",
         justifyContent: "center",
         gap: 18,
-        background: "linear-gradient(180deg,#0f4d2e,#15803d 75%,#1a9e4b)",
+        background: "#f4f6f3",
       }}
     >
       <div
@@ -481,22 +515,22 @@ function LoadingScreen() {
           width: 64,
           height: 64,
           borderRadius: 18,
-          background: "#bef264",
+          background: "#eef5ef",
+          color: GREEN,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 34,
           animation: "bob 1.1s ease-in-out infinite",
         }}
       >
-        ⚽
+        <Ball size={36} />
       </div>
       <div
         style={{
-          width: 28,
-          height: 28,
-          border: "3px solid rgba(255,255,255,.25)",
-          borderTopColor: "#fff",
+          width: 26,
+          height: 26,
+          border: "3px solid #e2e8e0",
+          borderTopColor: GREEN,
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",
         }}
@@ -504,7 +538,7 @@ function LoadingScreen() {
       <div
         className="cond"
         style={{
-          color: "#eafff1",
+          color: MUTED,
           fontWeight: 700,
           fontSize: 15,
           letterSpacing: 1,
@@ -519,25 +553,30 @@ function LoadingScreen() {
 
 function Header({
   name,
+  title,
   sub,
   liveCount,
   notifyOn,
   onBell,
 }: {
   name: string;
+  title: string;
   sub: string;
   liveCount: number;
   notifyOn: boolean;
   onBell: () => void;
 }) {
+  const parts = name.trim().split(" ");
+  const brandFirst = parts[0];
+  const brandRest = parts.slice(1).join(" ");
   return (
     <div
       style={{
         position: "sticky",
         top: 0,
         zIndex: 40,
-        background: "linear-gradient(180deg,#0f4d2e,#15803d 75%,#1a9e4b)",
-        boxShadow: "0 2px 18px rgba(8,46,28,.35)",
+        background: "#fff",
+        borderBottom: `1px solid ${LINE}`,
       }}
     >
       <div
@@ -547,49 +586,53 @@ function Header({
           padding: "14px 20px",
           display: "flex",
           alignItems: "center",
-          gap: 14,
-          flexWrap: "wrap",
+          gap: 13,
         }}
       >
+        {/* espaço para o icon / logótipo do torneio */}
         <div
           style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
-            background: "#bef264",
+            width: 46,
+            height: 46,
+            flexShrink: 0,
+            borderRadius: 14,
+            background: "#eef5ef",
+            color: GREEN,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 24,
           }}
         >
-          ⚽
+          <Ball size={26} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 10.5,
+              color: GREEN,
+              fontWeight: 700,
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+            }}
+          >
+            {title}
+          </div>
           <div
             className="cond"
             style={{
               fontWeight: 800,
-              fontSize: 26,
-              color: "#fff",
-              textTransform: "uppercase",
-              lineHeight: 0.95,
+              fontSize: 27,
+              color: INK,
+              lineHeight: 1.05,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            {name}
+            <span style={{ color: GREEN }}>{brandFirst}</span>
+            {brandRest && " " + brandRest}
           </div>
-          <div
-            style={{
-              fontSize: 12.5,
-              color: "#bbf7d0",
-              fontWeight: 600,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-            }}
-          >
+          <div style={{ fontSize: 12, color: MUTED, fontWeight: 500 }}>
             {sub}
           </div>
         </div>
@@ -597,12 +640,36 @@ function Header({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            marginLeft: "auto",
-            flexWrap: "wrap",
-            justifyContent: "flex-end",
+            gap: 8,
+            flexShrink: 0,
           }}
         >
+          {liveCount > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                background: "#fef2f2",
+                color: "#dc2626",
+                padding: "7px 11px",
+                borderRadius: 999,
+                fontWeight: 700,
+                fontSize: 12,
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#dc2626",
+                  animation: "pulse 1.1s infinite",
+                }}
+              />
+              {liveCount} ao vivo
+            </div>
+          )}
           <button
             onClick={onBell}
             aria-label="Notificações"
@@ -610,45 +677,17 @@ function Header({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 38,
-              height: 38,
-              border: "none",
-              borderRadius: 10,
-              background: notifyOn ? "#16a34a" : "rgba(255,255,255,.14)",
-              color: "#fff",
-              fontSize: 18,
+              width: 40,
+              height: 40,
+              border: `1px solid ${LINE}`,
+              borderRadius: "50%",
+              background: notifyOn ? GREEN : "#fff",
+              color: notifyOn ? "#fff" : "#5b7163",
               cursor: "pointer",
-              flexShrink: 0,
             }}
           >
-            {notifyOn ? "🔔" : "🔕"}
+            {notifyOn ? <Bell size={19} /> : <BellOff size={19} />}
           </button>
-          {liveCount > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                background: "#dc2626",
-                color: "#fff",
-                padding: "8px 12px",
-                borderRadius: 10,
-                fontWeight: 800,
-                fontSize: 12,
-              }}
-            >
-              <span
-                style={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: "50%",
-                  background: "#fff",
-                  animation: "pulse 1.1s infinite",
-                }}
-              />
-              {liveCount}
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -708,7 +747,7 @@ function NotificationsPanel({
             fontSize: 14.5,
           }}
         >
-          ✓ Notificações ativadas neste dispositivo.
+          <Check size={18} /> Notificações ativadas neste dispositivo.
         </div>
       ) : (
         <button
@@ -864,8 +903,8 @@ function NotifyModal({
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 18 }}>🔔</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff" }}>
+            <Bell size={18} />
             <span
               className="cond"
               style={{
@@ -904,6 +943,175 @@ function NotifyModal({
   );
 }
 
+function FeedbackCard() {
+  const [name, setName] = useState("");
+  const [msg, setMsg] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async () => {
+    if (name.trim().length < 2) {
+      setErr("Escreve o teu nome.");
+      return;
+    }
+    if (msg.trim().length < 2) {
+      setErr("Escreve uma mensagem.");
+      return;
+    }
+    setSending(true);
+    setErr("");
+    try {
+      const r = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), message: msg.trim() }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        setSent(true);
+        setMsg("");
+        setName("");
+      } else setErr(d.error || "Não foi possível enviar.");
+    } catch {
+      setErr("Sem ligação. Tenta de novo.");
+    }
+    setSending(false);
+  };
+
+  return (
+    <div className="soft-card" style={{ padding: "16px 16px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+        <span
+          style={{
+            width: 38,
+            height: 38,
+            flexShrink: 0,
+            borderRadius: 11,
+            background: "#eef5ef",
+            color: GREEN,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Chat size={20} />
+        </span>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15, color: INK }}>
+            Deixa o teu comentário
+          </div>
+          <div style={{ fontSize: 12.5, color: MUTED }}>
+            Feedback sobre o torneio, a app, o que quiseres.
+          </div>
+        </div>
+      </div>
+
+      {sent ? (
+        <div
+          style={{
+            marginTop: 14,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
+            padding: "18px 12px",
+            background: "#f3faf5",
+            borderRadius: 12,
+            textAlign: "center",
+          }}
+        >
+          <span style={{ color: GREEN }}>
+            <Check size={30} />
+          </span>
+          <div style={{ fontWeight: 700, color: INK }}>Obrigado pelo comentário!</div>
+          <button
+            onClick={() => setSent(false)}
+            style={{
+              border: `1px solid ${LINE}`,
+              background: "#fff",
+              color: "#5b7163",
+              fontWeight: 600,
+              fontSize: 13,
+              padding: "8px 16px",
+              borderRadius: 10,
+            }}
+          >
+            Enviar outro
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+          <input
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (err) setErr("");
+            }}
+            placeholder="O teu nome"
+            maxLength={60}
+            style={{
+              width: "100%",
+              padding: "11px 13px",
+              border: `1.5px solid ${LINE}`,
+              borderRadius: 11,
+              fontSize: 14.5,
+              outline: "none",
+            }}
+          />
+          <textarea
+            value={msg}
+            onChange={(e) => {
+              setMsg(e.target.value);
+              if (err) setErr("");
+            }}
+            placeholder="Escreve aqui o teu comentário…"
+            rows={4}
+            maxLength={600}
+            style={{
+              width: "100%",
+              padding: "11px 13px",
+              border: `1.5px solid ${LINE}`,
+              borderRadius: 11,
+              fontSize: 14.5,
+              outline: "none",
+              resize: "vertical",
+              fontFamily: "inherit",
+            }}
+          />
+          {err && (
+            <div style={{ color: "#dc2626", fontSize: 13, fontWeight: 600 }}>
+              {err}
+            </div>
+          )}
+          <button
+            onClick={submit}
+            disabled={sending}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              border: "none",
+              background: GREEN,
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 15,
+              padding: "12px",
+              borderRadius: 11,
+              opacity: sending ? 0.6 : 1,
+              cursor: sending ? "default" : "pointer",
+            }}
+          >
+            <Send size={17} />
+            {sending ? "A enviar…" : "Enviar comentário"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Profile({
   notifyOn,
   supported,
@@ -917,19 +1125,33 @@ function Profile({
 }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const rowLink = (
-    icon: string,
+    icon: React.ReactNode,
     label: string,
     onClick?: () => void,
     href?: string,
   ) => {
     const inner = (
       <>
-        <span style={{ fontSize: 20 }}>{icon}</span>
-        <span style={{ fontWeight: 700, fontSize: 15, color: "#13241b" }}>
+        <span
+          style={{
+            width: 38,
+            height: 38,
+            flexShrink: 0,
+            borderRadius: 11,
+            background: "#eef5ef",
+            color: GREEN,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon}
+        </span>
+        <span style={{ fontWeight: 600, fontSize: 15, color: INK }}>
           {label}
         </span>
-        <span style={{ marginLeft: "auto", color: "#9bb0a3", fontSize: 20 }}>
-          ›
+        <span style={{ marginLeft: "auto", color: "#c4cdc6", display: "flex" }}>
+          <Chevron size={20} />
         </span>
       </>
     );
@@ -938,10 +1160,11 @@ function Profile({
       display: "flex",
       alignItems: "center",
       gap: 12,
-      padding: "16px 18px",
+      padding: "13px 16px",
       background: "#fff",
-      border: "1px solid #e4ece0",
+      border: `1px solid ${LINE}`,
       borderRadius: 16,
+      boxShadow: SOFT,
       textDecoration: "none",
       cursor: "pointer",
     };
@@ -963,27 +1186,39 @@ function Profile({
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 16 }}>
-      {rowLink("📋", "Regulamento do torneio", onRules)}
-      {rowLink("📍", "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
+      {rowLink(<Document size={20} />, "Regulamento do torneio", onRules)}
+      {rowLink(<MapPin size={20} />, "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
 
       <div
+        className="soft-card"
         style={{
-          background: "#fff",
-          border: "1px solid #e4ece0",
-          borderRadius: 16,
-          padding: "16px 18px",
+          padding: "13px 16px",
           display: "flex",
           alignItems: "center",
           gap: 12,
           flexWrap: "wrap",
         }}
       >
-        <span style={{ fontSize: 20 }}>👨‍💼</span>
+        <span
+          style={{
+            width: 38,
+            height: 38,
+            flexShrink: 0,
+            borderRadius: 11,
+            background: "#eef5ef",
+            color: GREEN,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <User size={20} />
+        </span>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: "#13241b" }}>
+          <div style={{ fontWeight: 600, fontSize: 15, color: INK }}>
             Organizador do torneio
           </div>
-          <div style={{ fontSize: 13, color: "#8aa093" }}>Ricardo Cunha</div>
+          <div style={{ fontSize: 13, color: MUTED }}>Ricardo Cunha</div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <a
@@ -1026,38 +1261,37 @@ function Profile({
       </div>
 
       {/* Notificações — colapsável */}
-      <div
-        style={{
-          background: "#fff",
-          border: "1px solid #e4ece0",
-          borderRadius: 16,
-          overflow: "hidden",
-        }}
-      >
+      <div className="soft-card" style={{ overflow: "hidden" }}>
         <button
           onClick={() => setNotifOpen(!notifOpen)}
           style={{
             width: "100%",
-            background: DGREEN,
-            padding: "12px 18px",
+            background: "#fff",
+            padding: "13px 16px",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 12,
             border: "none",
             cursor: "pointer",
             textAlign: "left",
           }}
         >
-          <span style={{ fontSize: 18 }}>🔔</span>
           <span
-            className="cond"
             style={{
-              fontWeight: 800,
-              fontSize: 18,
-              color: "#fff",
-              textTransform: "uppercase",
+              width: 38,
+              height: 38,
+              flexShrink: 0,
+              borderRadius: 11,
+              background: notifyOn ? GREEN : "#eef5ef",
+              color: notifyOn ? "#fff" : GREEN,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
+            <Bell size={19} />
+          </span>
+          <span style={{ fontWeight: 600, fontSize: 15, color: INK }}>
             Notificações
           </span>
           <span
@@ -1065,28 +1299,27 @@ function Profile({
               marginLeft: "auto",
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 10,
             }}
           >
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: notifyOn ? "#bbf7d0" : "rgba(255,255,255,.7)",
+                color: notifyOn ? GREEN : MUTED,
               }}
             >
               {notifyOn ? "Ativadas" : "Desativadas"}
             </span>
             <span
               style={{
-                color: "#fff",
-                fontSize: 18,
-                display: "inline-block",
+                color: "#c4cdc6",
+                display: "inline-flex",
                 transform: notifOpen ? "rotate(90deg)" : "none",
                 transition: "transform .15s",
               }}
             >
-              ›
+              <Chevron size={18} />
             </span>
           </span>
         </button>
@@ -1099,7 +1332,9 @@ function Profile({
         )}
       </div>
 
-      {rowLink("🔐", "Backoffice", undefined, "/admin")}
+      <FeedbackCard />
+
+      {rowLink(<Shield size={20} />, "Backoffice", undefined, "/admin")}
     </div>
   );
 }
@@ -1122,141 +1357,181 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
         liveInfo[m.b] = scoreOf(m, m.b) + "–" + scoreOf(m, m.a) + " vs " + an;
       }
     });
-  const cols = "24px 1fr 28px 28px 28px 28px 30px 30px 38px 34px";
+  const cols = "24px 1fr 30px 56px 48px 38px 32px";
+  const head = {
+    display: "grid",
+    gridTemplateColumns: cols,
+    columnGap: 5,
+    alignItems: "center",
+  } as const;
+  const num = (v: React.ReactNode, extra?: React.CSSProperties) => (
+    <span style={{ textAlign: "center", color: MUTED, fontSize: 13, ...extra }}>{v}</span>
+  );
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 16,
-        overflow: "hidden",
-        border: "1px solid #e4ece0",
-      }}
-    >
+    <div className="soft-card" style={{ overflow: "hidden" }}>
       <div
         style={{
-          background: DGREEN,
-          padding: "12px 18px",
+          padding: "13px 18px",
+          borderBottom: `1px solid ${LINE}`,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <span
-          className="cond"
-          style={{ fontWeight: 800, fontSize: 20, color: "#fff" }}
-        >
-          GRUPO {g}
+        <span className="cond" style={{ fontWeight: 800, fontSize: 19, color: INK }}>
+          Grupo {g}
         </span>
-        <span style={{ fontSize: 12, color: "#bbf7d0", fontWeight: 600 }}>
+        <span style={{ fontSize: 12, color: MUTED, fontWeight: 600 }}>
           {rows.length} equipas
         </span>
       </div>
-      <div style={{ padding: "6px 8px 10px" }}>
+      <div style={{ padding: "4px 14px 10px" }}>
         <div
           className="stand-grid"
           style={{
-            display: "grid",
-            gridTemplateColumns: cols,
-            gap: 2,
-            padding: 8,
+            ...head,
+            padding: "10px 4px 8px",
             fontSize: 11,
             fontWeight: 700,
-            color: "#6b8475",
+            color: MUTED,
             textTransform: "uppercase",
+            letterSpacing: 0.4,
           }}
         >
-          <span />
-          <span />
+          <span style={{ textAlign: "center" }}>#</span>
+          <span>Equipa</span>
           <span style={{ textAlign: "center" }}>J</span>
-          <span style={{ textAlign: "center" }}>V</span>
-          <span style={{ textAlign: "center" }}>E</span>
-          <span style={{ textAlign: "center" }}>D</span>
-          <span style={{ textAlign: "center" }}>GM</span>
-          <span style={{ textAlign: "center" }}>GS</span>
+          <span style={{ textAlign: "center" }}>V/E/D</span>
+          <span style={{ textAlign: "center" }}>G</span>
           <span style={{ textAlign: "center" }}>DG</span>
-          <span style={{ textAlign: "center" }}>Pts</span>
+          <span style={{ textAlign: "center" }}>P</span>
         </div>
-        {rows.map((r, i) => (
-          <div
-            key={r.team.id}
-            className="stand-grid"
-            onClick={() => onTeam(r.team.id)}
-            role="button"
-            title="Ver ficha da equipa"
-            style={{
-              display: "grid",
-              gridTemplateColumns: cols,
-              gap: 2,
-              alignItems: "center",
-              padding: "9px 8px",
-              borderLeft: `4px solid ${i < 2 ? "#bef264" : "transparent"}`,
-              background: liveIds.has(r.team.id) ? "#fff7f5" : "transparent",
-              cursor: "pointer",
-            }}
-          >
-            <span
-              style={{ fontWeight: 800, textAlign: "center", color: GREEN }}
-            >
-              {i + 1}
-            </span>
-            <div style={{ minWidth: 0 }}>
-              <span
-                style={{
-                  fontWeight: 600,
-                  display: "block",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {r.team.name}
-              </span>
-              {liveIds.has(r.team.id) && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: "#dc2626",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: "#dc2626",
-                      animation: "pulse 1.1s infinite",
-                    }}
-                  />
-                  AO VIVO {liveInfo[r.team.id]}
-                </div>
-              )}
-            </div>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.P}</span>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.W}</span>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.D}</span>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.L}</span>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.GF}</span>
-            <span style={{ textAlign: "center", color: "#5b7163" }}>{r.GA}</span>
-            <span style={{ textAlign: "center", fontWeight: 600 }}>
-              {(r.GF - r.GA > 0 ? "+" : "") + (r.GF - r.GA)}
-            </span>
-            <span
-              className="cond pts"
+        {rows.map((r, i) => {
+          const dg = r.GF - r.GA;
+          const playoff = i < 2;
+          const isLive = liveIds.has(r.team.id);
+          return (
+            <div
+              key={r.team.id}
+              className="stand-grid"
+              onClick={() => onTeam(r.team.id)}
+              role="button"
+              title="Ver ficha da equipa"
               style={{
-                textAlign: "center",
-                fontWeight: 800,
-                color: DGREEN,
+                ...head,
+                padding: "8px 4px",
+                borderTop: i === 0 ? "none" : `1px solid #f3f5f1`,
+                cursor: "pointer",
               }}
             >
-              {r.Pts}
-            </span>
-          </div>
-        ))}
+              <span
+                style={{
+                  width: 22,
+                  height: 22,
+                  margin: "0 auto",
+                  borderRadius: 7,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: 12,
+                  background: playoff ? GREEN : "#eef1ee",
+                  color: playoff ? "#fff" : "#7c8a82",
+                }}
+              >
+                {i + 1}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  minWidth: 0,
+                }}
+              >
+                <span className="tbadge" style={{ display: "inline-flex", marginLeft: 6 }}>
+                  <TeamBadge name={r.team.name} seed={r.team.id} size={26} />
+                </span>
+                <div style={{ minWidth: 0 }}>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: INK,
+                      display: "block",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {r.team.name}
+                  </span>
+                  {isLive && (
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        color: "#dc2626",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "#dc2626",
+                          animation: "pulse 1.1s infinite",
+                        }}
+                      />
+                      AO VIVO {liveInfo[r.team.id]}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {num(r.P)}
+              {num(`${r.W}/${r.D}/${r.L}`, { fontSize: 12.5 })}
+              {num(`${r.GF}/${r.GA}`, { fontSize: 12.5 })}
+              {num((dg > 0 ? "+" : "") + dg, {
+                fontWeight: 600,
+                color: dg > 0 ? GREEN : dg < 0 ? "#dc2626" : MUTED,
+              })}
+              <span
+                className="cond pts"
+                style={{ textAlign: "center", fontWeight: 800, color: INK }}
+              >
+                {r.Pts}
+              </span>
+            </div>
+          );
+        })}
       </div>
+      {rows.length > 0 && (
+        <div
+          style={{
+            padding: "10px 18px",
+            borderTop: `1px solid ${LINE}`,
+            fontSize: 11.5,
+            color: MUTED,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+          }}
+        >
+          <span
+            style={{
+              width: 9,
+              height: 9,
+              borderRadius: 3,
+              background: GREEN,
+              flexShrink: 0,
+            }}
+          />
+          1.º e 2.º apuram-se para a fase final
+        </div>
+      )}
     </div>
   );
 }
@@ -1271,69 +1546,64 @@ function LiveCard({
   onClick: () => void;
 }) {
   const half = m.livePhase === "half";
+  const sa = scoreOf(m, m.a),
+    sb = scoreOf(m, m.b);
   return (
     <div
       onClick={onClick}
+      className="soft-card"
       style={{
-        background: "linear-gradient(150deg,#0c2a1c,#103d28)",
-        borderRadius: 18,
-        padding: "18px 20px",
-        color: "#fff",
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "stretch",
+        gap: 14,
         cursor: "pointer",
+        borderColor: "#f6d5d5",
       }}
     >
       <div
         style={{
+          width: 60,
+          flexShrink: 0,
+          borderRight: `1px solid ${LINE}`,
+          paddingRight: 13,
           display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 14,
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+          textAlign: "center",
         }}
       >
         <span
           style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: "#bbf7d0",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            fontSize: 10.5,
+            fontWeight: 800,
+            color: half ? "#d97706" : "#dc2626",
             textTransform: "uppercase",
           }}
         >
-          {phaseLabel(m)}
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: half ? "#d97706" : "#dc2626",
+              animation: "pulse 1.1s infinite",
+            }}
+          />
+          {half ? "Intervalo" : "Ao Vivo"}
         </span>
-        <span
-          style={{
-            background: half ? "#d97706" : "#dc2626",
-            padding: "4px 10px",
-            borderRadius: 8,
-            fontSize: 11,
-            fontWeight: 800,
-          }}
-        >
-          {liveBadge(m)}
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: MUTED }}>
+          {liveText(m)}
         </span>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div
-          className="cond"
-          style={{ textAlign: "right", fontWeight: 700, fontSize: 21 }}
-        >
-          {nameOf(m, "a")}
-        </div>
-        <div className="cond" style={{ fontWeight: 800, fontSize: 40 }}>
-          {scoreOf(m, m.a)} : {scoreOf(m, m.b)}
-        </div>
-        <div
-          className="cond"
-          style={{ textAlign: "left", fontWeight: 700, fontSize: 21 }}
-        >
-          {nameOf(m, "b")}
-        </div>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 9 }}>
+        <TeamLine name={nameOf(m, "a")} seed={m.a || "a"} val={sa} winner={sa > sb} />
+        <TeamLine name={nameOf(m, "b")} seed={m.b || "b"} val={sb} winner={sb > sa} />
       </div>
     </div>
   );
@@ -1358,6 +1628,7 @@ function KoCard({
     !!doneM && (sb > sa || (sa === sb && (m.penB || 0) > (m.penA || 0)));
   const cell = (
     name: string,
+    side: "a" | "b",
     score: number,
     win: boolean,
     pending: boolean,
@@ -1365,59 +1636,71 @@ function KoCard({
     <div
       style={{
         display: "flex",
-        justifyContent: "space-between",
         alignItems: "center",
+        gap: 10,
         padding: "11px 14px",
       }}
     >
+      {pending ? (
+        <span
+          style={{
+            width: 26,
+            height: 26,
+            flexShrink: 0,
+            borderRadius: "50%",
+            background: "#f0f3ef",
+          }}
+        />
+      ) : (
+        <TeamBadge name={name} seed={m[side] || side} size={26} />
+      )}
       <span
         style={{
-          fontWeight: 600,
-          color: pending ? "#9bb0a3" : "#13241b",
+          flex: 1,
+          minWidth: 0,
+          fontWeight: win ? 700 : 500,
+          fontSize: 14.5,
+          color: pending ? "#a7b3ab" : INK,
           fontStyle: pending ? "italic" : "normal",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
-        {win ? "🏆 " : ""}
         {name}
       </span>
+      {win && <Trophy size={15} color="#ca8a04" />}
       <span
         className="cond"
-        style={{ fontWeight: 800, fontSize: 20, color: DGREEN }}
+        style={{ fontWeight: 800, fontSize: 19, color: INK, flexShrink: 0 }}
       >
-        {score}
+        {m.status === "scheduled" ? "–" : score}
       </span>
     </div>
   );
   return (
     <div
       onClick={() => onClick(m.id)}
-      style={{
-        background: "#fff",
-        border: "1px solid #e4ece0",
-        borderRadius: 13,
-        overflow: "hidden",
-        cursor: "pointer",
-      }}
+      className="soft-card"
+      style={{ overflow: "hidden", cursor: "pointer" }}
     >
       {(m.date || m.time) && (
         <div
-          className="cond"
           style={{
-            padding: "6px 14px",
-            background: "#f6faf4",
-            borderBottom: "1px solid #f0f4ee",
+            padding: "7px 14px",
+            borderBottom: `1px solid ${LINE}`,
             fontSize: 12,
             fontWeight: 700,
-            color: "#5b7163",
+            color: MUTED,
             textAlign: "center",
           }}
         >
           {[fmtDate(m.date), m.time].filter(Boolean).join(" · ")}
         </div>
       )}
-      {cell(nameOf(m, "a"), sa, aw, !m.a)}
-      <div style={{ height: 1, background: "#f0f4ee" }} />
-      {cell(nameOf(m, "b"), sb, bw, !m.b)}
+      {cell(nameOf(m, "a"), "a", sa, aw, !m.a)}
+      <div style={{ height: 1, background: LINE, margin: "0 14px" }} />
+      {cell(nameOf(m, "b"), "b", sb, bw, !m.b)}
       {m.status === "live" && (
         <div
           style={{
@@ -1426,6 +1709,7 @@ function KoCard({
             fontSize: 11,
             fontWeight: 800,
             color: "#fff",
+            textAlign: "center",
           }}
         >
           {liveBadge(m)}
@@ -1446,10 +1730,9 @@ const Section = ({
     <div
       className="cond"
       style={{
-        fontWeight: 700,
-        fontSize: 18,
-        color: DGREEN,
-        textTransform: "uppercase",
+        fontWeight: 800,
+        fontSize: 19,
+        color: INK,
         marginBottom: 10,
       }}
     >
@@ -1460,6 +1743,50 @@ const Section = ({
     </div>
   </div>
 );
+// linha de uma equipa dentro de um card de jogo (badge + nome + resultado)
+function TeamLine({
+  name,
+  seed,
+  val,
+  winner,
+}: {
+  name: string;
+  seed: string;
+  val?: number;
+  winner?: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+      <TeamBadge name={name} seed={seed} size={26} />
+      <span
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontWeight: winner ? 700 : 500,
+          fontSize: 14.5,
+          color: INK,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {name}
+      </span>
+      <span
+        className="cond"
+        style={{
+          fontWeight: 800,
+          fontSize: 18,
+          color: val === undefined ? "#c4cdc6" : INK,
+          flexShrink: 0,
+        }}
+      >
+        {val === undefined ? "–" : val}
+      </span>
+    </div>
+  );
+}
+
 function Line({
   m,
   nameOf,
@@ -1471,111 +1798,129 @@ function Line({
   score?: boolean;
   onClick?: () => void;
 }) {
+  const sa = scoreOf(m, m.a),
+    sb = scoreOf(m, m.b);
+  const date = fmtDate(m.date);
   return (
     <div
       onClick={onClick}
+      className="soft-card"
       style={{
-        background: "#fff",
-        borderRadius: 12,
-        padding: "12px 16px",
-        border: "1px solid #e4ece0",
+        padding: "12px 14px",
         display: "flex",
-        flexDirection: "column",
-        gap: 8,
+        alignItems: "stretch",
+        gap: 14,
         cursor: onClick ? "pointer" : "default",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {m.date || m.time ? (
-          <span
-            className="cond"
-            style={{
-              fontWeight: 800,
-              fontSize: 14,
-              color: "#fff",
-              background: GREEN,
-              padding: "2px 9px",
-              borderRadius: 6,
-            }}
-          >
-            {[fmtDate(m.date), m.time].filter(Boolean).join(" · ")}
-          </span>
-        ) : null}
-        {m.phase === "friendly" ? (
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 800,
-              color: "#fff",
-              background: "#7c3aed",
-              padding: "2px 8px",
-              borderRadius: 6,
-            }}
-          >
-            AMIGÁVEL
-          </span>
+      <div
+        style={{
+          width: 54,
+          flexShrink: 0,
+          borderRight: `1px solid ${LINE}`,
+          paddingRight: 13,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          textAlign: "center",
+        }}
+      >
+        {score ? (
+          <>
+            <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>
+              {date || "—"}
+            </span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: MUTED, textTransform: "uppercase" }}>
+              Final
+            </span>
+          </>
         ) : (
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: score ? "#9bb0a3" : GREEN,
-              textTransform: "uppercase",
-            }}
-          >
-            {phaseLabel(m)}
+          <>
+            <span style={{ fontSize: 15, fontWeight: 800, color: INK }}>
+              {m.time || "—"}
+            </span>
+            <span style={{ fontSize: 10.5, fontWeight: 600, color: MUTED }}>
+              {date}
+            </span>
+          </>
+        )}
+        {m.phase === "friendly" && (
+          <span style={{ fontSize: 9, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", marginTop: 2 }}>
+            Amigável
           </span>
         )}
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <span style={{ textAlign: "right", fontWeight: 600 }}>
-          {nameOf(m, "a")}
-        </span>
-        <span
-          className="cond"
-          style={{
-            fontWeight: 800,
-            fontSize: score ? 20 : 12,
-            color: score ? DGREEN : "#9bb0a3",
-            background: "#eef2ec",
-            padding: "3px 11px",
-            borderRadius: 7,
-          }}
-        >
-          {score ? `${scoreOf(m, m.a)} : ${scoreOf(m, m.b)}` : "vs"}
-        </span>
-        <span style={{ textAlign: "left", fontWeight: 600 }}>
-          {nameOf(m, "b")}
-        </span>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 9 }}>
+        <TeamLine
+          name={nameOf(m, "a")}
+          seed={m.a || "a"}
+          val={score ? sa : undefined}
+          winner={score && sa > sb}
+        />
+        <TeamLine
+          name={nameOf(m, "b")}
+          seed={m.b || "b"}
+          val={score ? sb : undefined}
+          winner={score && sb > sa}
+        />
       </div>
     </div>
   );
 }
 
-const TopNote = () => (
-  <span
-    style={{
-      fontFamily: "Barlow, sans-serif",
-      fontWeight: 700,
-      fontSize: 11,
-      color: "#fff",
-      background: GREEN,
-      padding: "2px 8px",
-      borderRadius: 999,
-      textTransform: "none",
-      verticalAlign: "middle",
-      letterSpacing: 0,
-    }}
-  >
-    Top 5
-  </span>
+const StatHead = ({
+  icon,
+  title,
+  sub,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub?: string;
+}) => (
+  <div style={{ margin: "0 0 12px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <span
+        style={{
+          width: 32,
+          height: 32,
+          flexShrink: 0,
+          borderRadius: 10,
+          background: "#eef5ef",
+          color: GREEN,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {icon}
+      </span>
+      <span
+        className="cond"
+        style={{ fontWeight: 800, fontSize: 20, color: INK, flex: 1 }}
+      >
+        {title}
+      </span>
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: 11,
+          color: GREEN,
+          background: "#eef5ef",
+          padding: "3px 9px",
+          borderRadius: 999,
+        }}
+      >
+        Top 5
+      </span>
+    </div>
+    {sub && (
+      <div style={{ fontSize: 12.5, color: MUTED, margin: "6px 0 0 42px" }}>
+        {sub}
+      </div>
+    )}
+  </div>
 );
 const H = ({
   children,
@@ -1601,16 +1946,7 @@ const H = ({
   </div>
 );
 const Card = ({ children }: { children: React.ReactNode }) => (
-  <div
-    style={{
-      background: "#fff",
-      borderRadius: 16,
-      overflow: "hidden",
-      border: "1px solid #e4ece0",
-    }}
-  >
-    {children}
-  </div>
+  <div className="soft-card" style={{ overflow: "hidden" }}>{children}</div>
 );
 const Row3 = ({
   i,
@@ -1619,6 +1955,10 @@ const Row3 = ({
   val,
   color,
   extra,
+  seed,
+  barVal,
+  barMax,
+  last,
 }: {
   i: number;
   name: string;
@@ -1626,66 +1966,118 @@ const Row3 = ({
   val: number;
   color: string;
   extra?: string;
-}) => (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "34px 1fr auto auto",
-      alignItems: "center",
-      gap: 12,
-      padding: "13px 18px",
-      borderBottom: "1px solid #f0f4ee",
-    }}
-  >
-    <span
-      className="cond"
-      style={{ fontWeight: 800, fontSize: 18, color, textAlign: "center" }}
+  seed?: string;
+  barVal?: number;
+  barMax?: number;
+  last?: boolean;
+}) => {
+  const pct =
+    barMax && barMax > 0
+      ? Math.max(6, Math.min(100, ((barVal ?? val) / barMax) * 100))
+      : 0;
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: seed ? "20px 30px 1fr auto" : "20px 1fr auto",
+        alignItems: "center",
+        gap: 11,
+        padding: "11px 16px",
+        borderTop: i === 1 ? "none" : `1px solid #f3f5f1`,
+        borderBottom: last ? `1px solid ${LINE}` : undefined,
+      }}
     >
-      {i}
-    </span>
-    <div>
-      <div style={{ fontWeight: 600 }}>{name}</div>
-      <div style={{ fontSize: 12, color: "#8aa093" }}>{sub}</div>
-    </div>
-    {extra ? (
-      <span style={{ fontSize: 12, color: "#5b7163", fontWeight: 600 }}>
-        {extra}
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: 13,
+          color: i <= 3 ? color : MUTED,
+          textAlign: "center",
+        }}
+      >
+        {i}
       </span>
-    ) : (
-      <span />
-    )}
-    <span
-      className="cond"
-      style={{ fontWeight: 800, fontSize: 22, color: DGREEN }}
-    >
-      {val}
-    </span>
-  </div>
-);
+      {seed && <TeamBadge name={name} seed={seed} size={28} />}
+      <div style={{ minWidth: 0 }}>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: 14,
+            color: INK,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {name}
+        </div>
+        {pct > 0 ? (
+          <div
+            style={{
+              marginTop: 5,
+              height: 5,
+              borderRadius: 999,
+              background: "#eef1ee",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: pct + "%",
+                height: "100%",
+                borderRadius: 999,
+                background: color,
+              }}
+            />
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 1 }}>{sub}</div>
+        )}
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <span className="cond" style={{ fontWeight: 800, fontSize: 20, color: INK }}>
+          {val}
+        </span>
+        {extra && (
+          <div style={{ fontSize: 10.5, color: MUTED, fontWeight: 600 }}>
+            {extra}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 const Empty = ({
   icon,
   title,
   sub,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   sub?: string;
 }) => (
-  <div style={{ textAlign: "center", padding: "70px 20px", color: "#8aa093" }}>
-    <div style={{ fontSize: 42, marginBottom: 10 }}>{icon}</div>
-    <div style={{ fontSize: 17, fontWeight: 600 }}>{title}</div>
+  <div style={{ textAlign: "center", padding: "70px 20px", color: MUTED }}>
+    <div
+      style={{
+        marginBottom: 14,
+        display: "flex",
+        justifyContent: "center",
+        color: "#c4cfc6",
+      }}
+    >
+      {icon}
+    </div>
+    <div style={{ fontSize: 17, fontWeight: 600, color: "#5b6b62" }}>{title}</div>
     {sub && <div style={{ fontSize: 14, marginTop: 4 }}>{sub}</div>}
   </div>
 );
 const EmptyLine = ({ text }: { text: string }) => (
   <div
+    className="soft-card"
     style={{
-      background: "#fff",
-      borderRadius: 12,
       padding: 24,
       textAlign: "center",
-      color: "#8aa093",
-      border: "1px solid #e4ece0",
+      color: MUTED,
       fontSize: 14,
     }}
   >

@@ -7,7 +7,7 @@ import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } 
 import type { Match, TournamentState } from '@/lib/types';
 
 const GREEN = '#15803d', DGREEN = '#0f4d2e';
-type Tab = 'teams' | 'fixtures' | 'knockout' | 'settings' | 'access';
+type Tab = 'teams' | 'fixtures' | 'knockout' | 'comments' | 'settings' | 'access';
 
 export default function AdminPage() {
   const { state, apply } = useTournament();
@@ -16,8 +16,18 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('teams');
   const [openId, setOpenId] = useState<string | null>(null);
   const [editUnlock, setEditUnlock] = useState(false);
+  const [unread, setUnread] = useState(0);
 
   useEffect(() => { fetch('/api/session').then((r) => r.json()).then((d) => setAuthed(!!d.admin)).catch(() => setAuthed(false)); }, []);
+  // contador de comentários por ler (badge na aba)
+  useEffect(() => {
+    if (!authed) return;
+    let live = true;
+    const load = () => fetch('/api/comments').then((r) => (r.ok ? r.json() : null)).then((d) => { if (live && d) setUnread(d.unread || 0); }).catch(() => {});
+    load();
+    const id = setInterval(load, 20000);
+    return () => { live = false; clearInterval(id); };
+  }, [authed, tab]);
   // auto-cria fase final quando há ≥2 grupos com equipas
   useEffect(() => {
     if (authed && !state.knockoutCreated && state.groups.length >= 2 && state.teams.filter((t) => t.group).length >= 2) apply(actions.genKnockout(state));
@@ -47,9 +57,11 @@ export default function AdminPage() {
   const fixtures = state.matches.filter((m) => m.phase === 'group' || m.phase === 'friendly');
   const koList = ['sf', 'third', 'final'].flatMap((ph) => state.matches.filter((m) => m.phase === ph).sort((a, b) => (a.slot || 0) - (b.slot || 0)));
 
-  const tabBtn = (id: Tab, label: string) => (
-    <button onClick={() => setTab(id)} style={{ position: 'relative', flexShrink: 0, border: '1px solid #d3e0d0', background: '#fff', fontWeight: 700, fontSize: 13.5, padding: '10px 16px', borderRadius: 11 }}>
-      {label}{tab === id && <div style={{ position: 'absolute', left: 14, right: 14, bottom: 4, height: 3, background: GREEN, borderRadius: 3 }} />}
+  const tabBtn = (id: Tab, label: string, badge = 0) => (
+    <button onClick={() => setTab(id)} style={{ position: 'relative', flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 7, border: '1px solid #d3e0d0', background: '#fff', fontWeight: 700, fontSize: 13.5, padding: '10px 16px', borderRadius: 11 }}>
+      {label}
+      {badge > 0 && <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 800, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{badge}</span>}
+      {tab === id && <div style={{ position: 'absolute', left: 14, right: 14, bottom: 4, height: 3, background: GREEN, borderRadius: 3 }} />}
     </button>
   );
 
@@ -63,11 +75,12 @@ export default function AdminPage() {
         </div>
       </div>
       <StatsBar />
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}>{tabBtn('teams', 'EQUIPAS')}{tabBtn('fixtures', 'CALENDÁRIO')}{tabBtn('knockout', 'FASE FINAL')}{tabBtn('settings', 'DEFINIÇÕES')}{tabBtn('access', 'ACESSOS')}</div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}>{tabBtn('teams', 'EQUIPAS')}{tabBtn('fixtures', 'CALENDÁRIO')}{tabBtn('knockout', 'FASE FINAL')}{tabBtn('comments', 'COMENTÁRIOS', unread)}{tabBtn('settings', 'DEFINIÇÕES')}{tabBtn('access', 'ACESSOS')}</div>
 
       {tab === 'teams' && <TeamsTab state={state} apply={apply} />}
       {tab === 'fixtures' && <FixturesTab state={state} apply={apply} fixtures={fixtures} nameOf={nameOf} onOpen={openMatch} />}
       {tab === 'knockout' && <KnockoutTab state={state} apply={apply} koList={koList} nameOf={nameOf} onOpen={openMatch} />}
+      {tab === 'comments' && <CommentsTab onSeen={() => setUnread(0)} />}
       {tab === 'settings' && <SettingsTab state={state} apply={apply} />}
       {tab === 'access' && <AccessTab />}
       {open && <ScoringModal state={state} m={open} apply={apply} onClose={() => setOpenId(null)} editUnlock={editUnlock} setEditUnlock={setEditUnlock} />}
@@ -392,6 +405,63 @@ function AccessTab() {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+type CommentItem = { id: string; ts: number; name: string; message: string; read?: boolean };
+
+function CommentsTab({ onSeen }: { onSeen: () => void }) {
+  const [items, setItems] = useState<CommentItem[] | null>(null);
+  const load = (markRead = false) => {
+    fetch('/api/comments').then((r) => r.json()).then((d) => {
+      setItems(d.items || []);
+      if (markRead && (d.unread || 0) > 0) {
+        fetch('/api/comments', { method: 'PATCH' }).then(() => onSeen());
+      } else if (markRead) onSeen();
+    }).catch(() => setItems([]));
+  };
+  useEffect(() => { load(true); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  const del = (id: string) => { if (!confirm('Apagar este comentário?')) return; fetch('/api/comments?id=' + id, { method: 'DELETE' }).then(() => load()); };
+  const clear = () => { if (!confirm('Apagar TODOS os comentários?')) return; fetch('/api/comments', { method: 'DELETE' }).then(() => load()); };
+  const fmt = (ts: number) => new Date(ts).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div>
+      <Box>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <b style={{ color: DGREEN }}>Comentários do público</b>
+            <div style={{ fontSize: 12.5, color: '#8aa093', marginTop: 4 }}>Feedback enviado pelos visitantes (anónimo ou com nome). Os mais recentes aparecem primeiro.</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button onClick={() => load()} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>↻ Atualizar</button>
+            {items && items.length > 0 && <button onClick={clear} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 600, fontSize: 13, padding: '8px 14px', borderRadius: 9 }}>Limpar</button>}
+          </div>
+        </div>
+        {items && items.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <span style={{ background: '#eef2ec', color: DGREEN, fontWeight: 700, fontSize: 12.5, padding: '4px 10px', borderRadius: 8 }}>{items.length} comentário{items.length === 1 ? '' : 's'}</span>
+          </div>
+        )}
+      </Box>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+        {items === null && <div style={{ background: '#fff', borderRadius: 12, padding: 24, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>A carregar…</div>}
+        {items && items.length === 0 && <div style={{ background: '#fff', borderRadius: 12, padding: 30, textAlign: 'center', color: '#8aa093', border: '1px solid #e4ece0', fontSize: 14 }}>Ainda sem comentários.</div>}
+        {items && items.map((c) => (
+          <div key={c.id} style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', border: '1px solid #e4ece0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+              {c.name
+                ? <span style={{ fontWeight: 700, fontSize: 14, color: DGREEN }}>{c.name}</span>
+                : <span style={{ fontWeight: 700, fontSize: 13, color: '#7c3aed', background: '#f3eefe', padding: '2px 9px', borderRadius: 7 }}>Anónimo</span>}
+              <span style={{ fontSize: 12, color: '#9bb0a3' }}>{fmt(c.ts)}</span>
+              <button onClick={() => del(c.id)} title="Apagar" style={{ marginLeft: 'auto', border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 13, padding: '5px 10px', borderRadius: 8 }}>×</button>
+            </div>
+            <div style={{ fontSize: 14, color: '#2b3a31', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{c.message}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
