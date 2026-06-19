@@ -1,7 +1,7 @@
 "use client";
 // PLACAR PÚBLICO — só leitura, tempo real (React Query + SSE).
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
 import {
@@ -118,7 +118,7 @@ function useInstall(): InstallInfo {
 }
 
 export default function PublicPage() {
-  const { state, loading } = useTournament();
+  const { state, loading, refetch } = useTournament();
   const { on, supported, enable } = useNotifications();
   const install = useInstall();
   const [tab, setTab] = useState<Tab>("standings");
@@ -209,6 +209,7 @@ export default function PublicPage() {
 
   return (
     <div style={{ minHeight: "100vh" }}>
+      <PullToRefresh onRefresh={refetch} />
       <Header
         name={state.tournamentName}
         title={TAB_TITLE[tab]}
@@ -553,6 +554,123 @@ export default function PublicPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+// Pull-to-refresh próprio: no PWA instalado (standalone) o Android desativa o
+// "puxar para atualizar" nativo. Reimplementamos o gesto à mão.
+function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
+  const THRESHOLD = 64,
+    MAX = 96,
+    RESIST = 0.5;
+  const [pull, setPull] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const startY = useRef<number | null>(null);
+  const pullRef = useRef(0);
+  const busy = useRef(false);
+  const cb = useRef(onRefresh);
+  cb.current = onRefresh;
+
+  useEffect(() => {
+    const set = (v: number) => {
+      pullRef.current = v;
+      setPull(v);
+    };
+    const onStart = (e: TouchEvent) => {
+      if (busy.current || window.scrollY > 4 || e.touches.length !== 1) {
+        startY.current = null;
+        return;
+      }
+      startY.current = e.touches[0].clientY;
+    };
+    const onMove = (e: TouchEvent) => {
+      if (startY.current == null || busy.current) return;
+      const dy = e.touches[0].clientY - startY.current;
+      if (dy <= 0 || window.scrollY > 4) {
+        if (pullRef.current) set(0);
+        setDragging(false);
+        return;
+      }
+      setDragging(true);
+      set(Math.min(MAX, dy * RESIST));
+      if (e.cancelable) e.preventDefault();
+    };
+    const onEnd = () => {
+      if (startY.current == null) return;
+      startY.current = null;
+      setDragging(false);
+      if (pullRef.current >= THRESHOLD) {
+        busy.current = true;
+        setRefreshing(true);
+        set(THRESHOLD);
+        try {
+          cb.current();
+        } catch {}
+        window.setTimeout(() => {
+          busy.current = false;
+          setRefreshing(false);
+          set(0);
+        }, 700);
+      } else set(0);
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    window.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+      window.removeEventListener("touchcancel", onEnd);
+    };
+  }, []);
+
+  const p = refreshing ? THRESHOLD : pull;
+  if (p <= 0) return null;
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        top: "env(safe-area-inset-top)",
+        left: 0,
+        right: 0,
+        display: "flex",
+        justifyContent: "center",
+        pointerEvents: "none",
+        zIndex: 60,
+        transform: `translateY(${p - 34}px)`,
+        opacity: Math.min(1, p / THRESHOLD),
+        transition: dragging ? "none" : "transform .25s ease, opacity .2s ease",
+      }}
+    >
+      <div
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: "50%",
+          background: "#fff",
+          boxShadow: "0 2px 12px rgba(18,40,28,.18)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: GREEN,
+        }}
+      >
+        <span
+          style={{
+            display: "flex",
+            transform: refreshing
+              ? undefined
+              : `rotate(${(p / THRESHOLD) * 270}deg)`,
+            animation: refreshing ? "spin 0.8s linear infinite" : "none",
+          }}
+        >
+          <Ball size={21} />
+        </span>
+      </div>
     </div>
   );
 }

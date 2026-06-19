@@ -1,19 +1,22 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1aa34a"/>
-      <stop offset="1" stop-color="#0d3d24"/>
+    <linearGradient id="ball" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22b14c"/>
+      <stop offset="1" stop-color="#0f7a37"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <!-- bola minimalista -->
-  <circle cx="256" cy="256" r="150" fill="#ffffff"/>
-  <g stroke="#0f4d2e" stroke-width="11" stroke-linecap="round" fill="none">
-    <line x1="256" y1="201" x2="256" y2="106"/>
-    <line x1="308.3" y1="239" x2="398.7" y2="209.7"/>
-    <line x1="288.3" y1="300.5" x2="344.2" y2="377.4"/>
-    <line x1="223.7" y1="300.5" x2="167.8" y2="377.4"/>
-    <line x1="203.7" y1="239" x2="113.3" y2="209.7"/>
+  <!-- bola verde, sem fundo (transparente) -->
+  <circle cx="256" cy="256" r="196" fill="url(#ball)"/>
+  <!-- costuras subtis para dar aspecto de bola -->
+  <g stroke="#0c5a28" stroke-width="9" stroke-linecap="round" fill="none" opacity="0.55">
+    <line x1="256" y1="78"  x2="256" y2="120"/>
+    <line x1="256" y1="392" x2="256" y2="434"/>
+    <line x1="78"  y1="256" x2="120" y2="256"/>
+    <line x1="392" y1="256" x2="434" y2="256"/>
   </g>
-  <polygon points="256,201 308.3,239 288.3,300.5 223.7,300.5 203.7,239" fill="#0f4d2e"/>
+  <!-- "A" de Atiães -->
+  <g fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M196 360 L256 156 L316 360"/>
+    <line x1="221" y1="296" x2="291" y2="296"/>
+  </g>
 </svg>

@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   title: 'Atiães em Movimento · Torneio Futebol 5',
   description: 'Placar ao vivo do torneio',
   manifest: '/manifest.json',
-  icons: { icon: '/icon.png', apple: '/icon.png' },
+  // iOS não suporta transparência no ícone (fica preto) → usa versão opaca com fundo branco.
+  icons: { icon: '/icon.png', apple: '/apple-icon.png' },
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Atiães Futebol' },
 };
 // topbar branca a condizer com o header (browser + PWA standalone)
