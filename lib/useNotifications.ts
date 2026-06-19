@@ -22,7 +22,10 @@ export function useNotifications() {
     // Regista o service worker SEMPRE no arranque — necessário para a app ser
     // instalável (PWA) e para receber push, mesmo antes de ativar notificações.
     navigator.serviceWorker.register('/sw.js').catch(() => {});
-    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    // se o utilizador desativou de propósito, não voltamos a subscrever sozinhos
+    let optOut = false;
+    try { optOut = localStorage.getItem('pushOptOut') === '1'; } catch {}
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted' || optOut) return;
     setOn(true);
     // Re-sincroniza a subscrição com o servidor: quem já deu permissão fica
     // registado mesmo que o servidor tenha perdido as subscrições (auto-corrige).
@@ -51,6 +54,7 @@ export function useNotifications() {
         alert('As notificações só funcionam num endereço seguro (https://…) ou em localhost. Estás a abrir o site por http, por isso o navegador bloqueia.');
         return;
       }
+      try { localStorage.removeItem('pushOptOut'); } catch {}
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') {
         alert('Permissão de notificações recusada. Ativa-a nas definições do site/navegador e tenta de novo.');
@@ -78,5 +82,29 @@ export function useNotifications() {
     }
   }, []);
 
-  return { on, supported, enable };
+  const disable = useCallback(async () => {
+    // não dá para revogar a permissão por código — o que fazemos é cancelar a
+    // subscrição (deixa de receber push) + remover no servidor + marcar opt-out.
+    try {
+      try { localStorage.setItem('pushOptOut', '1'); } catch {}
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        const sub = await reg?.pushManager.getSubscription();
+        if (sub) {
+          await fetch('/api/push', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          }).catch(() => {});
+          await sub.unsubscribe().catch(() => {});
+        }
+      }
+      setOn(false);
+    } catch (e) {
+      console.error('Falha a desativar push:', e);
+      setOn(false);
+    }
+  }, []);
+
+  return { on, supported, enable, disable };
 }

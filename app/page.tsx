@@ -120,7 +120,7 @@ function useInstall(): InstallInfo {
 
 export default function PublicPage() {
   const { state, loading, refetch } = useTournament();
-  const { on, supported, enable } = useNotifications();
+  const { on, supported, enable, disable } = useNotifications();
   const install = useInstall();
   const [tab, setTab] = useState<Tab>("standings");
   const [rules, setRules] = useState(false);
@@ -497,6 +497,7 @@ export default function PublicPage() {
             notifyOn={on}
             supported={supported}
             onNotify={enable}
+            onDisable={disable}
             onRules={() => setRules(true)}
             install={install}
           />
@@ -536,6 +537,7 @@ export default function PublicPage() {
           notifyOn={on}
           supported={supported}
           onNotify={enable}
+          onDisable={disable}
           onClose={() => setNotifyOpen(false)}
         />
       )}
@@ -887,10 +889,12 @@ function NotificationsPanel({
   notifyOn,
   supported,
   onNotify,
+  onDisable,
 }: {
   notifyOn: boolean;
   supported: boolean;
   onNotify: () => void;
+  onDisable: () => void;
 }) {
   const [ios, setIos] = useState(false);
   const [standalone, setStandalone] = useState(false);
@@ -926,17 +930,42 @@ function NotificationsPanel({
         </div>
       )}
       {notifyOn ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            color: GREEN,
-            fontWeight: 700,
-            fontSize: 14.5,
-          }}
-        >
-          <Check size={18} /> Notificações ativadas neste dispositivo.
+        <div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              color: GREEN,
+              fontWeight: 700,
+              fontSize: 14.5,
+            }}
+          >
+            <Check size={18} /> Notificações ativadas neste dispositivo.
+          </div>
+          <button
+            onClick={onDisable}
+            style={{
+              marginTop: 14,
+              width: "100%",
+              border: "1px solid #f3c9c9",
+              background: "#fff",
+              color: "#dc2626",
+              fontWeight: 700,
+              fontSize: 14.5,
+              padding: "12px",
+              borderRadius: 11,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            <BellOff size={18} /> Desativar notificações
+          </button>
+          <div style={{ marginTop: 8, fontSize: 12.5, color: MUTED, textAlign: "center" }}>
+            Deixas de receber avisos neste dispositivo. Podes voltar a ativar quando quiseres.
+          </div>
         </div>
       ) : (
         <button
@@ -1051,11 +1080,13 @@ function NotifyModal({
   notifyOn,
   supported,
   onNotify,
+  onDisable,
   onClose,
 }: {
   notifyOn: boolean;
   supported: boolean;
   onNotify: () => void;
+  onDisable: () => void;
   onClose: () => void;
 }) {
   return (
@@ -1128,6 +1159,7 @@ function NotifyModal({
           notifyOn={notifyOn}
           supported={supported}
           onNotify={onNotify}
+          onDisable={onDisable}
         />
       </div>
     </div>
@@ -1689,12 +1721,14 @@ function Profile({
   notifyOn,
   supported,
   onNotify,
+  onDisable,
   onRules,
   install,
 }: {
   notifyOn: boolean;
   supported: boolean;
   onNotify: () => void;
+  onDisable: () => void;
   onRules: () => void;
   install: InstallInfo;
 }) {
@@ -1954,6 +1988,7 @@ function Profile({
             notifyOn={notifyOn}
             supported={supported}
             onNotify={onNotify}
+            onDisable={onDisable}
           />
         )}
       </div>
