@@ -179,6 +179,16 @@ export function List({ size = 24, color, style }: P) {
   );
 }
 
+export function Info({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5.2" />
+      <path d="M12 7.6h.01" />
+    </svg>
+  );
+}
+
 export function Chat({ size = 24, color, style }: P) {
   return (
     <svg {...base(size, color, style)}>

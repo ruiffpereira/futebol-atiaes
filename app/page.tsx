@@ -38,6 +38,7 @@ import {
   List,
   Chat,
   Send,
+  Info,
   TeamBadge,
 } from "./Icons";
 
@@ -54,7 +55,7 @@ const TAB_TITLE: Record<Tab, string> = {
   live: "Ao Vivo",
   schedule: "Calendário",
   stats: "Estatísticas",
-  profile: "Perfil",
+  profile: "Info",
 };
 
 export default function PublicPage() {
@@ -201,7 +202,7 @@ export default function PublicPage() {
           {tabBtn("live", "Ao Vivo")}
           {tabBtn("schedule", "Calendário")}
           {tabBtn("stats", "Estatísticas")}
-          {tabBtn("profile", "Perfil")}
+          {tabBtn("profile", "Info")}
         </div>
 
         {tab === "standings" &&
@@ -457,7 +458,7 @@ export default function PublicPage() {
         {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "#dc2626")}
         {navBtn("schedule", <Calendar size={22} />, "Calend.")}
         {navBtn("stats", <Chart size={22} />, "Estat.")}
-        {navBtn("profile", <User size={22} />, "Perfil")}
+        {navBtn("profile", <Info size={22} />, "Info")}
       </div>
 
       {rules && <Rules onClose={() => setRules(false)} />}

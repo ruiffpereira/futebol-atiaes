@@ -10,45 +10,46 @@ export default function Rules({ onClose }: { onClose: () => void }) {
         <div style={{ background: 'linear-gradient(135deg,#0c2a1c,#15803d)', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div className="cond" style={{ fontWeight: 800, fontSize: 22, color: '#fff', textTransform: 'uppercase', lineHeight: 1 }}>Regulamento</div>
-            <div style={{ fontSize: 12, color: '#bbf7d0', fontWeight: 600, marginTop: 2 }}>Torneio Futebol 5 · Atiães em Movimento</div>
+            <div style={{ fontSize: 12, color: '#bbf7d0', fontWeight: 600, marginTop: 2 }}>Torneio Futebol 5 · Atiães em Movimento · 4ª Edição</div>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,.2)', color: '#fff', width: 32, height: 32, borderRadius: 9, fontSize: 18 }}>×</button>
         </div>
         <div style={{ padding: '20px 22px 26px', overflowY: 'auto', flex: 1, minHeight: 0, color: '#22332b', fontSize: 14, lineHeight: 1.6 }}>
           <Title>Participação de equipas e atletas</Title>
           <ul style={{ margin: '0 0 18px', paddingLeft: 20 }}>
-            <li>Inscrição feita através da organização e homologada por esta.</li>
-            <li>Todos os jogadores entregam o «Termo de responsabilidade» preenchido e assinado.</li>
+            <li>Inscrição realizada através da organização do Torneio.</li>
+            <li>Pedido de inscrição homologado pela organização do Torneio.</li>
             <li>Ter conhecimento deste regulamento.</li>
           </ul>
           <Title>Regras gerais</Title>
           <ol style={{ margin: '0 0 18px', paddingLeft: 20 }}>
-            <li>Inscrição: 75€ (equipas novas) ou 50€ (equipas da edição anterior).</li>
-            <li>Inscrição de equipas até 15 de junho de 2025.</li>
-            <li>Inscrição de atletas até 25 de junho de 2025.</li>
-            <li>Mínimo de 5 atletas por equipa.</li>
-            <li>Substituições junto ao banco e ilimitadas.</li>
+            <li>Custo de inscrição por equipa: 75€.</li>
+            <li>Inscrição de equipas até 24 de junho de 2026.</li>
+            <li>Inscrição de atletas até 26 de junho de 2026.</li>
+            <li>Cada equipa inscreve no mínimo 5 atletas.</li>
+            <li>Substituições junto ao banco de suplentes e ilimitadas.</li>
             <li>Todos os atletas têm de constar na ficha de jogo.</li>
             <li>Cada equipa é obrigada a ter um capitão.</li>
-            <li>Termos de responsabilidade entregues antes do 1º jogo da equipa.</li>
             <li>Um atleta não pode participar por mais do que uma equipa.</li>
-            <li>Atrasados só entram até ao fim do 1º tempo; após o início do 2º tempo não entram nem ficam no banco.</li>
+            <li>Atrasados podem entrar até ao fim do 1º tempo se estiverem na ficha de jogo; após o início do 2º tempo não entram nem ficam no banco.</li>
           </ol>
-          <Title>Datas e local</Title>
+          <Title>Data e local</Title>
           <ul style={{ margin: '0 0 18px', paddingLeft: 20 }}>
-            <li>28/06/2025 — jogos das 8h30 às 23h50, no campo de futebol 5 em Atiães.</li>
-            <li>29/06/2025 — jogos das 9h00 às 12h35.</li>
-            <li>Sorteio: 22/05 às 18h00, no café «O Madeirense», junto ao campo.</li>
+            <li>27/06/2026 — jogos das 8h30 às 23h50, no campo de futebol 5 em Atiães.</li>
+            <li>28/06/2026 — jogos das 9h00 às 12h35.</li>
+            <li>Sorteio: 24/06/2026 às 21h00, junto ao campo de futebol 5 em Atiães.</li>
+            <li>O calendário completo depende do número de equipas inscritas.</li>
           </ul>
           <Title>Disciplina</Title>
           <ul style={{ margin: '0 0 18px', paddingLeft: 20 }}>
-            <li>Perde o jogo (derrota por 3 golos) a equipa que falte ou cujo atleta agrida alguém.</li>
-            <li>Máximo de 5 jogadores por equipa, um como guarda-redes equipado.</li>
-            <li>Mínimo de 4 atletas para começar; 10 min de tolerância, senão derrota por 3-0.</li>
-            <li>Dois tempos de 15 minutos, intervalo de 5 minutos.</li>
+            <li>Perde o jogo (derrota por 3 golos) a equipa que não compareça, ou cujo atleta agrida outro atleta, árbitro ou membro da organização.</li>
+            <li>Máximo de 5 jogadores por equipa, um como guarda-redes devidamente equipado.</li>
+            <li>Mínimo de 4 atletas para começar à hora marcada; 10 min de tolerância, senão derrota por 3-0.</li>
+            <li>Dois tempos de 15 minutos, com intervalo de 5 minutos.</li>
             <li>Cartão vermelho: jogador não regressa; equipa com menos um durante 2 min (ou até sofrer golo).</li>
-            <li>Agressão = expulsão automática do torneio.</li>
-            <li>Cores coincidentes: a equipa visitante veste coletes.</li>
+            <li>Agressão a atleta, árbitro ou organização = expulsão automática do torneio.</li>
+            <li>Cores coincidentes: a equipa que joga fora veste coletes.</li>
+            <li>Equipa sem equipamento veste coletes.</li>
           </ul>
           <Title>Critérios técnicos</Title>
           <ul style={{ margin: '0 0 10px', paddingLeft: 20 }}>
