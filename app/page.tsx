@@ -51,9 +51,9 @@ export default function PublicPage() {
   const recent = state.matches
     .filter((m) => m.status === "done")
     .sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0));
-  const scorers = topScorers(state),
-    attack = bestAttack(state),
-    defense = bestDefense(state);
+  const scorers = topScorers(state).slice(0, 5),
+    attack = bestAttack(state).slice(0, 5),
+    defense = bestDefense(state).slice(0, 5);
   const ko = (phase: string, slot?: number) =>
     state.matches.find(
       (m) => m.phase === phase && (slot ? m.slot === slot : true),
@@ -319,7 +319,9 @@ export default function PublicPage() {
             }}
           >
             <div>
-              <H>🏆 Melhores marcadores</H>
+              <H>
+                🏆 Melhores marcadores <TopNote />
+              </H>
               {scorers.length ? (
                 <Card>
                   {scorers.map((p, i) => (
@@ -338,7 +340,9 @@ export default function PublicPage() {
               )}
             </div>
             <div>
-              <H>⚽ Melhor ataque</H>
+              <H>
+                ⚽ Melhor ataque <TopNote />
+              </H>
               <div
                 style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
               >
@@ -363,7 +367,9 @@ export default function PublicPage() {
               )}
             </div>
             <div>
-              <H>🛡️ Melhor defesa</H>
+              <H>
+                🛡️ Melhor defesa <TopNote />
+              </H>
               <div
                 style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
               >
@@ -1553,6 +1559,24 @@ function Line({
   );
 }
 
+const TopNote = () => (
+  <span
+    style={{
+      fontFamily: "Barlow, sans-serif",
+      fontWeight: 700,
+      fontSize: 11,
+      color: "#fff",
+      background: GREEN,
+      padding: "2px 8px",
+      borderRadius: 999,
+      textTransform: "none",
+      verticalAlign: "middle",
+      letterSpacing: 0,
+    }}
+  >
+    Top 5
+  </span>
+);
 const H = ({
   children,
   sm,
