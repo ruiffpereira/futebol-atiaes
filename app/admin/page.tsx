@@ -249,14 +249,18 @@ function FixturesTab({ state, apply, fixtures, nameOf, onOpen }: { state: Tourna
 
 function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i: number; total: number; state: TournamentState; apply: (s: TournamentState) => void; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
   const [edit, setEdit] = useState(false);
+  // data/hora editadas localmente; só são aplicadas (e notificam 1x) ao guardar
+  const [dDate, setDDate] = useState(m.date || ''); const [dTime, setDTime] = useState(m.time || '');
+  const startEdit = () => { setDDate(m.date || ''); setDTime(m.time || ''); setEdit(true); };
+  const saveEdit = () => { if ((dDate || '') !== (m.date || '') || (dTime || '') !== (m.time || '')) apply(actions.setSchedule(state, m.id, dDate, dTime)); setEdit(false); };
   const when = [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
   return (
     <div style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', border: `1px solid ${edit ? '#bef264' : '#e4ece0'}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {edit ? <>
-            <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
-            <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <input type="date" value={dDate} onChange={(e) => setDDate(e.target.value)} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <input type="time" value={dTime} onChange={(e) => setDTime(e.target.value)} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
           </> : <span style={{ fontSize: 12, fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '4px 9px', borderRadius: 7 }}>{when || 'Sem data/hora'}</span>}
           {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
           {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
@@ -265,11 +269,11 @@ function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           {edit ? <>
             <button onClick={() => { if (confirm('Remover este jogo?')) apply(actions.removeMatch(state, m.id)); }} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 14, padding: '8px 11px', borderRadius: 9 }}>×</button>
-            <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓</button>
+            <button onClick={saveEdit} title="Guardar data/hora" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓ Guardar</button>
           </> : <>
             <button onClick={() => apply(actions.moveMatch(state, m.id, -1))} style={{ ...iconBtn, color: i === 0 ? '#dde6d8' : GREEN }}>↑</button>
             <button onClick={() => apply(actions.moveMatch(state, m.id, 1))} style={{ ...iconBtn, color: i === total - 1 ? '#dde6d8' : GREEN }}>↓</button>
-            <button onClick={() => setEdit(true)} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
+            <button onClick={startEdit} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
             <button onClick={() => onOpen(m.id)} style={btn(13)}>Registar</button>
           </>}
         </div>
@@ -304,6 +308,10 @@ function KnockoutTab({ state, apply, koList, nameOf, onOpen }: { state: Tourname
 
 function KoRow({ m, state, apply, nameOf, onOpen }: { m: Match; state: TournamentState; apply: (s: TournamentState) => void; nameOf: (m: Match, s: 'a' | 'b') => string; onOpen: (id: string) => void }) {
   const [edit, setEdit] = useState(false);
+  // data/hora editadas localmente; só aplicam (e notificam 1x) ao guardar
+  const [dDate, setDDate] = useState(m.date || ''); const [dTime, setDTime] = useState(m.time || '');
+  const startEdit = () => { setDDate(m.date || ''); setDTime(m.time || ''); setEdit(true); };
+  const saveEdit = () => { if ((dDate || '') !== (m.date || '') || (dTime || '') !== (m.time || '')) apply(actions.setSchedule(state, m.id, dDate, dTime)); setEdit(false); };
   const when = [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
   const teamSel = (side: 'a' | 'b') => (
     <select value={m[side] || ''} onChange={(e) => apply(actions.setKoTeam(state, m.id, side, e.target.value))} style={{ ...inp, width: '100%', fontSize: 13, padding: '8px 9px' }}>
@@ -317,12 +325,12 @@ function KoRow({ m, state, apply, nameOf, onOpen }: { m: Match; state: Tournamen
         <span style={{ fontSize: 12, fontWeight: 800, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {edit ? <>
-            <input type="date" value={m.date || ''} onChange={(e) => apply(actions.setMatchDate(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
-            <input type="time" value={m.time || ''} onChange={(e) => apply(actions.setMatchTime(state, m.id, e.target.value))} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
-            <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓</button>
+            <input type="date" value={dDate} onChange={(e) => setDDate(e.target.value)} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <input type="time" value={dTime} onChange={(e) => setDTime(e.target.value)} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
+            <button onClick={saveEdit} title="Guardar data/hora" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '8px 12px', borderRadius: 9 }}>✓ Guardar</button>
           </> : <>
             {when && <span style={{ fontSize: 12, fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '4px 9px', borderRadius: 7 }}>{when}</span>}
-            <button onClick={() => setEdit(true)} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
+            <button onClick={startEdit} title="Editar jogo" style={{ ...iconBtn, color: GREEN }}>✏️</button>
             <button onClick={() => onOpen(m.id)} style={btn(13)}>Registar</button>
           </>}
         </div>

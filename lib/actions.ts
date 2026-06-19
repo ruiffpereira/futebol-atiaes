@@ -51,8 +51,11 @@ export const actions = {
     return done(n);
   },
   removeMatch: (d: TournamentState, id: string) => { const n = clone(d); n.matches = n.matches.filter((m) => m.id !== id); return done(n, true); },
-  setMatchTime: (d: TournamentState, id: string, time: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.time = time; return done(n); },
-  setMatchDate: (d: TournamentState, id: string, date: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.date = date; return done(n); },
+  // edição "ao vivo" da data/hora — silenciosa (não notifica em cada tecla)
+  setMatchTime: (d: TournamentState, id: string, time: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.time = time; return done(n, true); },
+  setMatchDate: (d: TournamentState, id: string, date: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.date = date; return done(n, true); },
+  // guardar data+hora de uma vez → envia UMA notificação "Horário atualizado"
+  setSchedule: (d: TournamentState, id: string, date: string, time: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.date = date; m.time = time; } return done(n); },
   moveMatch: (d: TournamentState, id: string, dir: number) => {
     const n = clone(d);
     const list = n.matches.filter((m) => m.phase === 'group' || m.phase === 'friendly');
