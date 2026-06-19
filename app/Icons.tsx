@@ -82,9 +82,10 @@ export function Bell({ size = 24, color, style }: P) {
 export function BellOff({ size = 24, color, style }: P) {
   return (
     <svg {...base(size, color, style)}>
-      <path d="M6.2 9.5a5.8 5.8 0 0 1 9.4-4.6M17.8 11c0 3.6 1.5 5 2.1 5.3H7.2" />
+      {/* sino completo (igual ao ativo) + barra diagonal = desligado */}
+      <path d="M6.2 9.5a5.8 5.8 0 0 1 11.6 0c0 3.8 1.5 5.3 2.1 5.8H4.1c.6-.5 2.1-2 2.1-5.8Z" />
       <path d="M9.9 19a2.2 2.2 0 0 0 4.2 0" />
-      <path d="M4 3.8 20.2 20" />
+      <path d="M3.4 3.4 20.6 20.6" stroke={color || "currentColor"} strokeWidth="2.2" />
     </svg>
   );
 }

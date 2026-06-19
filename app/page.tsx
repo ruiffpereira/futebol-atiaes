@@ -680,14 +680,14 @@ function Header({
               justifyContent: "center",
               width: 40,
               height: 40,
-              border: `1px solid ${LINE}`,
+              border: `1px solid ${notifyOn ? GREEN : "#e0e5df"}`,
               borderRadius: "50%",
-              background: notifyOn ? GREEN : "#fff",
-              color: notifyOn ? "#fff" : "#5b7163",
+              background: notifyOn ? GREEN : "#f1f4f0",
+              color: notifyOn ? "#fff" : "#33403a",
               cursor: "pointer",
             }}
           >
-            {notifyOn ? <Bell size={19} /> : <BellOff size={19} />}
+            {notifyOn ? <Bell size={19} /> : <BellOff size={20} />}
           </button>
         </div>
       </div>
