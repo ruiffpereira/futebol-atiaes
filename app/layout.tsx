@@ -1,13 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Providers from './providers';
+import { APP_VERSION } from '@/lib/version';
+
+const v = `?v=${APP_VERSION}`;
 
 export const metadata: Metadata = {
   title: 'Atiães em Movimento · Torneio Futebol 5',
   description: 'Placar ao vivo do torneio',
-  manifest: '/manifest.json',
+  // o link do manifest é injetado automaticamente pelo app/manifest.ts (/manifest.webmanifest)
   // iOS não suporta transparência no ícone (fica preto) → usa versão opaca com fundo branco.
-  icons: { icon: '/icon.png?v=2', apple: '/apple-icon.png?v=2' },
+  icons: { icon: `/icon.png${v}`, apple: `/apple-icon.png${v}` },
   // black-translucent: a status bar do iOS fica por cima do header verde (texto branco)
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Atiães Futebol' },
 };

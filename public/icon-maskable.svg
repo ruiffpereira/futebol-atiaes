@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ball" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#27bd52"/>
+      <stop offset="1" stop-color="#0f7a37"/>
+    </linearGradient>
+  </defs>
+  <!-- full-bleed: o verde preenche o tile todo (o launcher recorta à forma redonda) -->
+  <rect width="512" height="512" fill="url(#ball)"/>
+  <!-- padrão + "A" dentro da zona segura (escalado a 0.9 à volta do centro) -->
+  <g transform="translate(256 256) scale(0.9) translate(-256 -256)">
+    <g stroke="#0b4d25" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <line x1="256" y1="161" x2="256" y2="58"/>
+      <line x1="346" y1="227" x2="444" y2="195"/>
+      <line x1="312" y1="333" x2="373" y2="416"/>
+      <line x1="200" y1="333" x2="139" y2="416"/>
+      <line x1="166" y1="227" x2="68"  y2="195"/>
+    </g>
+    <polygon points="256,161 346,227 312,333 200,333 166,227" fill="#0b4d25"/>
+    <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M202 344 L256 168 L310 344"/>
+      <line x1="223" y1="286" x2="289" y2="286"/>
+    </g>
+  </g>
+</svg>
