@@ -112,23 +112,28 @@ export function topScorers(d: TournamentState): ScorerRow[] {
   return Object.keys(map).map((k) => map[k]).sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
 }
 
-export type KeeperRow = { id: string; name: string; team: string; conceded: number; games: number; cleanSheets: number };
-export function topGoalkeepers(d: TournamentState): KeeperRow[] {
-  const done = d.matches.filter((m) => m.status === 'done' && m.a && m.b && m.phase !== 'friendly');
-  const ts: Record<string, { ga: number; games: number; cs: number }> = {};
-  d.teams.forEach((t) => { ts[t.id] = { ga: 0, games: 0, cs: 0 }; });
-  done.forEach((m) => {
+// Ataque/defesa por equipa — jogos oficiais (não amigáveis) já terminados ou ao vivo.
+export type TeamStatRow = { id: string; name: string; gf: number; ga: number; games: number };
+export function teamStats(d: TournamentState): TeamStatRow[] {
+  const map: Record<string, TeamStatRow> = {};
+  d.teams.forEach((t) => { map[t.id] = { id: t.id, name: t.name, gf: 0, ga: 0, games: 0 }; });
+  d.matches.forEach((m) => {
+    if (m.phase === 'friendly') return;
+    if (m.status !== 'done' && m.status !== 'live') return;
+    if (!m.a || !m.b) return;
     const sa = scoreOf(m, m.a), sb = scoreOf(m, m.b);
-    if (m.a && ts[m.a]) { ts[m.a].ga += sb; ts[m.a].games++; if (sb === 0) ts[m.a].cs++; }
-    if (m.b && ts[m.b]) { ts[m.b].ga += sa; ts[m.b].games++; if (sa === 0) ts[m.b].cs++; }
+    if (map[m.a]) { map[m.a].gf += sa; map[m.a].ga += sb; map[m.a].games++; }
+    if (map[m.b]) { map[m.b].gf += sb; map[m.b].ga += sa; map[m.b].games++; }
   });
-  const rows: KeeperRow[] = [];
-  d.teams.forEach((t) => t.players.forEach((p) => {
-    if (!p.gk) return;
-    const st = ts[t.id] || { ga: 0, games: 0, cs: 0 };
-    rows.push({ id: p.id, name: p.name, team: t.name, conceded: st.ga, games: st.games, cleanSheets: st.cs });
-  }));
-  return rows.sort((a, b) => a.conceded - b.conceded || b.cleanSheets - a.cleanSheets || b.games - a.games || a.name.localeCompare(b.name));
+  return Object.keys(map).map((k) => map[k]).filter((r) => r.games > 0);
+}
+// Melhor ataque: mais golos marcados (desempate: menos sofridos, depois nome).
+export function bestAttack(d: TournamentState): TeamStatRow[] {
+  return teamStats(d).sort((a, b) => b.gf - a.gf || a.ga - b.ga || a.name.localeCompare(b.name));
+}
+// Melhor defesa: menos golos sofridos (desempate: mais marcados, depois nome).
+export function bestDefense(d: TournamentState): TeamStatRow[] {
+  return teamStats(d).sort((a, b) => a.ga - b.ga || b.gf - a.gf || a.name.localeCompare(b.name));
 }
 
 // ---- fase final automática ----

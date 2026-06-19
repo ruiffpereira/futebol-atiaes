@@ -7,7 +7,8 @@ import { useNotifications } from "@/lib/useNotifications";
 import {
   standings,
   topScorers,
-  topGoalkeepers,
+  bestAttack,
+  bestDefense,
   scoreOf,
   phaseLabel,
   liveBadge,
@@ -51,7 +52,8 @@ export default function PublicPage() {
     .filter((m) => m.status === "done")
     .sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0));
   const scorers = topScorers(state),
-    keepers = topGoalkeepers(state);
+    attack = bestAttack(state),
+    defense = bestDefense(state);
   const ko = (phase: string, slot?: number) =>
     state.matches.find(
       (m) => m.phase === phase && (slot ? m.slot === slot : true),
@@ -336,28 +338,53 @@ export default function PublicPage() {
               )}
             </div>
             <div>
-              <H>🧤 Melhores guarda-redes</H>
+              <H>⚽ Melhor ataque</H>
               <div
                 style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
               >
-                Menos golos sofridos pela equipa.
+                Equipas com mais golos marcados.
               </div>
-              {keepers.length ? (
+              {attack.length ? (
                 <Card>
-                  {keepers.map((p, i) => (
+                  {attack.map((t, i) => (
                     <Row3
-                      key={p.id}
+                      key={t.id}
                       i={i + 1}
-                      name={p.name}
-                      sub={p.team}
-                      val={p.conceded}
-                      color="#1d4ed8"
-                      extra={p.games + "J"}
+                      name={t.name}
+                      sub={t.ga + " sofridos"}
+                      val={t.gf}
+                      color={GREEN}
+                      extra={t.games + "J"}
                     />
                   ))}
                 </Card>
               ) : (
-                <EmptyLine text="Sem guarda-redes definidos." />
+                <EmptyLine text="Sem jogos registados." />
+              )}
+            </div>
+            <div>
+              <H>🛡️ Melhor defesa</H>
+              <div
+                style={{ fontSize: 12.5, color: "#8aa093", margin: "0 0 10px" }}
+              >
+                Equipas com menos golos sofridos.
+              </div>
+              {defense.length ? (
+                <Card>
+                  {defense.map((t, i) => (
+                    <Row3
+                      key={t.id}
+                      i={i + 1}
+                      name={t.name}
+                      sub={t.gf + " marcados"}
+                      val={t.ga}
+                      color="#1d4ed8"
+                      extra={t.games + "J"}
+                    />
+                  ))}
+                </Card>
+              ) : (
+                <EmptyLine text="Sem jogos registados." />
               )}
             </div>
           </div>

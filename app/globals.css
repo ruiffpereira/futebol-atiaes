@@ -11,6 +11,19 @@ input, select { font-family: inherit; }
 ::-webkit-scrollbar { height: 6px; width: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 3px; }
 .only-mobile { display: none; }
+/* Backoffice (admin) — responsivo para uso em telemóvel */
+.admin-pad { padding: 22px 20px 60px; }
+.modal-sheet { padding: 24px 16px; }
+.modal-inner { padding: 18px 20px; }
+.modal-foot { padding: 14px 20px; }
+.score-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 600px) {
+  .admin-pad { padding: 14px 12px 44px; }
+  .modal-sheet { padding: 10px 8px; }
+  .modal-inner { padding: 14px 13px; }
+  .modal-foot { padding: 12px 13px; }
+  .score-sides { grid-template-columns: 1fr; gap: 18px; }
+}
 /* Tabela de classificação — tamanhos controlados aqui para responder em mobile */
 .stand-grid { font-size: 14px; }
 .stand-grid .pts { font-size: 15px; }

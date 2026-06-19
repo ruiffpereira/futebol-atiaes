@@ -54,7 +54,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div style={{ maxWidth: 1180, margin: '0 auto', padding: '22px 20px 60px' }}>
+    <div className="admin-pad" style={{ maxWidth: 1180, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
         <h1 className="cond" style={{ color: DGREEN, textTransform: 'uppercase', margin: 0 }}>Backoffice</h1>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -418,7 +418,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
   const goals = (m.scorers || []).map((s) => { const t = state.teams.find((x) => x.id === s.team); const pl = t && s.player ? t.players.find((p) => p.id === s.player) : null; return { id: s.id, team: t?.name || '?', isA: s.team === m.a, label: s.own ? 'Auto-golo' : pl ? pl.name : 'Sem marcador' }; });
   const f = (label: string, onClick: () => void, bg: string) => <button onClick={onClick} style={{ flex: 1, minWidth: 140, border: 'none', background: bg, color: '#fff', fontWeight: 800, fontSize: 14, padding: 13, borderRadius: 11 }}>{label}</button>;
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,30,18,.55)', display: 'flex', justifyContent: 'center', padding: '24px 16px', overflowY: 'auto' }}>
+    <div onClick={onClose} className="modal-sheet" style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,30,18,.55)', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 620, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 48px)' }}>
         <div style={{ background: 'linear-gradient(120deg,#0f4d2e,#15803d)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="cond" style={{ fontWeight: 800, fontSize: 18, color: '#fff', textTransform: 'uppercase' }}>{phaseLabel(m)}</span>{isLive && <span style={{ background: 'rgba(255,255,255,.2)', color: '#fff', fontSize: 12, fontWeight: 800, padding: '5px 11px', borderRadius: 7 }}>{liveText(m)}</span>}</div>
@@ -427,7 +427,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
             <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,.2)', color: '#fff', width: 32, height: 32, borderRadius: 9, fontSize: 18 }}>×</button>
           </div>
         </div>
-        <div style={{ padding: '18px 20px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
+        <div className="modal-inner" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12, marginBottom: 18 }}>
             <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 700 }}>{ta?.name || '—'}</div><div className="cond" style={{ fontWeight: 800, fontSize: 50, color: DGREEN }}>{scoreOf(m, m.a)}</div></div>
             <div className="cond" style={{ fontWeight: 800, fontSize: 28, color: '#c3d4bd' }}>:</div>
@@ -435,7 +435,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
           </div>
           {!isLive && !editUnlock && <div style={{ display: 'flex', gap: 10, background: '#eef2ec', border: '1px solid #dce6d7', borderRadius: 11, padding: '11px 14px', marginBottom: 14, fontSize: 12.5 }}>🔒 <div><b style={{ color: DGREEN }}>Edição bloqueada.</b> Carrega em ✏️ Editar para corrigir.</div></div>}
           {!isLive && editUnlock && <div style={{ display: 'flex', gap: 10, background: '#fef3c7', border: '1px solid #fadf8b', borderRadius: 11, padding: '11px 14px', marginBottom: 14, fontSize: 12.5 }}>⚠️ <div><b style={{ color: '#92660a' }}>Modo de edição.</b> Estas alterações não notificam ninguém.</div></div>}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>{side(ta, tb, m.a, m.b)}{side(tb, ta, m.b, m.a)}</div>
+          <div className="score-sides">{side(ta, tb, m.a, m.b)}{side(tb, ta, m.b, m.a)}</div>
           {goals.length > 0 && (
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f0f4ee', pointerEvents: canEdit ? 'auto' : 'none', opacity: canEdit ? 1 : 0.45 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#5b7163', textTransform: 'uppercase', marginBottom: 8 }}>Golos registados · × para corrigir</div>
@@ -456,7 +456,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 10, padding: '14px 20px', borderTop: '1px solid #eef2ec', flexWrap: 'wrap', flexShrink: 0 }}>
+        <div className="modal-foot" style={{ display: 'flex', gap: 10, borderTop: '1px solid #eef2ec', flexWrap: 'wrap', flexShrink: 0 }}>
           {m.status === 'scheduled' && f('▶ Iniciar 1ª parte', () => apply(actions.startMatch(state, m.id)), GREEN)}
           {isLive && (m.livePhase || 'first') === 'first' && <>{f('⏸ Intervalo', () => apply(actions.setLivePhase(state, m.id, 'half')), '#d97706')}{f('■ Terminar', () => apply(actions.finishMatch(state, m.id)), DGREEN)}</>}
           {isLive && m.livePhase === 'half' && <>{f('▶ 2ª parte', () => apply(actions.setLivePhase(state, m.id, 'second')), GREEN)}{f('■ Terminar', () => apply(actions.finishMatch(state, m.id)), DGREEN)}</>}
