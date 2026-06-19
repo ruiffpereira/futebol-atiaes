@@ -180,6 +180,35 @@ export function List({ size = 24, color, style }: P) {
   );
 }
 
+export function Download({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <path d="M12 3.5v11" />
+      <path d="M8 10.5l4 4 4-4" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}
+
+export function Share({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <path d="M12 3.5v10.5" />
+      <path d="M8.5 7 12 3.5 15.5 7" />
+      <path d="M7.5 11H6a1.6 1.6 0 0 0-1.6 1.6v7.3A1.6 1.6 0 0 0 6 21.5h12a1.6 1.6 0 0 0 1.6-1.6v-7.3A1.6 1.6 0 0 0 18 11h-1.5" />
+    </svg>
+  );
+}
+
+export function PlusSquare({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <rect x="4" y="4" width="16" height="16" rx="4" />
+      <path d="M12 8.5v7M8.5 12h7" />
+    </svg>
+  );
+}
+
 export function Info({ size = 24, color, style }: P) {
   return (
     <svg {...base(size, color, style)}>

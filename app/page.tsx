@@ -39,6 +39,9 @@ import {
   Chat,
   Send,
   Info,
+  Download,
+  Share,
+  PlusSquare,
   TeamBadge,
 } from "./Icons";
 
@@ -58,9 +61,66 @@ const TAB_TITLE: Record<Tab, string> = {
   profile: "Info",
 };
 
+type InstallInfo = {
+  canShow: boolean;
+  platform: "ios" | "android" | "other";
+  promptInstall: () => void;
+};
+
+// Deteção de instalação PWA (Android via beforeinstallprompt, iOS via instruções).
+// Só "canShow" em telemóvel e quando NÃO está instalada (esconde em desktop/instalada).
+function useInstall(): InstallInfo {
+  const [deferred, setDeferred] = useState<{
+    prompt: () => void;
+    userChoice: Promise<unknown>;
+  } | null>(null);
+  const [installed, setInstalled] = useState(true); // assume escondido até confirmar
+  const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
+
+  useEffect(() => {
+    const nav = navigator as Navigator & { standalone?: boolean; maxTouchPoints: number };
+    const ua = nav.userAgent || "";
+    const isIOS =
+      /iphone|ipad|ipod/i.test(ua) ||
+      (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
+    const isAndroid = /android/i.test(ua);
+    setPlatform(isIOS ? "ios" : isAndroid ? "android" : "other");
+    const standalone =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      nav.standalone === true;
+    setInstalled(!!standalone);
+
+    const onBIP = (e: Event) => {
+      e.preventDefault();
+      setDeferred(e as unknown as { prompt: () => void; userChoice: Promise<unknown> });
+    };
+    const onInstalled = () => {
+      setInstalled(true);
+      setDeferred(null);
+    };
+    window.addEventListener("beforeinstallprompt", onBIP);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBIP);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const promptInstall = () => {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(() => setDeferred(null));
+  };
+  const canShow =
+    !installed &&
+    (platform === "ios" || (platform === "android" && !!deferred));
+  return { canShow, platform, promptInstall };
+}
+
 export default function PublicPage() {
   const { state, loading } = useTournament();
   const { on, supported, enable } = useNotifications();
+  const install = useInstall();
   const [tab, setTab] = useState<Tab>("standings");
   const [rules, setRules] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
@@ -436,6 +496,7 @@ export default function PublicPage() {
             supported={supported}
             onNotify={enable}
             onRules={() => setRules(true)}
+            install={install}
           />
         )}
       </div>
@@ -1113,18 +1174,158 @@ function FeedbackCard() {
   );
 }
 
+function IosInstall({ onClose }: { onClose: () => void }) {
+  const step = (n: number, text: React.ReactNode, icon?: React.ReactNode) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <span
+        style={{
+          width: 28,
+          height: 28,
+          flexShrink: 0,
+          borderRadius: "50%",
+          background: "#eef5ef",
+          color: GREEN,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 800,
+          fontSize: 14,
+        }}
+      >
+        {n}
+      </span>
+      <span style={{ flex: 1, fontSize: 14, color: INK, lineHeight: 1.4 }}>
+        {text}
+      </span>
+      {icon && <span style={{ color: GREEN, display: "flex" }}>{icon}</span>}
+    </div>
+  );
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 80,
+        background: "rgba(8,30,18,.5)",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        padding: "0 0 0",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: "20px 20px 0 0",
+          width: "100%",
+          maxWidth: 520,
+          padding: "20px 20px calc(24px + env(safe-area-inset-bottom))",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          <span
+            style={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              borderRadius: 12,
+              background: "#eef5ef",
+              color: GREEN,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Download size={21} />
+          </span>
+          <div style={{ flex: 1 }}>
+            <div className="cond" style={{ fontWeight: 800, fontSize: 20, color: INK }}>
+              Instalar no iPhone / iPad
+            </div>
+            <div style={{ fontSize: 12.5, color: MUTED }}>
+              Em 3 passos, no Safari
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              border: `1px solid ${LINE}`,
+              background: "#fff",
+              color: "#5b7163",
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              fontSize: 17,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+        <div style={{ display: "grid", gap: 14 }}>
+          {step(
+            1,
+            <>
+              Toca no botão <b>Partilhar</b> na barra do Safari
+            </>,
+            <Share size={20} />,
+          )}
+          {step(
+            2,
+            <>
+              Escolhe <b>«Adicionar ao ecrã principal»</b>
+            </>,
+            <PlusSquare size={20} />,
+          )}
+          {step(
+            3,
+            <>
+              Abre a app pelo novo <b>ícone</b> no ecrã principal
+            </>,
+          )}
+        </div>
+        <div
+          style={{
+            marginTop: 16,
+            background: "#f6f8f5",
+            border: `1px solid ${LINE}`,
+            borderRadius: 11,
+            padding: "10px 13px",
+            fontSize: 12.5,
+            color: "#5b6b62",
+          }}
+        >
+          Tem de ser no <b>Safari</b> (não funciona no Chrome do iPhone). Precisa de iOS 16.4 ou superior para as notificações.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Profile({
   notifyOn,
   supported,
   onNotify,
   onRules,
+  install,
 }: {
   notifyOn: boolean;
   supported: boolean;
   onNotify: () => void;
   onRules: () => void;
+  install: InstallInfo;
 }) {
   const [notifOpen, setNotifOpen] = useState(false);
+  const [iosHelp, setIosHelp] = useState(false);
   const rowLink = (
     icon: React.ReactNode,
     label: string,
@@ -1187,6 +1388,56 @@ function Profile({
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto", display: "grid", gap: 16 }}>
+      {install.canShow && (
+        <button
+          onClick={() =>
+            install.platform === "ios" ? setIosHelp(true) : install.promptInstall()
+          }
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "14px 16px",
+            background: GREEN,
+            border: "none",
+            borderRadius: 16,
+            boxShadow: SOFT,
+            cursor: "pointer",
+            textAlign: "left",
+            color: "#fff",
+          }}
+        >
+          <span
+            style={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              borderRadius: 12,
+              background: "rgba(255,255,255,.18)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Download size={21} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontWeight: 700, fontSize: 15 }}>
+              Instalar a app
+            </span>
+            <span style={{ display: "block", fontSize: 12.5, color: "#dcfce7" }}>
+              {install.platform === "ios"
+                ? "Adiciona ao ecrã principal do iPhone/iPad"
+                : "Acesso rápido e notificações no telemóvel"}
+            </span>
+          </span>
+          <span style={{ color: "rgba(255,255,255,.85)", display: "flex" }}>
+            <Chevron size={20} />
+          </span>
+        </button>
+      )}
+      {iosHelp && <IosInstall onClose={() => setIosHelp(false)} />}
       {rowLink(<Document size={20} />, "Regulamento do torneio", onRules)}
       {rowLink(<MapPin size={20} />, "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
 

@@ -18,7 +18,11 @@ export function useNotifications() {
 
   useEffect(() => {
     setSupported(typeof Notification !== 'undefined' && 'serviceWorker' in navigator);
-    if (typeof Notification === 'undefined' || Notification.permission !== 'granted' || !('serviceWorker' in navigator)) return;
+    if (!('serviceWorker' in navigator)) return;
+    // Regista o service worker SEMPRE no arranque — necessário para a app ser
+    // instalável (PWA) e para receber push, mesmo antes de ativar notificações.
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
     setOn(true);
     // Re-sincroniza a subscrição com o servidor: quem já deu permissão fica
     // registado mesmo que o servidor tenha perdido as subscrições (auto-corrige).

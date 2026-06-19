@@ -26,3 +26,8 @@ self.addEventListener('notificationclick', (event) => {
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+
+// Handler 'fetch' mínimo: NÃO faz cache (deixa o browser tratar de tudo),
+// apenas existe porque alguns navegadores exigem um fetch handler para
+// considerarem a app instalável (PWA). Sem respondWith = sem alterar nada.
+self.addEventListener('fetch', () => {});
