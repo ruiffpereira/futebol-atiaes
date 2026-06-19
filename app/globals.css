@@ -40,4 +40,6 @@ input, select { font-family: inherit; }
     font-size: 12px;
   }
   .stand-grid .pts { font-size: 13px; }
+  .tbadge { display: none !important; }
+  .tcell { padding-left: 9px; }
 }

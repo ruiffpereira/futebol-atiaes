@@ -576,7 +576,7 @@ function Header({
         zIndex: 40,
         background: "#fff",
         paddingTop: "env(safe-area-inset-top)",
-        boxShadow: "0 1px 10px rgba(18,40,28,.05)",
+        borderBottom: `1px solid ${LINE}`,
       }}
     >
       <div
@@ -1442,6 +1442,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                 {i + 1}
               </span>
               <div
+                className="tcell"
                 style={{
                   display: "flex",
                   alignItems: "center",
