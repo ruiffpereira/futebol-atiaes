@@ -111,9 +111,9 @@ function useInstall(): InstallInfo {
     deferred.prompt();
     deferred.userChoice.finally(() => setDeferred(null));
   };
-  const canShow =
-    !installed &&
-    (platform === "ios" || (platform === "android" && !!deferred));
+  // Mostra quando: iOS (instruções manuais) OU qualquer plataforma (Android/desktop)
+  // em que o browser disparou o beforeinstallprompt.
+  const canShow = !installed && (platform === "ios" || !!deferred);
   return { canShow, platform, promptInstall };
 }
 

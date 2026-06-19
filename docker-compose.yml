@@ -6,7 +6,7 @@ services:
     labels:
       - traefik.docker.network=edr2lnb85qn2gwkuhy7tcsoq
     environment:
-      - SERVICE_FQDN_TORNEIO_3000=atiaesfutebol5.rufvision.com
+      - SERVICE_FQDN_TORNEIO_3000=atiaesfutebol.rufvision.com
       - NODE_ENV=production
       - DATA_DIR=/data
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-atiaes-troca-me}

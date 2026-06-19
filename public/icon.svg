@@ -1,22 +1,25 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="ball" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#22b14c"/>
+      <stop offset="0" stop-color="#27bd52"/>
       <stop offset="1" stop-color="#0f7a37"/>
     </linearGradient>
   </defs>
   <!-- bola verde, sem fundo (transparente) -->
-  <circle cx="256" cy="256" r="196" fill="url(#ball)"/>
-  <!-- costuras subtis para dar aspecto de bola -->
-  <g stroke="#0c5a28" stroke-width="9" stroke-linecap="round" fill="none" opacity="0.55">
-    <line x1="256" y1="78"  x2="256" y2="120"/>
-    <line x1="256" y1="392" x2="256" y2="434"/>
-    <line x1="78"  y1="256" x2="120" y2="256"/>
-    <line x1="392" y1="256" x2="434" y2="256"/>
+  <circle cx="256" cy="256" r="200" fill="url(#ball)"/>
+  <!-- padrão clássico de bola de futebol: costuras a sair do pentágono central -->
+  <g stroke="#0b4d25" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="256" y1="161" x2="256" y2="58"/>
+    <line x1="346" y1="227" x2="444" y2="195"/>
+    <line x1="312" y1="333" x2="373" y2="416"/>
+    <line x1="200" y1="333" x2="139" y2="416"/>
+    <line x1="166" y1="227" x2="68"  y2="195"/>
   </g>
-  <!-- "A" de Atiães -->
-  <g fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M196 360 L256 156 L316 360"/>
-    <line x1="221" y1="296" x2="291" y2="296"/>
+  <!-- pentágono central (escuro) — contraste para o "A" -->
+  <polygon points="256,161 346,227 312,333 200,333 166,227" fill="#0b4d25"/>
+  <!-- "A" de Atiães — grande, por cima da bola -->
+  <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M202 344 L256 168 L310 344"/>
+    <line x1="223" y1="286" x2="289" y2="286"/>
   </g>
 </svg>
