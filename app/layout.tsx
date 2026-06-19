@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   // iOS não suporta transparência no ícone (fica preto) → usa versão opaca com fundo branco.
   icons: { icon: '/icon.png', apple: '/apple-icon.png' },
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Atiães Futebol' },
+  // black-translucent: a status bar do iOS fica por cima do header verde (texto branco)
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Atiães Futebol' },
 };
-// topbar branca a condizer com o header (browser + PWA standalone)
+// topbar verde a condizer com o header (browser + PWA standalone, Android + iOS)
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
+  themeColor: '#15803d',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',

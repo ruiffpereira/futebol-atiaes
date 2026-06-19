@@ -63,6 +63,7 @@ const TAB_TITLE: Record<Tab, string> = {
 
 type InstallInfo = {
   canShow: boolean;
+  installed: boolean;
   platform: "ios" | "android" | "other";
   promptInstall: () => void;
 };
@@ -114,7 +115,7 @@ function useInstall(): InstallInfo {
   // Mostra quando: iOS (instruções manuais) OU qualquer plataforma (Android/desktop)
   // em que o browser disparou o beforeinstallprompt.
   const canShow = !installed && (platform === "ios" || !!deferred);
-  return { canShow, platform, promptInstall };
+  return { canShow, installed, platform, promptInstall };
 }
 
 export default function PublicPage() {
@@ -208,7 +209,7 @@ export default function PublicPage() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div className="app-scale" style={{ minHeight: "100vh" }}>
       <PullToRefresh onRefresh={refetch} />
       <Header
         name={state.tournamentName}
@@ -523,6 +524,12 @@ export default function PublicPage() {
         {navBtn("profile", <Info size={22} />, "Info")}
       </div>
 
+      <AutoPrompts
+        install={install}
+        notifOn={on}
+        notifSupported={supported}
+        onEnableNotif={enable}
+      />
       {rules && <Rules onClose={() => setRules(false)} />}
       {notifyOpen && (
         <NotifyModal
@@ -754,9 +761,9 @@ function Header({
         position: "sticky",
         top: 0,
         zIndex: 40,
-        background: "#fff",
+        background: GREEN,
         paddingTop: "env(safe-area-inset-top)",
-        borderBottom: `1px solid ${LINE}`,
+        borderBottom: "1px solid rgba(0,0,0,.06)",
       }}
     >
       <div
@@ -776,8 +783,8 @@ function Header({
             height: 46,
             flexShrink: 0,
             borderRadius: 14,
-            background: "#eef5ef",
-            color: GREEN,
+            background: "rgba(255,255,255,.18)",
+            color: "#fff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -789,7 +796,7 @@ function Header({
           <div
             style={{
               fontSize: 10.5,
-              color: GREEN,
+              color: "rgba(255,255,255,.85)",
               fontWeight: 700,
               letterSpacing: 1.2,
               textTransform: "uppercase",
@@ -802,17 +809,17 @@ function Header({
             style={{
               fontWeight: 800,
               fontSize: 27,
-              color: INK,
+              color: "rgba(255,255,255,.92)",
               lineHeight: 1.05,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            <span style={{ color: GREEN }}>{brandFirst}</span>
+            <span style={{ color: "#fff" }}>{brandFirst}</span>
             {brandRest && " " + brandRest}
           </div>
-          <div style={{ fontSize: 12, color: MUTED, fontWeight: 500 }}>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,.72)", fontWeight: 500 }}>
             {sub}
           </div>
         </div>
@@ -859,10 +866,10 @@ function Header({
               justifyContent: "center",
               width: 40,
               height: 40,
-              border: `1px solid ${notifyOn ? GREEN : "#e0e5df"}`,
+              border: `1px solid ${notifyOn ? "#fff" : "rgba(255,255,255,.4)"}`,
               borderRadius: "50%",
-              background: notifyOn ? GREEN : "#f1f4f0",
-              color: notifyOn ? "#fff" : "#33403a",
+              background: notifyOn ? "#fff" : "rgba(255,255,255,.16)",
+              color: notifyOn ? GREEN : "#fff",
               cursor: "pointer",
             }}
           >
@@ -1121,6 +1128,249 @@ function NotifyModal({
       </div>
     </div>
   );
+}
+
+// ── Popups automáticos no mobile ──────────────────────────────────────────
+// Funil: 1) se NÃO instalada → sugere instalar; 2) se instalada e notificações
+// desligadas → sugere ativar. Só em telemóvel, dispensável, e não repete durante
+// uns dias (guarda em localStorage).
+const PROMO_COOLDOWN = 3 * 24 * 3600 * 1000; // 3 dias
+function promoSeen(key: string) {
+  try {
+    return Date.now() - Number(localStorage.getItem("promo_" + key) || 0) < PROMO_COOLDOWN;
+  } catch {
+    return false;
+  }
+}
+function markPromo(key: string) {
+  try {
+    localStorage.setItem("promo_" + key, String(Date.now()));
+  } catch {}
+}
+
+function PromoSheet({
+  icon,
+  title,
+  sub,
+  children,
+  onClose,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 85,
+        background: "rgba(8,30,18,.5)",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: "20px 20px 0 0",
+          width: "100%",
+          maxWidth: 520,
+          padding: "20px 20px calc(20px + env(safe-area-inset-bottom))",
+          animation: "sheetUp .28s ease",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <span
+            style={{
+              width: 46,
+              height: 46,
+              flexShrink: 0,
+              borderRadius: 14,
+              background: "#eef5ef",
+              color: GREEN,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {icon}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="cond" style={{ fontWeight: 800, fontSize: 21, color: INK }}>
+              {title}
+            </div>
+            <div style={{ fontSize: 13, color: MUTED }}>{sub}</div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            style={{
+              border: `1px solid ${LINE}`,
+              background: "#fff",
+              color: "#5b7163",
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              fontSize: 17,
+              lineHeight: 1,
+              flexShrink: 0,
+            }}
+          >
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const promoPrimaryBtn: React.CSSProperties = {
+  width: "100%",
+  border: "none",
+  background: GREEN,
+  color: "#fff",
+  fontWeight: 700,
+  fontSize: 15,
+  padding: "13px",
+  borderRadius: 12,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+};
+const promoDismissBtn: React.CSSProperties = {
+  width: "100%",
+  marginTop: 8,
+  border: "none",
+  background: "transparent",
+  color: MUTED,
+  fontWeight: 600,
+  fontSize: 13.5,
+  padding: "10px",
+};
+
+// Decide e mostra o popup certo, automaticamente, no mobile.
+function AutoPrompts({
+  install,
+  notifOn,
+  notifSupported,
+  onEnableNotif,
+}: {
+  install: InstallInfo;
+  notifOn: boolean;
+  notifSupported: boolean;
+  onEnableNotif: () => void;
+}) {
+  const [view, setView] = useState<null | "install" | "ios" | "notify">(null);
+  const mobile = install.platform === "ios" || install.platform === "android";
+
+  useEffect(() => {
+    if (!mobile || view) return;
+    const t = window.setTimeout(() => {
+      if (install.canShow && !promoSeen("install")) {
+        setView(install.platform === "ios" ? "ios" : "install");
+      } else if (
+        install.installed &&
+        notifSupported &&
+        !notifOn &&
+        !promoSeen("notify")
+      ) {
+        setView("notify");
+      }
+    }, 1800);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobile, install.canShow, install.installed, notifOn, notifSupported]);
+
+  if (view === "ios")
+    return (
+      <IosInstall
+        onClose={() => {
+          markPromo("install");
+          setView(null);
+        }}
+      />
+    );
+  if (view === "install")
+    return (
+      <PromoSheet
+        icon={<Download size={22} />}
+        title="Instalar a app"
+        sub="Atiães em Movimento no teu ecrã principal"
+        onClose={() => {
+          markPromo("install");
+          setView(null);
+        }}
+      >
+        <div style={{ fontSize: 14, color: "#3a4a40", lineHeight: 1.5, marginBottom: 14 }}>
+          Acesso rápido com um toque e notificações dos jogos em tempo real, sem
+          ocupar espaço como uma app normal.
+        </div>
+        <button
+          onClick={() => {
+            install.promptInstall();
+            markPromo("install");
+            setView(null);
+          }}
+          style={promoPrimaryBtn}
+        >
+          <Download size={18} /> Instalar agora
+        </button>
+        <button
+          onClick={() => {
+            markPromo("install");
+            setView(null);
+          }}
+          style={promoDismissBtn}
+        >
+          Agora não
+        </button>
+      </PromoSheet>
+    );
+  if (view === "notify")
+    return (
+      <PromoSheet
+        icon={<Bell size={21} />}
+        title="Ativar notificações"
+        sub="Não percas nenhum golo"
+        onClose={() => {
+          markPromo("notify");
+          setView(null);
+        }}
+      >
+        <div style={{ fontSize: 14, color: "#3a4a40", lineHeight: 1.5, marginBottom: 14 }}>
+          Recebe um aviso quando um jogo começa, nos golos e no resultado final,
+          mesmo com a app fechada.
+        </div>
+        <button
+          onClick={() => {
+            onEnableNotif();
+            markPromo("notify");
+            setView(null);
+          }}
+          style={promoPrimaryBtn}
+        >
+          <Bell size={18} /> Ativar notificações
+        </button>
+        <button
+          onClick={() => {
+            markPromo("notify");
+            setView(null);
+          }}
+          style={promoDismissBtn}
+        >
+          Agora não
+        </button>
+      </PromoSheet>
+    );
+  return null;
 }
 
 function FeedbackCard() {
