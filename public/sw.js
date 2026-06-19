@@ -5,8 +5,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icon-192.png',   // ícone grande (cor) no corpo da notificação
-      badge: '/badge.png',     // ícone pequeno na barra de estado (Android usa só o alfa → silhueta)
+      icon: '/icon-192.png?v=2',   // ícone grande (cor) no corpo da notificação
+      badge: '/badge.png?v=2',     // ícone pequeno na barra de estado (Android usa só o alfa → silhueta)
       vibrate: [130, 60, 130],   // Android
       tag: 'torneio',
       renotify: true,

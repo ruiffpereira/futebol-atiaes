@@ -693,7 +693,7 @@ function LoadingScreen() {
         alignItems: "center",
         justifyContent: "center",
         gap: 18,
-        background: "#f4f6f3",
+        background: "#dcfce7",
       }}
     >
       <div
