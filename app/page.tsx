@@ -641,15 +641,17 @@ function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
       aria-hidden
       style={{
         position: "fixed",
-        top: "env(safe-area-inset-top)",
+        // arranca logo por baixo da top bar (altura do header ≈ 78px) e desce
+        // com o puxão — sempre visível, sem sobrepor a barra (translateY >= 0)
+        top: "calc(env(safe-area-inset-top) + 78px)",
         left: 0,
         right: 0,
         display: "flex",
         justifyContent: "center",
         pointerEvents: "none",
-        zIndex: 60,
-        transform: `translateY(${p - 34}px)`,
-        opacity: Math.min(1, p / THRESHOLD),
+        zIndex: 45,
+        transform: `translateY(${p}px)`,
+        opacity: Math.min(1, p / 26),
         transition: dragging ? "none" : "transform .25s ease, opacity .2s ease",
       }}
     >
@@ -1058,6 +1060,7 @@ function NotifyModal({
 }) {
   return (
     <div
+      className="m-fade"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -1072,6 +1075,7 @@ function NotifyModal({
       }}
     >
       <div
+        className="m-pop"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",
@@ -1570,6 +1574,7 @@ function IosInstall({ onClose }: { onClose: () => void }) {
   );
   return (
     <div
+      className="m-fade"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -1583,6 +1588,7 @@ function IosInstall({ onClose }: { onClose: () => void }) {
       }}
     >
       <div
+        className="m-sheet"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",

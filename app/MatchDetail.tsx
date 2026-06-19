@@ -50,8 +50,8 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   );
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: 0.5 }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>

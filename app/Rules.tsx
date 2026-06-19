@@ -5,8 +5,8 @@ const Title = ({ children }: { children: React.ReactNode }) => <div className="c
 // Regulamento completo (do ficheiro do utilizador).
 export default function Rules({ onClose }: { onClose: () => void }) {
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(8,30,18,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 680, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(8,30,18,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 680, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)' }}>
         <div style={{ background: 'linear-gradient(135deg,#0c2a1c,#15803d)', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div className="cond" style={{ fontWeight: 800, fontSize: 22, color: '#fff', textTransform: 'uppercase', lineHeight: 1 }}>Regulamento</div>
