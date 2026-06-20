@@ -209,7 +209,7 @@ export default function PublicPage() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="app-scale" style={{ minHeight: "100vh" }}>
+    <div className="app-scale" style={{ minHeight: "calc(100vh / 0.92)" }}>
       <PullToRefresh onRefresh={refetch} />
       <Header
         name={state.tournamentName}
@@ -412,7 +412,11 @@ export default function PublicPage() {
             }}
           >
             <div>
-              <StatHead icon={<Trophy size={18} />} title="Melhores marcadores" />
+              <StatHead
+                icon={<Trophy size={18} />}
+                title="Melhores marcadores"
+                sub="Jogadores com mais golos marcados"
+              />
               {scorers.length ? (
                 <Card>
                   {scorers.map((p, i) => (
