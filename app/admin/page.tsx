@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTournament } from '@/lib/useTournament';
 import { actions } from '@/lib/actions';
-import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } from '@/lib/tournament';
+import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate, uid } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 import { TeamBadge } from '../Icons';
 import { resizeImage } from '@/lib/img';
@@ -156,8 +156,27 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
   const [edit, setEdit] = useState(false);
   const [pin, setPin] = useState('');
   const [uploading, setUploading] = useState(false);
+  // Edição em rascunho: NADA é gravado até clicar no ✓. Todas as alterações (nome,
+  // logo, grupo, jogadores, capitão, treinador) ficam só no estado local `draft`.
+  const [draft, setDraft] = useState<TournamentState['teams'][number]>(t);
+  const startEdit = () => { setDraft(JSON.parse(JSON.stringify(t))); setEdit(true); };
+  const patch = (p: Partial<TournamentState['teams'][number]>) => setDraft((d) => ({ ...d, ...p }));
+  const finishEdit = () => {
+    // Limpa golos/cartões de jogadores removidos durante a edição.
+    const removed = t.players.filter((p) => !draft.players.some((q) => q.id === p.id)).map((p) => p.id);
+    const teams = state.teams.map((x) => (x.id === t.id ? draft : x));
+    const matches = removed.length
+      ? state.matches.map((m) => ({
+          ...m,
+          scorers: m.scorers.filter((s) => !s.player || !removed.includes(s.player)),
+          cards: (m.cards || []).filter((c) => !c.player || !removed.includes(c.player)),
+        }))
+      : state.matches;
+    apply({ ...state, teams, matches, _notify: false });
+    setEdit(false);
+  };
   const fileRef = useRef<HTMLInputElement>(null);
-  const addPin = () => { if (pin.trim()) { apply(actions.addPlayer(state, t.id, pin.trim())); setPin(''); } };
+  const addPin = () => { const v = pin.trim(); if (v) { setDraft((d) => ({ ...d, players: [...d.players, { id: uid(), name: v }] })); setPin(''); } };
   const groupLabel = groupOpts.find((g) => g.v === t.group)?.l || (t.group ? 'Grupo ' + t.group : 'Sem grupo');
   const onPickLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; e.target.value = '';
@@ -168,7 +187,7 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
       const fd = new FormData(); fd.append('file', blob, 'logo.webp');
       const r = await fetch('/api/uploads', { method: 'POST', body: fd });
       const d = await r.json().catch(() => ({}));
-      if (r.ok && d.url) apply(actions.setTeamLogo(state, t.id, d.url));
+      if (r.ok && d.url) patch({ logo: d.url });
       else alert(d.error || 'Falha no upload da imagem.');
     } catch { alert('Não foi possível processar a imagem.'); }
     finally { setUploading(false); }
@@ -180,7 +199,7 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
         <TeamBadge name={t.name} seed={t.id} logo={t.logo} size={30} />
         <span className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
         <span style={{ background: '#eef2ec', color: DGREEN, fontWeight: 700, fontSize: 12, padding: '4px 9px', borderRadius: 8 }}>{groupLabel}</span>
-        <button onClick={() => setEdit(true)} title="Editar equipa" style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 13, padding: '6px 10px', borderRadius: 8 }}>✏️</button>
+        <button onClick={startEdit} title="Editar equipa" style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 13, padding: '6px 10px', borderRadius: 8 }}>✏️</button>
       </div>
       {t.players.length ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -200,28 +219,28 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
   return (
     <div style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #bef264' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #f0f4ee' }}>
-        <TeamBadge name={t.name} seed={t.id} logo={t.logo} size={52} />
+        <TeamBadge name={draft.name} seed={t.id} logo={draft.logo} size={52} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: '#5b7163', marginBottom: 6 }}>Logo da equipa</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <input ref={fileRef} type="file" accept="image/*" onChange={onPickLogo} style={{ display: 'none' }} />
-            <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}>{uploading ? 'A carregar…' : (t.logo ? 'Trocar imagem' : '＋ Carregar imagem')}</button>
-            {t.logo && !uploading && <button onClick={() => apply(actions.setTeamLogo(state, t.id, ''))} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8 }}>Remover</button>}
+            <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}>{uploading ? 'A carregar…' : (draft.logo ? 'Trocar imagem' : '＋ Carregar imagem')}</button>
+            {draft.logo && !uploading && <button onClick={() => patch({ logo: undefined })} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8 }}>Remover</button>}
           </div>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <input value={t.name} onChange={(e) => apply(actions.renameTeam(state, t.id, e.target.value))} className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, border: '1px solid #d3e0d0', background: '#fff', padding: '3px 7px', borderRadius: 7, outline: 'none' }} />
-        <select value={t.group} onChange={(e) => apply(actions.setTeamGroup(state, t.id, e.target.value))} style={{ padding: '5px 8px', border: '1px solid #d3e0d0', borderRadius: 8, fontSize: 12.5 }}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>
-        <button onClick={() => setEdit(false)} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '7px 11px', borderRadius: 8 }}>✓</button>
+        <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, border: '1px solid #d3e0d0', background: '#fff', padding: '3px 7px', borderRadius: 7, outline: 'none' }} />
+        <select value={draft.group} onChange={(e) => patch({ group: e.target.value })} style={{ padding: '5px 8px', border: '1px solid #d3e0d0', borderRadius: 8, fontSize: 12.5 }}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>
+        <button onClick={finishEdit} title="Concluir edição" style={{ border: 'none', background: '#dcfce7', color: DGREEN, fontWeight: 700, fontSize: 13, padding: '7px 11px', borderRadius: 8 }}>✓</button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
-        {t.players.map((p) => (
+        {draft.players.map((p) => (
           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6faf4', padding: '5px 7px 5px 9px', borderRadius: 8 }}>
-            {t.captain === p.id && <span style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>©</span>}
-            <input value={p.name} onChange={(e) => apply(actions.renamePlayer(state, t.id, p.id, e.target.value))} style={{ flex: 1, minWidth: 0, border: '1px solid transparent', background: 'transparent', fontSize: 14, padding: '3px 6px', borderRadius: 6, outline: 'none' }} />
-            <button onClick={() => apply(actions.toggleGK(state, t.id, p.id))} title="Guarda-redes" style={{ border: `1px solid ${p.gk ? '#2563eb' : '#d3e0d0'}`, background: p.gk ? '#2563eb' : '#fff', color: p.gk ? '#fff' : '#aebfb3', fontSize: 11, fontWeight: 800, padding: '5px 8px', borderRadius: 6 }}>GR</button>
-            <button onClick={() => apply(actions.removePlayer(state, t.id, p.id))} style={{ border: 'none', background: 'transparent', color: '#b6c9b0', fontSize: 16 }}>×</button>
+            {draft.captain === p.id && <span style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>©</span>}
+            <input value={p.name} onChange={(e) => setDraft((d) => ({ ...d, players: d.players.map((q) => (q.id === p.id ? { ...q, name: e.target.value } : q)) }))} style={{ flex: 1, minWidth: 0, border: '1px solid transparent', background: 'transparent', fontSize: 14, padding: '3px 6px', borderRadius: 6, outline: 'none' }} />
+            <button onClick={() => setDraft((d) => { const on = !d.players.find((q) => q.id === p.id)?.gk; return { ...d, players: d.players.map((q) => ({ ...q, gk: q.id === p.id ? on : false })) }; })} title="Guarda-redes" style={{ border: `1px solid ${p.gk ? '#2563eb' : '#d3e0d0'}`, background: p.gk ? '#2563eb' : '#fff', color: p.gk ? '#fff' : '#aebfb3', fontSize: 11, fontWeight: 800, padding: '5px 8px', borderRadius: 6 }}>GR</button>
+            <button onClick={() => setDraft((d) => ({ ...d, players: d.players.filter((q) => q.id !== p.id), captain: d.captain === p.id ? '' : d.captain }))} style={{ border: 'none', background: 'transparent', color: '#b6c9b0', fontSize: 16 }}>×</button>
           </div>
         ))}
       </div>
@@ -230,10 +249,10 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
         <button onClick={addPin} style={{ border: 'none', background: '#dcfce7', color: GREEN, fontWeight: 700, fontSize: 13, padding: '9px 13px', borderRadius: 9 }}>+ Jogador</button>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid #f0f4ee' }}>
-        <select value={t.captain || ''} onChange={(e) => apply(actions.setCaptain(state, t.id, e.target.value))} style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }}>
-          <option value="">⊘ Capitão (opcional)</option>{t.players.map((p) => <option key={p.id} value={p.id}>© {p.name}</option>)}
+        <select value={draft.captain || ''} onChange={(e) => patch({ captain: e.target.value })} style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }}>
+          <option value="">⊘ Capitão (opcional)</option>{draft.players.map((p) => <option key={p.id} value={p.id}>© {p.name}</option>)}
         </select>
-        <input value={t.coach || ''} onChange={(e) => apply(actions.setCoach(state, t.id, e.target.value))} placeholder="Treinador (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
+        <input value={draft.coach || ''} onChange={(e) => patch({ coach: e.target.value })} placeholder="Treinador (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
       </div>
       <button onClick={() => { if (confirm('Remover esta equipa?')) apply(actions.removeTeam(state, t.id)); }} style={{ width: '100%', marginTop: 10, border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 13, padding: '9px 10px', borderRadius: 8 }}>Remover equipa</button>
     </div>
@@ -577,7 +596,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
   );
 }
 
-const inp: React.CSSProperties = { padding: '11px 13px', border: '1.5px solid #d3e0d0', borderRadius: 10, fontSize: 14.5, outline: 'none', background: '#fff' };
+const inp: React.CSSProperties = { padding: '11px 13px', border: '1.5px solid #d3e0d0', borderRadius: 10, fontSize: 14.5, outline: 'none', background: '#fff', color: '#16201b', colorScheme: 'light' };
 const iconBtn: React.CSSProperties = { border: '1px solid #d3e0d0', background: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 10px', borderRadius: 9 };
 const btn = (fs = 14): React.CSSProperties => ({ border: 'none', background: GREEN, color: '#fff', fontWeight: 700, fontSize: fs, padding: fs < 14 ? '8px 14px' : '11px 20px', borderRadius: fs < 14 ? 9 : 10 });
 const cardBtn = (bd: string, bg: string, col: string): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 3, border: `1px solid ${bd}`, background: bg, color: col, fontWeight: 800, fontSize: 12, padding: '7px 8px', borderRadius: 8, flexShrink: 0 });

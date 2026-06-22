@@ -282,22 +282,37 @@ export default function PublicPage() {
         </div>
 
         {tab === "standings" &&
-          (state.groups.some((g) => state.teams.some((t) => t.group === g)) ? (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit,minmax(min(100%,290px),1fr))",
-                gap: 18,
-              }}
-            >
-              {state.groups.map((g) => (
-                <GroupCard key={g} g={g} state={state} onTeam={setTeamId} />
-              ))}
-            </div>
-          ) : (
-            <Empty icon={<List size={44} />} title="Ainda sem equipas." />
-          ))}
+          (() => {
+            const hasGroupTeams = state.groups.some((g) =>
+              state.teams.some((t) => t.group === g),
+            );
+            // Equipas sem grupo (amigáveis) — incluindo grupos entretanto apagados.
+            const ungrouped = state.teams
+              .filter((t) => !t.group || !state.groups.includes(t.group))
+              .sort((a, b) => a.name.localeCompare(b.name, "pt"));
+            if (!hasGroupTeams && ungrouped.length === 0)
+              return (
+                <Empty icon={<List size={44} />} title="Ainda sem equipas." />
+              );
+            return (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit,minmax(min(100%,290px),1fr))",
+                  gap: 18,
+                }}
+              >
+                {hasGroupTeams &&
+                  state.groups.map((g) => (
+                    <GroupCard key={g} g={g} state={state} onTeam={setTeamId} />
+                  ))}
+                {ungrouped.length > 0 && (
+                  <TeamListCard teams={ungrouped} onTeam={setTeamId} />
+                )}
+              </div>
+            );
+          })()}
 
         {tab === "live" &&
           (live.length ? (
@@ -2241,6 +2256,91 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
           1.º e 2.º apuram-se para a fase final
         </div>
       )}
+    </div>
+  );
+}
+
+// Equipas sem grupo (amigáveis) — lista simples por ordem alfabética.
+function TeamListCard({
+  teams,
+  onTeam,
+}: {
+  teams: TournamentState["teams"];
+  onTeam: (id: string) => void;
+}) {
+  return (
+    <div className="soft-card" style={{ overflow: "hidden" }}>
+      <div
+        style={{
+          padding: "13px 18px",
+          borderBottom: `1px solid ${LINE}`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span className="cond" style={{ fontWeight: 800, fontSize: 19, color: INK }}>
+          Lista de Equipas
+        </span>
+        <span style={{ fontSize: 12, color: MUTED, fontWeight: 600 }}>
+          {teams.length} {teams.length === 1 ? "equipa" : "equipas"}
+        </span>
+      </div>
+      <div style={{ padding: "6px 14px 10px" }}>
+        {teams.map((t, i) => (
+          <div
+            key={t.id}
+            onClick={() => onTeam(t.id)}
+            role="button"
+            title="Ver ficha da equipa"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "9px 4px",
+              borderTop: i === 0 ? "none" : `1px solid var(--surface-2)`,
+              cursor: "pointer",
+            }}
+          >
+            <span
+              style={{
+                width: 22,
+                textAlign: "center",
+                flexShrink: 0,
+                color: MUTED,
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {i + 1}
+            </span>
+            <TeamBadge name={t.name} seed={t.id} logo={t.logo} size={28} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: 14.5,
+                  color: INK,
+                  display: "block",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {t.name}
+              </span>
+              <span style={{ fontSize: 11.5, color: MUTED }}>
+                {t.players.length
+                  ? `${t.players.length} ${t.players.length === 1 ? "jogador" : "jogadores"}`
+                  : "Sem jogadores"}
+              </span>
+            </div>
+            <span style={{ color: "var(--muted)", display: "flex", flexShrink: 0 }}>
+              <Chevron size={18} />
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

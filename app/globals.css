@@ -76,6 +76,42 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Backoffice desenhado só com superfícies claras (hardcoded #fff/#f6faf4). No modo
+   escuro do iOS herdava os tokens escuros (--text branco, etc.) e tanto o texto dos
+   campos como o dos botões ficava invisível sobre fundo claro. Forçamos toda a
+   subárvore do admin a usar SEMPRE os tokens claros + color-scheme: light. */
+.admin-pad, .admin-login {
+  color-scheme: light;
+  --bg: #f4f6f3;
+  --surface: #fff;
+  --surface-2: #f6faf4;
+  --text: #16201b;
+  --muted: #8a978f;
+  --muted-2: #5b7163;
+  --line: #edf0ec;
+  --line-2: #d3e0d0;
+  --brand: #15803d;
+  --brand-dark: #0f4d2e;
+  --brand-tint: #eef5ef;
+  --danger: #dc2626;
+  --danger-2: #b91c1c;
+  --danger-tint: #fdeaea;
+  --warn: #d97706;
+  --warn-tint: #fef3c7;
+  --info: #2563eb;
+  color: var(--text);
+}
+/* iOS em modo escuro ainda sobrepõe o texto dos campos com -webkit-text-fill-color */
+.admin-pad input, .admin-pad select, .admin-pad textarea,
+.admin-login input {
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+}
+.admin-pad input::placeholder, .admin-pad textarea::placeholder,
+.admin-login input::placeholder {
+  color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
+}
 html, body { margin: 0; padding: 0; overscroll-behavior: none; }
 html { background: var(--surface); }
 body { font-family: 'Barlow', system-ui, sans-serif; background: var(--bg); color: var(--text); }
