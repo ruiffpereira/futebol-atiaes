@@ -1,7 +1,7 @@
 "use client";
 // PLACAR PÚBLICO — só leitura, tempo real (React Query + SSE).
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useContext, createContext } from "react";
 import { useTheme, nextMode } from "@/lib/theme";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
@@ -57,6 +57,10 @@ const INK = "var(--text)",
   MUTED = "var(--muted)",
   LINE = "var(--line)",
   SOFT = "var(--shadow)";
+// Mapa id-da-equipa → URL do logo, partilhado com os badges aninhados (classificação, jogos…).
+const LogosContext = createContext<Record<string, string | undefined>>({});
+const useTeamLogo = (id?: string | null) => useContext(LogosContext)[id || ""];
+
 type Tab = "standings" | "live" | "schedule" | "stats" | "profile";
 const TAB_TITLE: Record<Tab, string> = {
   standings: "Classificação",
@@ -139,6 +143,10 @@ export default function PublicPage() {
   }, []);
 
   const tn = (id: string | null) => state.teams.find((t) => t.id === id);
+  const logoMap = useMemo(
+    () => Object.fromEntries(state.teams.map((t) => [t.id, t.logo])),
+    [state.teams],
+  );
   const nameOf = (m: Match, side: "a" | "b") => {
     const t = tn(m[side]);
     return t ? t.name : srcLabel(side === "a" ? m.srcA : m.srcB);
@@ -214,6 +222,7 @@ export default function PublicPage() {
   if (loading) return <LoadingScreen />;
 
   return (
+   <LogosContext.Provider value={logoMap}>
     <div className="app-scale" style={{ minHeight: "calc(100vh / 0.92)" }}>
       <PullToRefresh onRefresh={refetch} />
       <Header
@@ -576,6 +585,7 @@ export default function PublicPage() {
         />
       )}
     </div>
+   </LogosContext.Provider>
   );
 }
 
@@ -2037,6 +2047,7 @@ function Profile({
 
 function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; onTeam: (id: string) => void }) {
   const rows = standings(state, g);
+  const logoOf = (id: string) => state.teams.find((t) => t.id === id)?.logo;
   const liveIds = new Set<string>();
   const liveInfo: Record<string, string> = {};
   state.matches
@@ -2148,7 +2159,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                 }}
               >
                 <span className="tbadge" style={{ display: "inline-flex", marginLeft: 6 }}>
-                  <TeamBadge name={r.team.name} seed={r.team.id} size={26} />
+                  <TeamBadge name={r.team.name} seed={r.team.id} logo={logoOf(r.team.id)} size={26} />
                 </span>
                 <div style={{ minWidth: 0 }}>
                   <span
@@ -2316,6 +2327,7 @@ function KoCard({
   nameOf: (m: Match, s: "a" | "b") => string;
   onClick: (id: string) => void;
 }) {
+  const logos = useContext(LogosContext);
   if (!m) return null;
   const sa = scoreOf(m, m.a),
     sb = scoreOf(m, m.b);
@@ -2350,7 +2362,7 @@ function KoCard({
           }}
         />
       ) : (
-        <TeamBadge name={name} seed={m[side] || side} size={26} />
+        <TeamBadge name={name} seed={m[side] || side} logo={logos[m[side] || ""]} size={26} />
       )}
       <span
         style={{
@@ -2453,9 +2465,10 @@ function TeamLine({
   val?: number;
   winner?: boolean;
 }) {
+  const logo = useTeamLogo(seed);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-      <TeamBadge name={name} seed={seed} size={26} />
+      <TeamBadge name={name} seed={seed} logo={logo} size={26} />
       <span
         style={{
           flex: 1,
@@ -2673,6 +2686,7 @@ const Row3 = ({
     barMax && barMax > 0
       ? Math.max(6, Math.min(100, ((barVal ?? val) / barMax) * 100))
       : 0;
+  const rowLogo = useTeamLogo(seed);
   return (
     <div
       style={{
@@ -2695,7 +2709,7 @@ const Row3 = ({
       >
         {i}
       </span>
-      {seed && <TeamBadge name={name} seed={seed} size={28} />}
+      {seed && <TeamBadge name={name} seed={seed} logo={rowLogo} size={28} />}
       <div style={{ minWidth: 0 }}>
         <div
           style={{

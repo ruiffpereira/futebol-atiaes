@@ -302,14 +302,35 @@ export function initials(name: string): string {
 export function TeamBadge({
   name,
   seed,
+  logo,
   size = 30,
   style,
 }: {
   name: string;
   seed?: string;
+  logo?: string;
   size?: number;
   style?: CSSProperties;
 }) {
+  if (logo) {
+    return (
+      <img
+        src={logo}
+        alt=""
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          flexShrink: 0,
+          borderRadius: "50%",
+          objectFit: "cover",
+          background: "var(--surface-2, #eef2ec)",
+          ...style,
+        }}
+      />
+    );
+  }
   const bg = teamColor(seed || name);
   return (
     <span

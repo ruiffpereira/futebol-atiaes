@@ -1,10 +1,12 @@
 'use client';
 // BACKOFFICE — login + gestão + registo ao vivo. Escritas protegidas (cookie de admin).
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTournament } from '@/lib/useTournament';
 import { actions } from '@/lib/actions';
 import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
+import { TeamBadge } from '../Icons';
+import { resizeImage } from '@/lib/img';
 
 const GREEN = '#15803d', DGREEN = '#0f4d2e';
 type Tab = 'teams' | 'fixtures' | 'knockout' | 'comments' | 'settings' | 'access';
@@ -153,12 +155,29 @@ function TeamsTab({ state, apply }: { state: TournamentState; apply: (s: Tournam
 function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][number]; state: TournamentState; apply: (s: TournamentState) => void; groupOpts: { v: string; l: string }[] }) {
   const [edit, setEdit] = useState(false);
   const [pin, setPin] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const addPin = () => { if (pin.trim()) { apply(actions.addPlayer(state, t.id, pin.trim())); setPin(''); } };
   const groupLabel = groupOpts.find((g) => g.v === t.group)?.l || (t.group ? 'Grupo ' + t.group : 'Sem grupo');
+  const onPickLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    try {
+      const blob = await resizeImage(file);
+      const fd = new FormData(); fd.append('file', blob, 'logo.webp');
+      const r = await fetch('/api/uploads', { method: 'POST', body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.url) apply(actions.setTeamLogo(state, t.id, d.url));
+      else alert(d.error || 'Falha no upload da imagem.');
+    } catch { alert('Não foi possível processar a imagem.'); }
+    finally { setUploading(false); }
+  };
 
   if (!edit) return (
     <div style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #e4ece0' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <TeamBadge name={t.name} seed={t.id} logo={t.logo} size={30} />
         <span className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
         <span style={{ background: '#eef2ec', color: DGREEN, fontWeight: 700, fontSize: 12, padding: '4px 9px', borderRadius: 8 }}>{groupLabel}</span>
         <button onClick={() => setEdit(true)} title="Editar equipa" style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 13, padding: '6px 10px', borderRadius: 8 }}>✏️</button>
@@ -180,6 +199,17 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
 
   return (
     <div style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #bef264' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #f0f4ee' }}>
+        <TeamBadge name={t.name} seed={t.id} logo={t.logo} size={52} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#5b7163', marginBottom: 6 }}>Logo da equipa</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <input ref={fileRef} type="file" accept="image/*" onChange={onPickLogo} style={{ display: 'none' }} />
+            <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ border: '1px solid #d3e0d0', background: '#fff', color: GREEN, fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}>{uploading ? 'A carregar…' : (t.logo ? 'Trocar imagem' : '＋ Carregar imagem')}</button>
+            {t.logo && !uploading && <button onClick={() => apply(actions.setTeamLogo(state, t.id, ''))} style={{ border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 12.5, padding: '7px 12px', borderRadius: 8 }}>Remover</button>}
+          </div>
+        </div>
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <input value={t.name} onChange={(e) => apply(actions.renameTeam(state, t.id, e.target.value))} className="cond" style={{ fontWeight: 700, fontSize: 18, flex: 1, minWidth: 0, border: '1px solid #d3e0d0', background: '#fff', padding: '3px 7px', borderRadius: 7, outline: 'none' }} />
         <select value={t.group} onChange={(e) => apply(actions.setTeamGroup(state, t.id, e.target.value))} style={{ padding: '5px 8px', border: '1px solid #d3e0d0', borderRadius: 8, fontSize: 12.5 }}>{groupOpts.map((g) => <option key={g.v} value={g.v}>{g.l}</option>)}</select>

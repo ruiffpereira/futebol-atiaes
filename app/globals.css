@@ -136,6 +136,8 @@ input, select { font-family: inherit; }
     font-size: 12px;
   }
   .stand-grid .pts { font-size: 13px; }
-  .tbadge { display: none !important; }
-  .tcell { padding-left: 9px; }
+  /* badge/logo da equipa visível também em mobile, mais compacto */
+  .tbadge { display: inline-flex !important; margin-left: 0 !important; }
+  .tbadge img, .tbadge > span { width: 22px !important; height: 22px !important; font-size: 9px !important; }
+  .tcell { padding-left: 6px; }
 }

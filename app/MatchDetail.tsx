@@ -42,9 +42,9 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     </div>
   );
 
-  const teamCol = (label: string, side: 'a' | 'b') => (
+  const teamCol = (label: string, side: 'a' | 'b', logo?: string) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-      <TeamBadge name={label} seed={m[side] || side} size={48} />
+      <TeamBadge name={label} seed={m[side] || side} logo={logo} size={48} />
       <span style={{ fontWeight: 700, fontSize: 14.5, color: INK, textAlign: 'center', lineHeight: 1.15, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
     </div>
   );
@@ -58,14 +58,14 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
             <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
-            {teamCol(ta?.name || 'A definir', 'a')}
+            {teamCol(ta?.name || 'A definir', 'a', ta?.logo)}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <span className="cond" style={{ fontWeight: 800, fontSize: 40, color: INK, lineHeight: 1 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</span>
               {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? 'var(--warn)' : 'var(--danger)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
               {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Terminado</span>}
               {m.status === 'scheduled' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 700 }}>{m.time || 'Por jogar'}</span>}
             </div>
-            {teamCol(tb?.name || 'A definir', 'b')}
+            {teamCol(tb?.name || 'A definir', 'b', tb?.logo)}
           </div>
         </div>
         <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0 }}>

@@ -24,6 +24,7 @@ export default function TeamDetail({
     const t = state.teams.find((x) => x.id === id);
     return t ? t.name : 'A definir';
   };
+  const logoOf = (id: string | null) => state.teams.find((x) => x.id === id)?.logo;
   // jogos da equipa, ao vivo primeiro, depois por data/hora
   const matches = state.matches
     .filter((m) => m.a === team.id || m.b === team.id)
@@ -108,7 +109,7 @@ export default function TeamDetail({
         {done && <span style={{ width: 24, height: 24, flexShrink: 0, borderRadius: '50%', background: resColor, color: '#fff', fontWeight: 800, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{result}</span>}
         {live && <span style={{ width: 8, height: 8, flexShrink: 0, borderRadius: '50%', background: 'var(--danger)', animation: 'pulse 1.1s infinite' }} />}
         {m.status === 'scheduled' && <span style={{ width: 24, height: 24, flexShrink: 0, color: MUTED, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Clock size={16} /></span>}
-        <TeamBadge name={nameOf(oppId)} seed={oppId || 'x'} size={26} />
+        <TeamBadge name={nameOf(oppId)} seed={oppId || 'x'} logo={logoOf(oppId)} size={26} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase' }}>{[phaseLabel(m), when].filter(Boolean).join(' · ')}</div>
           <div style={{ fontWeight: 600, fontSize: 14, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(oppId)}</div>
@@ -127,7 +128,7 @@ export default function TeamDetail({
             <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: -8 }}>
-            <TeamBadge name={team.name} seed={team.id} size={64} />
+            <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={64} />
             <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, textAlign: 'center', lineHeight: 1.05, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {pos > 0 && <span style={{ background: 'var(--brand-tint)', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}

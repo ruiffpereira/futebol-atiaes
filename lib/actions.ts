@@ -19,6 +19,7 @@ export const actions = {
   setTeamGroup: (d: TournamentState, id: string, group: string) => { const n = clone(d); const t = n.teams.find((x) => x.id === id); if (t) t.group = group; return done(n); },
   setCaptain: (d: TournamentState, id: string, pid: string) => { const n = clone(d); const t = n.teams.find((x) => x.id === id); if (t) t.captain = pid || ''; return done(n, true); },
   setCoach: (d: TournamentState, id: string, coach: string) => { const n = clone(d); const t = n.teams.find((x) => x.id === id); if (t) t.coach = coach; return done(n, true); },
+  setTeamLogo: (d: TournamentState, id: string, url: string) => { const n = clone(d); const t = n.teams.find((x) => x.id === id); if (t) t.logo = url || undefined; return done(n, true); },
   toggleGK: (d: TournamentState, teamId: string, pid: string) => {
     const n = clone(d); const t = n.teams.find((x) => x.id === teamId);
     if (t) { const target = t.players.find((x) => x.id === pid); if (target) { const on = !target.gk; t.players.forEach((p) => { p.gk = false; }); target.gk = on; } }
