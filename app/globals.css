@@ -137,14 +137,15 @@ input, select { font-family: inherit; }
 .soft-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
 /* App pública um pouco mais compacta (parecia tudo ampliado). Só o site público. */
 .app-scale { zoom: 0.92; }
-/* Backoffice (admin) — responsivo para uso em telemóvel */
-.admin-pad { padding: 22px 20px 60px; }
+/* Backoffice (admin) — responsivo para uso em telemóvel.
+   topo respeita a safe-area do iPhone (notch/status bar) — viewport-fit=cover */
+.admin-pad { padding: calc(env(safe-area-inset-top) + 22px) 20px 60px; }
 .modal-sheet { padding: 24px 16px; }
 .modal-inner { padding: 18px 20px; }
 .modal-foot { padding: 14px 20px; }
 .score-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 600px) {
-  .admin-pad { padding: 14px 12px 44px; }
+  .admin-pad { padding: calc(env(safe-area-inset-top) + 14px) 12px 44px; }
   .modal-sheet { padding: 10px 8px; }
   .modal-inner { padding: 14px 13px; }
   .modal-foot { padding: 12px 13px; }

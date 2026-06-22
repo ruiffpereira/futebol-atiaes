@@ -44,7 +44,7 @@ export default function AdminPage() {
 
   if (authed === null) return <div style={{ padding: 40 }}>A carregar…</div>;
   if (!authed) return (
-    <div className="admin-login" style={{ maxWidth: 380, margin: '50px auto', background: '#fff', borderRadius: 18, padding: '34px 30px', border: '1px solid #e4ece0' }}>
+    <div className="admin-login" style={{ maxWidth: 380, margin: 'calc(env(safe-area-inset-top) + 50px) auto 50px', background: '#fff', borderRadius: 18, padding: '34px 30px', border: '1px solid #e4ece0' }}>
       <div style={{ fontSize: 38, textAlign: 'center' }}>🔒</div>
       <h2 className="cond" style={{ textAlign: 'center', color: DGREEN, textTransform: 'uppercase', margin: '6px 0 18px' }}>Backoffice</h2>
       <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} placeholder="Palavra-passe" style={{ width: '100%', padding: '13px 14px', border: '1.5px solid #d3e0d0', borderRadius: 11, fontSize: 15, outline: 'none' }} />
