@@ -6,11 +6,11 @@ const STORAGE_KEY = 'theme';
 // Verde do header (claro) / verde mais vivo (escuro) → cor da topbar do browser/PWA.
 const TOPBAR = { light: '#15803d', dark: '#16a34a' };
 
-// Default = claro (white). "system" é guardado explicitamente para não se confundir com o default.
+// Default = Sistema (segue o dispositivo). A escolha do utilizador é guardada explicitamente.
 export function getStoredMode(): ThemeMode {
-  if (typeof localStorage === 'undefined') return 'light';
+  if (typeof localStorage === 'undefined') return 'system';
   const v = localStorage.getItem(STORAGE_KEY);
-  return v === 'light' || v === 'dark' || v === 'system' ? v : 'light';
+  return v === 'light' || v === 'dark' || v === 'system' ? v : 'system';
 }
 
 function systemPrefersDark(): boolean {
@@ -46,7 +46,7 @@ export function setMode(m: ThemeMode) {
 
 // Hook do seletor: devolve o modo atual e um setter que persiste + aplica.
 export function useTheme(): [ThemeMode, (m: ThemeMode) => void] {
-  const mode = useSyncExternalStore(subscribe, getStoredMode, () => 'light' as ThemeMode);
+  const mode = useSyncExternalStore(subscribe, getStoredMode, () => 'system' as ThemeMode);
 
   // Em "system", reage à mudança de tema do dispositivo (atualiza topbar/ícones).
   useEffect(() => {

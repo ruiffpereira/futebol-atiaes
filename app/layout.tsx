@@ -23,7 +23,7 @@ export const viewport: Viewport = {
 };
 
 // Aplica o tema guardado antes da pintura (evita flash de tema errado).
-const themeInit = `(function(){try{var m=localStorage.getItem('theme');if(m!=='dark'&&m!=='light'&&m!=='system')m='light';if(m==='dark'||m==='light'){document.documentElement.setAttribute('data-theme',m);}var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);var t=d?'#16a34a':'#15803d';var e=document.querySelector('meta[name="theme-color"]');if(e)e.setAttribute('content',t);}catch(e){}})();`;
+const themeInit = `(function(){try{var m=localStorage.getItem('theme');if(m!=='dark'&&m!=='light'&&m!=='system')m='system';if(m==='dark'||m==='light'){document.documentElement.setAttribute('data-theme',m);}var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);var t=d?'#16a34a':'#15803d';var e=document.querySelector('meta[name="theme-color"]');if(e)e.setAttribute('content',t);}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
