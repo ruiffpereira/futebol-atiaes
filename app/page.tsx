@@ -2,6 +2,7 @@
 // PLACAR PÚBLICO — só leitura, tempo real (React Query + SSE).
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
 import { useState, useEffect, useRef } from "react";
+import { useTheme, nextMode } from "@/lib/theme";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
 import {
@@ -43,15 +44,19 @@ import {
   Share,
   PlusSquare,
   TeamBadge,
+  Sun,
+  Moon,
+  Monitor,
 } from "./Icons";
 
-const GREEN = "#15803d",
-  DGREEN = "#0f4d2e";
+// Cores via tokens CSS (var) → seguem o tema claro/escuro/sistema definido em globals.css.
+const GREEN = "var(--brand)",
+  DGREEN = "var(--brand-dark)";
 // paleta "clean & arejado"
-const INK = "#16201b",
-  MUTED = "#8a978f",
-  LINE = "#edf0ec",
-  SOFT = "0 1px 2px rgba(18,40,28,.04), 0 6px 16px rgba(18,40,28,.03)";
+const INK = "var(--text)",
+  MUTED = "var(--muted)",
+  LINE = "var(--line)",
+  SOFT = "var(--shadow)";
 type Tab = "standings" | "live" | "schedule" | "stats" | "profile";
 const TAB_TITLE: Record<Tab, string> = {
   standings: "Classificação",
@@ -168,7 +173,7 @@ export default function PublicPage() {
           flexShrink: 0,
           border: "none",
           background: active ? GREEN : "transparent",
-          color: active ? "#fff" : "#62736a",
+          color: active ? "#fff" : "var(--muted)",
           fontWeight: 700,
           fontSize: 13.5,
           padding: "9px 16px",
@@ -196,7 +201,7 @@ export default function PublicPage() {
         alignItems: "center",
         gap: 3,
         padding: "6px 2px",
-        color: tab === id ? activeColor : "#9aa8a0",
+        color: tab === id ? activeColor : "var(--muted)",
       }}
     >
       <span style={{ display: "flex", height: 22, alignItems: "center" }}>
@@ -233,7 +238,7 @@ export default function PublicPage() {
             justifyContent: "flex-end",
             gap: 6,
             marginBottom: 10,
-            color: "#9aa8a0",
+            color: "var(--muted)",
             fontSize: 11.5,
             fontWeight: 500,
             textDecoration: "none",
@@ -253,7 +258,7 @@ export default function PublicPage() {
             overflowX: "auto",
             padding: 4,
             marginBottom: 18,
-            background: "#fff",
+            background: "var(--surface)",
             border: `1px solid ${LINE}`,
             borderRadius: 999,
             width: "fit-content",
@@ -480,7 +485,7 @@ export default function PublicPage() {
                       name={t.name}
                       sub={t.gf + " marcados"}
                       val={t.ga}
-                      color="#2563eb"
+                      color="var(--info)"
                       seed={t.id}
                       barVal={defense[defense.length - 1].ga - t.ga}
                       barMax={defense[defense.length - 1].ga - defense[0].ga}
@@ -516,14 +521,17 @@ export default function PublicPage() {
           right: 0,
           bottom: 0,
           zIndex: 50,
-          background: "#fff",
-          boxShadow: "0 -2px 16px rgba(18,40,28,.07)",
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(18px) saturate(180%)",
+          WebkitBackdropFilter: "blur(18px) saturate(180%)",
+          borderTop: "1px solid var(--glass-border)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,.08)",
           padding: "7px 4px",
           paddingBottom: "max(7px, env(safe-area-inset-bottom))",
         }}
       >
         {navBtn("standings", <List size={22} />, "Tabela")}
-        {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "#dc2626")}
+        {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "var(--danger)")}
         {navBtn("schedule", <Calendar size={22} />, "Calend.")}
         {navBtn("stats", <Chart size={22} />, "Estat.")}
         {navBtn("profile", <Info size={22} />, "Info")}
@@ -666,7 +674,7 @@ function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
           width: 38,
           height: 38,
           borderRadius: "50%",
-          background: "#fff",
+          background: "var(--surface)",
           boxShadow: "0 2px 12px rgba(18,40,28,.18)",
           display: "flex",
           alignItems: "center",
@@ -701,7 +709,7 @@ function LoadingScreen() {
         alignItems: "center",
         justifyContent: "center",
         gap: 18,
-        background: "#dcfce7",
+        background: "var(--brand-tint)",
       }}
     >
       <div
@@ -709,7 +717,7 @@ function LoadingScreen() {
           width: 64,
           height: 64,
           borderRadius: 18,
-          background: "#eef5ef",
+          background: "var(--brand-tint)",
           color: GREEN,
           display: "flex",
           alignItems: "center",
@@ -723,7 +731,7 @@ function LoadingScreen() {
         style={{
           width: 26,
           height: 26,
-          border: "3px solid #e2e8e0",
+          border: "3px solid var(--line-2)",
           borderTopColor: GREEN,
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",
@@ -763,6 +771,10 @@ function Header({
   const parts = name.trim().split(" ");
   const brandFirst = parts[0];
   const brandRest = parts.slice(1).join(" ");
+  const [themeMode, setThemeMode] = useTheme();
+  const themeIcon =
+    themeMode === "light" ? <Sun size={19} /> : themeMode === "dark" ? <Moon size={19} /> : <Monitor size={19} />;
+  const themeLabel = themeMode === "light" ? "Claro" : themeMode === "dark" ? "Escuro" : "Sistema";
   return (
     <div
       style={{
@@ -845,8 +857,8 @@ function Header({
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                background: "#fef2f2",
-                color: "#dc2626",
+                background: "var(--danger-tint)",
+                color: "var(--danger)",
                 padding: "7px 11px",
                 borderRadius: 999,
                 fontWeight: 700,
@@ -858,13 +870,32 @@ function Header({
                   width: 7,
                   height: 7,
                   borderRadius: "50%",
-                  background: "#dc2626",
+                  background: "var(--danger)",
                   animation: "pulse 1.1s infinite",
                 }}
               />
               {liveCount} ao vivo
             </div>
           )}
+          <button
+            onClick={() => setThemeMode(nextMode(themeMode))}
+            aria-label={`Tema: ${themeLabel}`}
+            title={`Tema: ${themeLabel}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              border: "1px solid rgba(255,255,255,.4)",
+              borderRadius: "50%",
+              background: "rgba(255,255,255,.16)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            {themeIcon}
+          </button>
           <button
             onClick={onBell}
             aria-label="Notificações"
@@ -920,9 +951,9 @@ function NotificationsPanel({
       {!supported && !standalone && (
         <div
           style={{
-            background: "#fdeaea",
-            border: "1px solid #f3c9c9",
-            color: "#b91c1c",
+            background: "var(--danger-tint)",
+            border: "1px solid var(--danger-tint)",
+            color: "var(--danger-2)",
             borderRadius: 11,
             padding: "11px 14px",
             fontSize: 13.5,
@@ -952,9 +983,9 @@ function NotificationsPanel({
             style={{
               marginTop: 14,
               width: "100%",
-              border: "1px solid #f3c9c9",
-              background: "#fff",
-              color: "#dc2626",
+              border: "1px solid var(--danger-tint)",
+              background: "var(--surface)",
+              color: "var(--danger)",
               fontWeight: 700,
               fontSize: 14.5,
               padding: "12px",
@@ -994,8 +1025,8 @@ function NotificationsPanel({
           {/* Android */}
           <div
             style={{
-              background: "#f6faf4",
-              border: `1px solid ${ios ? "#e1ece0" : "#bef264"}`,
+              background: "var(--surface-2)",
+              border: `1px solid ${ios ? "var(--line-2)" : "#bef264"}`,
               borderRadius: 12,
               padding: "12px 14px",
             }}
@@ -1010,7 +1041,7 @@ function NotificationsPanel({
             >
               🤖 Android (Chrome)
             </div>
-            <div style={{ fontSize: 13.5, color: "#3a4a40", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13.5, color: "var(--muted-2)", lineHeight: 1.5 }}>
               Toca em <b>«Ativar notificações»</b> aqui em cima e aceita o pedido
               do navegador. Está feito.
             </div>
@@ -1018,8 +1049,8 @@ function NotificationsPanel({
           {/* iOS */}
           <div
             style={{
-              background: "#f6faf4",
-              border: `1px solid ${ios ? "#bef264" : "#e1ece0"}`,
+              background: "var(--surface-2)",
+              border: `1px solid ${ios ? "#bef264" : "var(--line-2)"}`,
               borderRadius: 12,
               padding: "12px 14px",
             }}
@@ -1038,7 +1069,7 @@ function NotificationsPanel({
               <div
                 style={{
                   fontSize: 13,
-                  color: "#b45309",
+                  color: "var(--warn)",
                   fontWeight: 600,
                   marginBottom: 8,
                 }}
@@ -1052,7 +1083,7 @@ function NotificationsPanel({
                 margin: 0,
                 paddingLeft: 18,
                 fontSize: 13.5,
-                color: "#3a4a40",
+                color: "var(--muted-2)",
                 lineHeight: 1.6,
               }}
             >
@@ -1113,7 +1144,7 @@ function NotifyModal({
         className="m-pop"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#fff",
+          background: "var(--surface)",
           borderRadius: 18,
           width: "100%",
           maxWidth: 460,
@@ -1122,7 +1153,7 @@ function NotifyModal({
       >
         <div
           style={{
-            background: "linear-gradient(135deg,#0c2a1c,#15803d)",
+            background: "linear-gradient(135deg,var(--brand-dark),var(--brand))",
             padding: "14px 18px",
             display: "flex",
             alignItems: "center",
@@ -1217,7 +1248,7 @@ function PromoSheet({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#fff",
+          background: "var(--surface)",
           borderRadius: "20px 20px 0 0",
           width: "100%",
           maxWidth: 520,
@@ -1232,7 +1263,7 @@ function PromoSheet({
               height: 46,
               flexShrink: 0,
               borderRadius: 14,
-              background: "#eef5ef",
+              background: "var(--brand-tint)",
               color: GREEN,
               display: "flex",
               alignItems: "center",
@@ -1252,8 +1283,8 @@ function PromoSheet({
             aria-label="Fechar"
             style={{
               border: `1px solid ${LINE}`,
-              background: "#fff",
-              color: "#5b7163",
+              background: "var(--surface)",
+              color: "var(--muted-2)",
               width: 32,
               height: 32,
               borderRadius: "50%",
@@ -1349,7 +1380,7 @@ function AutoPrompts({
           setView(null);
         }}
       >
-        <div style={{ fontSize: 14, color: "#3a4a40", lineHeight: 1.5, marginBottom: 14 }}>
+        <div style={{ fontSize: 14, color: "var(--muted-2)", lineHeight: 1.5, marginBottom: 14 }}>
           Acesso rápido com um toque e notificações dos jogos em tempo real, sem
           ocupar espaço como uma app normal.
         </div>
@@ -1385,7 +1416,7 @@ function AutoPrompts({
           setView(null);
         }}
       >
-        <div style={{ fontSize: 14, color: "#3a4a40", lineHeight: 1.5, marginBottom: 14 }}>
+        <div style={{ fontSize: 14, color: "var(--muted-2)", lineHeight: 1.5, marginBottom: 14 }}>
           Recebe um aviso quando um jogo começa, nos golos e no resultado final,
           mesmo com a app fechada.
         </div>
@@ -1458,7 +1489,7 @@ function FeedbackCard() {
             height: 38,
             flexShrink: 0,
             borderRadius: 11,
-            background: "#eef5ef",
+            background: "var(--brand-tint)",
             color: GREEN,
             display: "flex",
             alignItems: "center",
@@ -1486,7 +1517,7 @@ function FeedbackCard() {
             alignItems: "center",
             gap: 10,
             padding: "18px 12px",
-            background: "#f3faf5",
+            background: "var(--surface-2)",
             borderRadius: 12,
             textAlign: "center",
           }}
@@ -1499,8 +1530,8 @@ function FeedbackCard() {
             onClick={() => setSent(false)}
             style={{
               border: `1px solid ${LINE}`,
-              background: "#fff",
-              color: "#5b7163",
+              background: "var(--surface)",
+              color: "var(--muted-2)",
               fontWeight: 600,
               fontSize: 13,
               padding: "8px 16px",
@@ -1550,7 +1581,7 @@ function FeedbackCard() {
             }}
           />
           {err && (
-            <div style={{ color: "#dc2626", fontSize: 13, fontWeight: 600 }}>
+            <div style={{ color: "var(--danger)", fontSize: 13, fontWeight: 600 }}>
               {err}
             </div>
           )}
@@ -1591,7 +1622,7 @@ function IosInstall({ onClose }: { onClose: () => void }) {
           height: 28,
           flexShrink: 0,
           borderRadius: "50%",
-          background: "#eef5ef",
+          background: "var(--brand-tint)",
           color: GREEN,
           display: "flex",
           alignItems: "center",
@@ -1627,7 +1658,7 @@ function IosInstall({ onClose }: { onClose: () => void }) {
         className="m-sheet"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#fff",
+          background: "var(--surface)",
           borderRadius: "20px 20px 0 0",
           width: "100%",
           maxWidth: 520,
@@ -1648,7 +1679,7 @@ function IosInstall({ onClose }: { onClose: () => void }) {
               height: 40,
               flexShrink: 0,
               borderRadius: 12,
-              background: "#eef5ef",
+              background: "var(--brand-tint)",
               color: GREEN,
               display: "flex",
               alignItems: "center",
@@ -1669,8 +1700,8 @@ function IosInstall({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             style={{
               border: `1px solid ${LINE}`,
-              background: "#fff",
-              color: "#5b7163",
+              background: "var(--surface)",
+              color: "var(--muted-2)",
               width: 32,
               height: 32,
               borderRadius: "50%",
@@ -1706,12 +1737,12 @@ function IosInstall({ onClose }: { onClose: () => void }) {
         <div
           style={{
             marginTop: 16,
-            background: "#f6f8f5",
+            background: "var(--surface-2)",
             border: `1px solid ${LINE}`,
             borderRadius: 11,
             padding: "10px 13px",
             fontSize: 12.5,
-            color: "#5b6b62",
+            color: "var(--muted-2)",
           }}
         >
           Tem de ser no <b>Safari</b> (não funciona no Chrome do iPhone). Precisa de iOS 16.4 ou superior para as notificações.
@@ -1752,7 +1783,7 @@ function Profile({
             height: 38,
             flexShrink: 0,
             borderRadius: 11,
-            background: "#eef5ef",
+            background: "var(--brand-tint)",
             color: GREEN,
             display: "flex",
             alignItems: "center",
@@ -1764,7 +1795,7 @@ function Profile({
         <span style={{ fontWeight: 600, fontSize: 15, color: INK }}>
           {label}
         </span>
-        <span style={{ marginLeft: "auto", color: "#c4cdc6", display: "flex" }}>
+        <span style={{ marginLeft: "auto", color: "var(--muted)", display: "flex" }}>
           <Chevron size={20} />
         </span>
       </>
@@ -1775,7 +1806,7 @@ function Profile({
       alignItems: "center",
       gap: 12,
       padding: "13px 16px",
-      background: "#fff",
+      background: "var(--surface)",
       border: `1px solid ${LINE}`,
       borderRadius: 16,
       boxShadow: SOFT,
@@ -1838,7 +1869,7 @@ function Profile({
             <span style={{ display: "block", fontWeight: 700, fontSize: 15 }}>
               Instalar a app
             </span>
-            <span style={{ display: "block", fontSize: 12.5, color: "#dcfce7" }}>
+            <span style={{ display: "block", fontSize: 12.5, color: "rgba(255,255,255,.85)" }}>
               {install.platform === "ios"
                 ? "Adiciona ao ecrã principal do iPhone/iPad"
                 : "Acesso rápido e notificações no telemóvel"}
@@ -1869,7 +1900,7 @@ function Profile({
             height: 38,
             flexShrink: 0,
             borderRadius: 11,
-            background: "#eef5ef",
+            background: "var(--brand-tint)",
             color: GREEN,
             display: "flex",
             alignItems: "center",
@@ -1910,7 +1941,7 @@ function Profile({
               display: "flex",
               alignItems: "center",
               gap: 6,
-              background: "#eef2ec",
+              background: "var(--surface-2)",
               color: DGREEN,
               fontWeight: 700,
               fontSize: 13.5,
@@ -1930,7 +1961,7 @@ function Profile({
           onClick={() => setNotifOpen(!notifOpen)}
           style={{
             width: "100%",
-            background: "#fff",
+            background: "var(--surface)",
             padding: "13px 16px",
             display: "flex",
             alignItems: "center",
@@ -1946,7 +1977,7 @@ function Profile({
               height: 38,
               flexShrink: 0,
               borderRadius: 11,
-              background: notifyOn ? GREEN : "#eef5ef",
+              background: notifyOn ? GREEN : "var(--brand-tint)",
               color: notifyOn ? "#fff" : GREEN,
               display: "flex",
               alignItems: "center",
@@ -1977,7 +2008,7 @@ function Profile({
             </span>
             <span
               style={{
-                color: "#c4cdc6",
+                color: "var(--muted)",
                 display: "inline-flex",
                 transform: notifOpen ? "rotate(90deg)" : "none",
                 transition: "transform .15s",
@@ -2085,7 +2116,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
               style={{
                 ...head,
                 padding: "8px 4px",
-                borderTop: i === 0 ? "none" : `1px solid #f3f5f1`,
+                borderTop: i === 0 ? "none" : `1px solid var(--surface-2)`,
                 cursor: "pointer",
               }}
             >
@@ -2100,8 +2131,8 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                   justifyContent: "center",
                   fontWeight: 800,
                   fontSize: 12,
-                  background: playoff ? GREEN : "#eef1ee",
-                  color: playoff ? "#fff" : "#7c8a82",
+                  background: playoff ? GREEN : "var(--surface-2)",
+                  color: playoff ? "#fff" : "var(--muted)",
                 }}
               >
                 {i + 1}
@@ -2141,7 +2172,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                         gap: 4,
                         fontSize: 10,
                         fontWeight: 800,
-                        color: "#dc2626",
+                        color: "var(--danger)",
                       }}
                     >
                       <span
@@ -2149,7 +2180,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
                           width: 6,
                           height: 6,
                           borderRadius: "50%",
-                          background: "#dc2626",
+                          background: "var(--danger)",
                           animation: "pulse 1.1s infinite",
                         }}
                       />
@@ -2163,7 +2194,7 @@ function GroupCard({ g, state, onTeam }: { g: string; state: TournamentState; on
               {num(`${r.GF}/${r.GA}`, { fontSize: 12.5 })}
               {num((dg > 0 ? "+" : "") + dg, {
                 fontWeight: 600,
-                color: dg > 0 ? GREEN : dg < 0 ? "#dc2626" : MUTED,
+                color: dg > 0 ? GREEN : dg < 0 ? "var(--danger)" : MUTED,
               })}
               <span
                 className="cond pts"
@@ -2225,7 +2256,7 @@ function LiveCard({
         alignItems: "stretch",
         gap: 14,
         cursor: "pointer",
-        borderColor: "#f6d5d5",
+        borderColor: "var(--danger-tint)",
       }}
     >
       <div
@@ -2249,7 +2280,7 @@ function LiveCard({
             gap: 5,
             fontSize: 10.5,
             fontWeight: 800,
-            color: half ? "#d97706" : "#dc2626",
+            color: half ? "var(--warn)" : "var(--danger)",
             textTransform: "uppercase",
           }}
         >
@@ -2258,7 +2289,7 @@ function LiveCard({
               width: 6,
               height: 6,
               borderRadius: "50%",
-              background: half ? "#d97706" : "#dc2626",
+              background: half ? "var(--warn)" : "var(--danger)",
               animation: "pulse 1.1s infinite",
             }}
           />
@@ -2315,7 +2346,7 @@ function KoCard({
             height: 26,
             flexShrink: 0,
             borderRadius: "50%",
-            background: "#f0f3ef",
+            background: "var(--surface-2)",
           }}
         />
       ) : (
@@ -2327,7 +2358,7 @@ function KoCard({
           minWidth: 0,
           fontWeight: win ? 700 : 500,
           fontSize: 14.5,
-          color: pending ? "#a7b3ab" : INK,
+          color: pending ? "var(--muted)" : INK,
           fontStyle: pending ? "italic" : "normal",
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -2336,7 +2367,7 @@ function KoCard({
       >
         {name}
       </span>
-      {win && <Trophy size={15} color="#ca8a04" />}
+      {win && <Trophy size={15} color="var(--warn)" />}
       <span
         className="cond"
         style={{ fontWeight: 800, fontSize: 19, color: INK, flexShrink: 0 }}
@@ -2371,7 +2402,7 @@ function KoCard({
       {m.status === "live" && (
         <div
           style={{
-            background: m.livePhase === "half" ? "#d97706" : "#dc2626",
+            background: m.livePhase === "half" ? "var(--warn)" : "var(--danger)",
             padding: "5px 14px",
             fontSize: 11,
             fontWeight: 800,
@@ -2444,7 +2475,7 @@ function TeamLine({
         style={{
           fontWeight: 800,
           fontSize: 18,
-          color: val === undefined ? "#c4cdc6" : INK,
+          color: val === undefined ? "var(--muted)" : INK,
           flexShrink: 0,
         }}
       >
@@ -2554,7 +2585,7 @@ const StatHead = ({
           height: 32,
           flexShrink: 0,
           borderRadius: 10,
-          background: "#eef5ef",
+          background: "var(--brand-tint)",
           color: GREEN,
           display: "flex",
           alignItems: "center",
@@ -2574,7 +2605,7 @@ const StatHead = ({
           fontWeight: 700,
           fontSize: 11,
           color: GREEN,
-          background: "#eef5ef",
+          background: "var(--brand-tint)",
           padding: "3px 9px",
           borderRadius: 999,
         }}
@@ -2650,7 +2681,7 @@ const Row3 = ({
         alignItems: "center",
         gap: 11,
         padding: "11px 16px",
-        borderTop: i === 1 ? "none" : `1px solid #f3f5f1`,
+        borderTop: i === 1 ? "none" : `1px solid var(--surface-2)`,
         borderBottom: last ? `1px solid ${LINE}` : undefined,
       }}
     >
@@ -2684,7 +2715,7 @@ const Row3 = ({
               marginTop: 5,
               height: 5,
               borderRadius: 999,
-              background: "#eef1ee",
+              background: "var(--surface-2)",
               overflow: "hidden",
             }}
           >
@@ -2729,12 +2760,12 @@ const Empty = ({
         marginBottom: 14,
         display: "flex",
         justifyContent: "center",
-        color: "#c4cfc6",
+        color: "var(--muted)",
       }}
     >
       {icon}
     </div>
-    <div style={{ fontSize: 17, fontWeight: 600, color: "#5b6b62" }}>{title}</div>
+    <div style={{ fontSize: 17, fontWeight: 600, color: "var(--muted-2)" }}>{title}</div>
     {sub && <div style={{ fontSize: 14, marginTop: 4 }}>{sub}</div>}
   </div>
 );

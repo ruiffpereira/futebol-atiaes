@@ -3,7 +3,7 @@ import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 import { Ball, Card, TeamBadge } from './Icons';
 
-const INK = '#16201b', MUTED = '#8a978f', LINE = '#edf0ec', GREEN = '#15803d';
+const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
 // Detalhe do jogo (lance-a-lance + equipas) — só leitura.
 export default function MatchDetail({ m, state, onClose }: { m: Match; state: TournamentState; onClose: () => void }) {
@@ -21,7 +21,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     const who = e.kind === 'goal' ? (e.own ? 'Auto-golo' : pname(t, e.player) || 'Golo') : pname(t, e.player) || 'Cartão';
     const icon = e.kind === 'goal'
       ? <Ball size={16} color={INK} />
-      : <Card size={15} color={e.kind === 'yellow' ? '#eab308' : '#dc2626'} />;
+      : <Card size={15} color={e.kind === 'yellow' ? 'var(--warn)' : 'var(--danger)'} />;
     return { i, isA, icon, who, sc, isGoal: e.kind === 'goal' };
   });
   const lineup = (t: typeof ta) => (t ? t.players.map((p) => ({
@@ -34,11 +34,11 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   const playerRow = (p: { name: string; cap: boolean; gk: boolean; g: number; y: number; r: number }, k: number) => (
     <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: `1px solid ${LINE}` }}>
       {p.cap && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
-      {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#2563eb', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
+      {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
       <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
       {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
-      {p.y > 0 && <Card size={12} color="#eab308" />}
-      {p.r > 0 && <Card size={12} color="#dc2626" />}
+      {p.y > 0 && <Card size={12} color="var(--warn)" />}
+      {p.r > 0 && <Card size={12} color="var(--danger)" />}
     </div>
   );
 
@@ -51,17 +51,17 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
 
   return (
     <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: 0.5 }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>
-            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: '#fff', color: '#5b7163', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
+            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
             {teamCol(ta?.name || 'A definir', 'a')}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <span className="cond" style={{ fontWeight: 800, fontSize: 40, color: INK, lineHeight: 1 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</span>
-              {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? '#d97706' : '#dc2626', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
+              {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? 'var(--warn)' : 'var(--danger)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
               {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Terminado</span>}
               {m.status === 'scheduled' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 700 }}>{m.time || 'Por jogar'}</span>}
             </div>
@@ -75,7 +75,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
             {rows.map((e) => (
               <div key={e.i} style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 36px 1fr', alignItems: 'center', gap: 8, padding: '6px 0' }}>
                 <div style={{ textAlign: 'right', minWidth: 0 }}>{e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fff', zIndex: 1 }}>{e.icon}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'var(--surface)', zIndex: 1 }}>{e.icon}</div>
                 <div style={{ textAlign: 'left', minWidth: 0 }}>{!e.isA && <><div style={{ fontWeight: 600, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.who}</div>{e.isGoal && <div className="cond" style={{ fontSize: 13, color: GREEN, fontWeight: 800 }}>{e.sc}</div>}</>}</div>
               </div>
             ))}

@@ -3,7 +3,7 @@ import { scoreOf, phaseLabel, liveBadge, fmtDate, standings } from '@/lib/tourna
 import type { Match, Team, TournamentState } from '@/lib/types';
 import { Ball, Clock, TeamBadge } from './Icons';
 
-const INK = '#16201b', MUTED = '#8a978f', LINE = '#edf0ec', GREEN = '#15803d';
+const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
 // Ficha da equipa — resumo, forma recente, jogos e melhores marcadores. Só leitura.
 // Clicar num jogo ao vivo reencaminha para o separador "Ao Vivo".
@@ -77,14 +77,14 @@ export default function TeamDetail({
   const liveMatch = matches.find((m) => m.status === 'live');
 
   const box = (label: string, val: number | string) => (
-    <div style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 14, padding: '12px 6px', textAlign: 'center' }}>
+    <div style={{ background: 'var(--surface)', border: `1px solid ${LINE}`, borderRadius: 14, padding: '12px 6px', textAlign: 'center' }}>
       <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, lineHeight: 1 }}>{val}</div>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase', letterSpacing: .3, marginTop: 4 }}>{label}</div>
     </div>
   );
 
   const formChip = (r: string, k: number) => {
-    const c = r === 'V' ? GREEN : r === 'D' ? '#dc2626' : '#9aa8a0';
+    const c = r === 'V' ? GREEN : r === 'D' ? 'var(--danger)' : 'var(--muted)';
     return <span key={k} style={{ width: 26, height: 26, borderRadius: '50%', background: c, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12.5 }}>{r}</span>;
   };
 
@@ -97,23 +97,23 @@ export default function TeamDetail({
     const live = m.status === 'live';
     const done = m.status === 'done';
     const result = done ? (my > th ? 'V' : my < th ? 'D' : 'E') : '';
-    const resColor = result === 'V' ? GREEN : result === 'D' ? '#dc2626' : '#d97706';
+    const resColor = result === 'V' ? GREEN : result === 'D' ? 'var(--danger)' : 'var(--warn)';
     const when = [fmtDate(m.date), m.time].filter(Boolean).join(' · ');
     return (
       <button
         key={m.id}
         onClick={() => (live ? onLive() : onMatch(m.id))}
-        style={{ textAlign: 'left', width: '100%', background: '#fff', border: `1px solid ${live ? '#f6d5d5' : LINE}`, borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        style={{ textAlign: 'left', width: '100%', background: 'var(--surface)', border: `1px solid ${live ? 'var(--danger-tint)' : LINE}`, borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
       >
         {done && <span style={{ width: 24, height: 24, flexShrink: 0, borderRadius: '50%', background: resColor, color: '#fff', fontWeight: 800, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{result}</span>}
-        {live && <span style={{ width: 8, height: 8, flexShrink: 0, borderRadius: '50%', background: '#dc2626', animation: 'pulse 1.1s infinite' }} />}
+        {live && <span style={{ width: 8, height: 8, flexShrink: 0, borderRadius: '50%', background: 'var(--danger)', animation: 'pulse 1.1s infinite' }} />}
         {m.status === 'scheduled' && <span style={{ width: 24, height: 24, flexShrink: 0, color: MUTED, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Clock size={16} /></span>}
         <TeamBadge name={nameOf(oppId)} seed={oppId || 'x'} size={26} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase' }}>{[phaseLabel(m), when].filter(Boolean).join(' · ')}</div>
           <div style={{ fontWeight: 600, fontSize: 14, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(oppId)}</div>
         </div>
-        {live && <span style={{ background: m.livePhase === 'half' ? '#d97706' : '#dc2626', color: '#fff', fontSize: 9.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, flexShrink: 0 }}>{liveBadge(m)}</span>}
+        {live && <span style={{ background: m.livePhase === 'half' ? 'var(--warn)' : 'var(--danger)', color: '#fff', fontSize: 9.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, flexShrink: 0 }}>{liveBadge(m)}</span>}
         {(done || live) && <span className="cond" style={{ fontWeight: 800, fontSize: 18, color: INK, flexShrink: 0 }}>{my}:{th}</span>}
       </button>
     );
@@ -121,16 +121,16 @@ export default function TeamDetail({
 
   return (
     <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
         <div style={{ padding: '16px 18px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: '#fff', color: '#5b7163', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
+            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: -8 }}>
             <TeamBadge name={team.name} seed={team.id} size={64} />
             <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, textAlign: 'center', lineHeight: 1.05, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {pos > 0 && <span style={{ background: '#eef5ef', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}
+              {pos > 0 && <span style={{ background: 'var(--brand-tint)', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}
               <span style={{ fontSize: 12.5, color: MUTED, fontWeight: 600 }}>
                 {team.group ? 'Grupo ' + team.group : 'Amigável'}{team.coach ? ' · ' + team.coach : ''}
               </span>
@@ -164,7 +164,7 @@ export default function TeamDetail({
                   <span style={{ fontWeight: 700, fontSize: 13, color: i < 3 ? GREEN : MUTED, textAlign: 'center' }}>{i + 1}</span>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 14, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                    <div style={{ marginTop: 5, height: 5, borderRadius: 999, background: '#eef1ee', overflow: 'hidden' }}>
+                    <div style={{ marginTop: 5, height: 5, borderRadius: 999, background: 'var(--surface-2)', overflow: 'hidden' }}>
                       <div style={{ width: Math.max(8, (p.g / maxG) * 100) + '%', height: '100%', borderRadius: 999, background: GREEN }} />
                     </div>
                   </div>
@@ -180,9 +180,9 @@ export default function TeamDetail({
               {team.players.map((p) => {
                 const s = stat(p.id);
                 return (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6f8f5', border: `1px solid ${LINE}`, padding: '6px 11px', borderRadius: 999 }}>
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '6px 11px', borderRadius: 999 }}>
                     {team.captain === p.id && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
-                    {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#2563eb', padding: '1px 5px', borderRadius: 5 }}>GR</span>}
+                    {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 5px', borderRadius: 5 }}>GR</span>}
                     <span style={{ fontSize: 13.5, color: INK }}>{p.name}</span>
                     {s.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={12} />{s.g}</span>}
                   </div>

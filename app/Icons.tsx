@@ -244,6 +244,32 @@ export function Star({ size = 24, color, style }: P) {
   );
 }
 
+export function Sun({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" />
+    </svg>
+  );
+}
+
+export function Moon({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <path d="M20 14.2A8 8 0 1 1 9.8 4 6.3 6.3 0 0 0 20 14.2Z" />
+    </svg>
+  );
+}
+
+export function Monitor({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <rect x="3" y="4.5" width="18" height="12" rx="2.2" />
+      <path d="M8.5 20.5h7M12 16.5v4" />
+    </svg>
+  );
+}
+
 // Cartão (amarelo/vermelho) — retângulo cheio inclinado.
 export function Card({ size = 14, color = "#eab308", style }: P) {
   return (
