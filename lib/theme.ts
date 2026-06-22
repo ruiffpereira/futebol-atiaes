@@ -3,8 +3,9 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 const STORAGE_KEY = 'theme';
-// Verde do header (claro) / verde mais vivo (escuro) → cor da topbar do browser/PWA.
-const TOPBAR = { light: '#15803d', dark: '#16a34a' };
+// Cor da topbar do browser/PWA — tem de igualar o fundo do header (var(--brand)):
+// claro #15803d, escuro #22c55e. (Antes usava #16a34a no escuro e destoava do header.)
+const TOPBAR = { light: '#15803d', dark: '#22c55e' };
 
 // Default = Sistema (segue o dispositivo). A escolha do utilizador é guardada explicitamente.
 export function getStoredMode(): ThemeMode {

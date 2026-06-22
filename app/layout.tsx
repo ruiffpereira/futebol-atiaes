@@ -16,14 +16,14 @@ export const metadata: Metadata = {
 };
 // topbar verde a condizer com o header (browser + PWA standalone, Android + iOS)
 export const viewport: Viewport = {
-  themeColor: '#15803d', // verde do header; ajustado em runtime para o verde escuro no tema dark
+  themeColor: '#15803d', // verde do header (claro); ajustado em runtime para #22c55e no tema dark
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
 };
 
 // Aplica o tema guardado antes da pintura (evita flash de tema errado).
-const themeInit = `(function(){try{var m=localStorage.getItem('theme');if(m!=='dark'&&m!=='light'&&m!=='system')m='system';if(m==='dark'||m==='light'){document.documentElement.setAttribute('data-theme',m);}var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);var t=d?'#16a34a':'#15803d';var e=document.querySelector('meta[name="theme-color"]');if(e)e.setAttribute('content',t);}catch(e){}})();`;
+const themeInit = `(function(){try{var m=localStorage.getItem('theme');if(m!=='dark'&&m!=='light'&&m!=='system')m='system';if(m==='dark'||m==='light'){document.documentElement.setAttribute('data-theme',m);}var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);var t=d?'#22c55e':'#15803d';var e=document.querySelector('meta[name="theme-color"]');if(e)e.setAttribute('content',t);}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
