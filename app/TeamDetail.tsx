@@ -121,8 +121,8 @@ export default function TeamDetail({
   };
 
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px', overflowY: 'auto' }}>
-      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px)', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom))', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
         <div style={{ padding: '16px 18px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
