@@ -324,7 +324,7 @@ export function TeamBadge({
           height: size,
           flexShrink: 0,
           borderRadius: "50%",
-          objectFit: "cover",
+          objectFit: "contain",
           background: "var(--surface-2, #eef2ec)",
           ...style,
         }}
