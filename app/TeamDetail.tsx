@@ -180,21 +180,22 @@ export default function TeamDetail({
           {label('Plantel')}
           {team.players.length ? (() => {
             const hasNum = team.players.some((p) => p.number != null);
-            const hasMark = team.players.some((p) => team.captain === p.id || p.gk);
-            // colunas fixas antes do nome → nomes alinhados; marcadores num slot que não empurra
-            const cols = `${hasNum ? '22px ' : ''}${hasMark ? '30px ' : ''}1fr`;
+            // só número (se houver) antes do nome → nomes alinhados; © e GR vão para os cantos (absolutos)
+            const cols = `${hasNum ? '22px ' : ''}1fr`;
             return (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                {team.players.map((p) => (
-                  <div key={p.id} style={{ display: 'grid', gridTemplateColumns: cols, alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0 }}>
-                    {hasNum && <span style={{ justifySelf: 'center' }}>{p.number != null && <span style={{ width: 20, height: 20, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}</span>}
-                    {hasMark && <span style={{ display: 'flex', alignItems: 'center', gap: 3, overflow: 'hidden' }}>
-                      {team.captain === p.id && <span style={{ fontSize: 12, fontWeight: 800, color: GREEN }}>©</span>}
-                      {p.gk && <span style={{ fontSize: 8.5, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
-                    </span>}
-                    <span style={{ minWidth: 0, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
-                  </div>
-                ))}
+                {team.players.map((p) => {
+                  const cap = team.captain === p.id;
+                  const pad = cap || p.gk ? 18 : 0;  // folga mínima p/ o nome não passar por baixo dos cantos
+                  return (
+                    <div key={p.id} style={{ position: 'relative', display: 'grid', gridTemplateColumns: cols, alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0, minHeight: 48, overflow: 'hidden' }}>
+                      {hasNum && <span style={{ justifySelf: 'center' }}>{p.number != null && <span style={{ width: 20, height: 20, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}</span>}
+                      <span style={{ minWidth: 0, paddingRight: pad, fontSize: 13.5, color: INK, lineHeight: 1.15, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', wordBreak: 'break-word' }}>{p.name}</span>
+                      {cap && <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 11, fontWeight: 800, color: GREEN, lineHeight: 1 }}>©</span>}
+                      {p.gk && <span style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>GR</span>}
+                    </div>
+                  );
+                })}
               </div>
             );
           })() : <div style={{ fontSize: 13, color: MUTED, fontStyle: 'italic' }}>Sem jogadores registados.</div>}
