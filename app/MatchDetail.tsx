@@ -25,14 +25,15 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     return { i, isA, icon, who, sc, isGoal: e.kind === 'goal' };
   });
   const lineup = (t: typeof ta) => (t ? t.players.map((p) => ({
-    name: p.name, cap: t.captain === p.id, gk: !!p.gk,
+    name: p.name, cap: t.captain === p.id, gk: !!p.gk, num: p.number,
     g: (m.scorers || []).filter((s) => s.player === p.id).length,
     y: (m.cards || []).filter((c) => c.player === p.id && c.type === 'yellow').length,
     r: (m.cards || []).filter((c) => c.player === p.id && c.type === 'red').length,
   })) : []);
 
-  const playerRow = (p: { name: string; cap: boolean; gk: boolean; g: number; y: number; r: number }, k: number) => (
+  const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number) => (
     <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: `1px solid ${LINE}` }}>
+      {p.num != null && <span style={{ minWidth: 17, textAlign: 'center', fontSize: 11, fontWeight: 800, color: MUTED }}>{p.num}</span>}
       {p.cap && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
       {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
       <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>

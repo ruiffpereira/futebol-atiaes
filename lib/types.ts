@@ -1,6 +1,6 @@
 // Modelo de dados do torneio (partilhado servidor + cliente)
 
-export type Player = { id: string; name: string; gk?: boolean };
+export type Player = { id: string; name: string; gk?: boolean; number?: number };  // number = nº de camisola
 
 export type Team = {
   id: string;

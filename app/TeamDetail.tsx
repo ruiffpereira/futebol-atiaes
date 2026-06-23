@@ -183,7 +183,8 @@ export default function TeamDetail({
               {team.players.map((p) => {
                 const s = stat(p.id);
                 return (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '6px 11px', borderRadius: 999 }}>
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '6px 11px 6px 7px', borderRadius: 999 }}>
+                    {p.number != null && <span style={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}
                     {team.captain === p.id && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
                     {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 5px', borderRadius: 5 }}>GR</span>}
                     <span style={{ fontSize: 13.5, color: INK }}>{p.name}</span>
