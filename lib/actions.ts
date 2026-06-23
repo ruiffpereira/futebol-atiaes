@@ -79,6 +79,11 @@ export const actions = {
   startMatch: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = 'first'; } return done(n); },
   setLivePhase: (d: TournamentState, id: string, phase: LivePhase) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = phase; } return done(n); },
   finishMatch: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'done'; m.finishedAt = Date.now(); } return done(n); },
+  // ---- desempate por penáltis (fase final empatada ao fim da 2ª parte) ----
+  startPens: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = 'pens'; m.penA = m.penA || 0; m.penB = m.penB || 0; } return done(n); },
+  setPenStart: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.penStart = side; return done(n); },
+  addPen: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { const k = side === 'a' ? 'penA' : 'penB'; m[k] = (m[k] || 0) + 1; } return done(n); },
+  removePen: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { const k = side === 'a' ? 'penA' : 'penB'; m[k] = Math.max(0, (m[k] || 0) - 1); } return done(n); },
   reopenMatch: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = m.livePhase || 'second'; } return done(n); },
 
   // ---- fase final (automática) ----

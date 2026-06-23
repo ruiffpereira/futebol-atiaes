@@ -51,12 +51,14 @@ export function phaseLabel(m: Match): string {
 export function liveText(m: Match): string {
   if (m.status !== 'live') return '';
   if (m.livePhase === 'half') return 'Intervalo';
+  if (m.livePhase === 'pens') return 'Penáltis';
   if (m.livePhase === 'second') return '2ª parte';
   return '1ª parte';
 }
 export function liveBadge(m: Match): string {
   if (m.status !== 'live') return '';
   if (m.livePhase === 'half') return 'INTERVALO';
+  if (m.livePhase === 'pens') return 'PENÁLTIS';
   return 'AO VIVO · ' + (m.livePhase === 'second' ? '2ª PARTE' : '1ª PARTE');
 }
 

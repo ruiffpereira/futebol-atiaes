@@ -2355,6 +2355,8 @@ function LiveCard({
   onClick: () => void;
 }) {
   const half = m.livePhase === "half";
+  const pens = m.livePhase === "pens";
+  const accent = pens ? "var(--brand)" : half ? "var(--warn)" : "var(--danger)";
   const sa = scoreOf(m, m.a),
     sb = scoreOf(m, m.b);
   return (
@@ -2391,7 +2393,7 @@ function LiveCard({
             gap: 5,
             fontSize: 10.5,
             fontWeight: 800,
-            color: half ? "var(--warn)" : "var(--danger)",
+            color: accent,
             textTransform: "uppercase",
           }}
         >
@@ -2400,11 +2402,11 @@ function LiveCard({
               width: 6,
               height: 6,
               borderRadius: "50%",
-              background: half ? "var(--warn)" : "var(--danger)",
+              background: accent,
               animation: "pulse 1.1s infinite",
             }}
           />
-          {half ? "Intervalo" : "Ao Vivo"}
+          {pens ? "Penáltis" : half ? "Intervalo" : "Ao Vivo"}
         </span>
         <span style={{ fontSize: 10.5, fontWeight: 600, color: MUTED }}>
           {liveText(m)}
@@ -2514,7 +2516,7 @@ function KoCard({
       {m.status === "live" && (
         <div
           style={{
-            background: m.livePhase === "half" ? "var(--warn)" : "var(--danger)",
+            background: m.livePhase === "half" ? "var(--warn)" : m.livePhase === "pens" ? "var(--brand)" : "var(--danger)",
             padding: "5px 14px",
             fontSize: 11,
             fontWeight: 800,

@@ -114,7 +114,7 @@ export default function TeamDetail({
           <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase' }}>{[phaseLabel(m), when].filter(Boolean).join(' · ')}</div>
           <div style={{ fontWeight: 600, fontSize: 14, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(oppId)}</div>
         </div>
-        {live && <span style={{ background: m.livePhase === 'half' ? 'var(--warn)' : 'var(--danger)', color: '#fff', fontSize: 9.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, flexShrink: 0 }}>{liveBadge(m)}</span>}
+        {live && <span style={{ background: m.livePhase === 'half' ? 'var(--warn)' : m.livePhase === 'pens' ? 'var(--brand)' : 'var(--danger)', color: '#fff', fontSize: 9.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, flexShrink: 0 }}>{liveBadge(m)}</span>}
         {(done || live) && <span className="cond" style={{ fontWeight: 800, fontSize: 18, color: INK, flexShrink: 0 }}>{my}:{th}</span>}
       </button>
     );
@@ -122,13 +122,13 @@ export default function TeamDetail({
 
   return (
     <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
-      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom))', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
+            <button onClick={onClose} aria-label="Fechar" style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 42, height: 42, borderRadius: '50%', fontSize: 26, lineHeight: 1, boxShadow: '0 2px 8px rgba(10,30,20,.12)', cursor: 'pointer' }}>×</button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: -8 }}>
-            <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={64} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: -14 }}>
+            <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={104} />
             <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, textAlign: 'center', lineHeight: 1.05, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {pos > 0 && <span style={{ background: 'var(--brand-tint)', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}

@@ -312,7 +312,7 @@ function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i
             <input type="time" value={dTime} onChange={(e) => setDTime(e.target.value)} style={{ fontSize: 12, fontWeight: 700, color: DGREEN, border: '1px solid #d3e0d0', borderRadius: 7, padding: '3px 7px', background: '#fff' }} />
           </> : <span style={{ fontSize: 12, fontWeight: 800, color: DGREEN, background: '#eef2ec', padding: '4px 9px', borderRadius: 7 }}>{when || 'Sem data/hora'}</span>}
           {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
-          {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
+          {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : m.livePhase === 'pens' ? '#15803d' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
           {m.status === 'done' && <span style={{ fontSize: 10, fontWeight: 800, color: '#5b7163', background: '#eef2ec', padding: '2px 7px', borderRadius: 6 }}>TERMINADO</span>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -527,6 +527,10 @@ function CommentsTab({ onSeen }: { onSeen: () => void }) {
 function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: { state: TournamentState; m: Match; apply: (s: TournamentState) => void; onClose: () => void; editUnlock: boolean; setEditUnlock: (b: boolean) => void }) {
   const ta = state.teams.find((t) => t.id === m.a), tb = state.teams.find((t) => t.id === m.b);
   const isLive = m.status === 'live'; const canEdit = isLive || editUnlock; const silent = !isLive;
+  const [confirmPens, setConfirmPens] = useState(false);
+  const isKo = m.phase !== 'group' && m.phase !== 'friendly';        // fase final (meias, 3º/4º, final)
+  const tied = scoreOf(m, m.a) === scoreOf(m, m.b);
+  const inPens = isLive && m.livePhase === 'pens';
   const side = (team: typeof ta, opp: typeof ta, teamId: string | null, oppId: string | null) => (
     <div style={{ pointerEvents: canEdit ? 'auto' : 'none', opacity: canEdit ? 1 : 0.45 }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: '#5b7163', textTransform: 'uppercase', marginBottom: 8 }}>{team?.name || '—'}</div>
@@ -544,6 +548,37 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
   );
   const goals = (m.scorers || []).map((s) => { const t = state.teams.find((x) => x.id === s.team); const pl = t && s.player ? t.players.find((p) => p.id === s.player) : null; return { id: s.id, team: t?.name || '?', isA: s.team === m.a, label: s.own ? 'Auto-golo' : pl ? pl.name : 'Sem marcador' }; });
   const f = (label: string, onClick: () => void, bg: string) => <button onClick={onClick} style={{ flex: 1, minWidth: 140, border: 'none', background: bg, color: '#fff', fontWeight: 800, fontSize: 14, padding: 13, borderRadius: 11 }}>{label}</button>;
+  // Painel de penáltis (fase final empatada) — escolhe quem começa e marca por EQUIPA, não por jogador.
+  const penTeamBtn = (label: string, sd: 'a' | 'b', count: number) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', flex: 1, minWidth: 0 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: DGREEN, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{label}{m.penStart === sd && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#fff', background: '#d97706', padding: '2px 6px', borderRadius: 6 }}>INICIA</span>}</div>
+      <div className="cond" style={{ fontWeight: 800, fontSize: 52, color: DGREEN, lineHeight: 1 }}>{count}</div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={() => apply(actions.addPen(state, m.id, sd))} style={{ border: 'none', background: GREEN, color: '#fff', fontWeight: 800, fontSize: 24, width: 72, height: 52, borderRadius: 13 }}>+</button>
+        <button onClick={() => apply(actions.removePen(state, m.id, sd))} style={{ border: '1.5px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 800, fontSize: 24, width: 52, height: 52, borderRadius: 13 }}>−</button>
+      </div>
+    </div>
+  );
+  const penPanel = (
+    <div style={{ background: '#f6faf4', border: '1px solid #dce6d7', borderRadius: 14, padding: 16 }}>
+      <div style={{ fontSize: 12, fontWeight: 800, color: '#5b7163', textTransform: 'uppercase', letterSpacing: .4, textAlign: 'center', marginBottom: 14 }}>Desempate por penáltis</div>
+      {!m.penStart ? (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 700, color: DGREEN, textAlign: 'center', marginBottom: 12 }}>Qual equipa começa?</div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => apply(actions.setPenStart(state, m.id, 'a'))} style={{ flex: 1, minWidth: 0, border: '1.5px solid #d3e0d0', background: '#fff', color: DGREEN, fontWeight: 800, fontSize: 15, padding: '14px 12px', borderRadius: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ta?.name || 'Equipa A'}</button>
+            <button onClick={() => apply(actions.setPenStart(state, m.id, 'b'))} style={{ flex: 1, minWidth: 0, border: '1.5px solid #d3e0d0', background: '#fff', color: DGREEN, fontWeight: 800, fontSize: 15, padding: '14px 12px', borderRadius: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tb?.name || 'Equipa B'}</button>
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'stretch', gap: 14 }}>
+          {penTeamBtn(ta?.name || 'Equipa A', 'a', m.penA || 0)}
+          <div style={{ width: 1, background: '#dce6d7' }} />
+          {penTeamBtn(tb?.name || 'Equipa B', 'b', m.penB || 0)}
+        </div>
+      )}
+    </div>
+  );
   return (
     <div onClick={onClose} className="modal-sheet" style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,30,18,.55)', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 620, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 48px)' }}>
@@ -562,7 +597,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
           </div>
           {!isLive && !editUnlock && <div style={{ display: 'flex', gap: 10, background: '#eef2ec', border: '1px solid #dce6d7', borderRadius: 11, padding: '11px 14px', marginBottom: 14, fontSize: 12.5 }}>🔒 <div><b style={{ color: DGREEN }}>Edição bloqueada.</b> Carrega em ✏️ Editar para corrigir.</div></div>}
           {!isLive && editUnlock && <div style={{ display: 'flex', gap: 10, background: '#fef3c7', border: '1px solid #fadf8b', borderRadius: 11, padding: '11px 14px', marginBottom: 14, fontSize: 12.5 }}>⚠️ <div><b style={{ color: '#92660a' }}>Modo de edição.</b> Estas alterações não notificam ninguém.</div></div>}
-          <div className="score-sides">{side(ta, tb, m.a, m.b)}{side(tb, ta, m.b, m.a)}</div>
+          {inPens ? penPanel : <div className="score-sides">{side(ta, tb, m.a, m.b)}{side(tb, ta, m.b, m.a)}</div>}
           {goals.length > 0 && (
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f0f4ee', pointerEvents: canEdit ? 'auto' : 'none', opacity: canEdit ? 1 : 0.45 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#5b7163', textTransform: 'uppercase', marginBottom: 8 }}>Golos registados · × para corrigir</div>
@@ -587,10 +622,24 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
           {m.status === 'scheduled' && f('▶ Iniciar 1ª parte', () => apply(actions.startMatch(state, m.id)), GREEN)}
           {isLive && (m.livePhase || 'first') === 'first' && <>{f('⏸ Intervalo', () => apply(actions.setLivePhase(state, m.id, 'half')), '#d97706')}{f('■ Terminar', () => apply(actions.finishMatch(state, m.id)), DGREEN)}</>}
           {isLive && m.livePhase === 'half' && <>{f('▶ 2ª parte', () => apply(actions.setLivePhase(state, m.id, 'second')), GREEN)}{f('■ Terminar', () => apply(actions.finishMatch(state, m.id)), DGREEN)}</>}
-          {isLive && m.livePhase === 'second' && f('■ Terminar jogo', () => apply(actions.finishMatch(state, m.id)), DGREEN)}
+          {isLive && m.livePhase === 'second' && isKo && tied && f('⚽ Ir para penáltis', () => setConfirmPens(true), '#d97706')}
+          {isLive && m.livePhase === 'second' && !(isKo && tied) && f('■ Terminar jogo', () => apply(actions.finishMatch(state, m.id)), DGREEN)}
+          {inPens && m.penStart && f('■ Terminar jogo', () => apply(actions.finishMatch(state, m.id)), DGREEN)}
           {m.status === 'done' && <button onClick={() => apply(actions.reopenMatch(state, m.id))} style={{ flex: 1, minWidth: 150, border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 700, fontSize: 14, padding: 13, borderRadius: 11 }}>Reabrir jogo</button>}
           <button onClick={onClose} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 700, fontSize: 14, padding: '13px 20px', borderRadius: 11 }}>Fechar</button>
         </div>
+        {confirmPens && (
+          <div onClick={(e) => { e.stopPropagation(); setConfirmPens(false); }} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: 22, maxWidth: 360, width: '100%', boxShadow: '0 24px 60px rgba(8,30,18,.5)' }}>
+              <div style={{ fontWeight: 800, fontSize: 18, color: DGREEN, marginBottom: 8 }}>Ir para penáltis?</div>
+              <div style={{ fontSize: 14, color: '#5b7163', lineHeight: 1.5, marginBottom: 18 }}>O jogo está empatado. Tem a certeza que quer decidir a eliminatória por marcas de grande penalidade?</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setConfirmPens(false)} style={{ flex: 1, border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 700, fontSize: 14, padding: 12, borderRadius: 11 }}>Não</button>
+                <button onClick={() => { apply(actions.startPens(state, m.id)); setConfirmPens(false); }} style={{ flex: 1, border: 'none', background: '#d97706', color: '#fff', fontWeight: 800, fontSize: 14, padding: 12, borderRadius: 11 }}>Sim, penáltis</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -51,17 +51,18 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
 
   return (
     <div className="m-fade" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
-      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom))', boxShadow: '0 20px 60px rgba(10,30,20,.25)' }}>
+      <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: 0.5 }}>{[phaseLabel(m), fmtDate(m.date), m.time].filter(Boolean).join(' · ')}</span>
-            <button onClick={onClose} style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 32, height: 32, borderRadius: '50%', fontSize: 17, lineHeight: 1 }}>×</button>
+            <button onClick={onClose} aria-label="Fechar" style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 42, height: 42, borderRadius: '50%', fontSize: 26, lineHeight: 1, boxShadow: '0 2px 8px rgba(10,30,20,.12)', cursor: 'pointer' }}>×</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
             {teamCol(ta?.name || 'A definir', 'a', ta?.logo)}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <span className="cond" style={{ fontWeight: 800, fontSize: 40, color: INK, lineHeight: 1 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</span>
-              {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? 'var(--warn)' : 'var(--danger)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
+              {((m.penA || 0) > 0 || (m.penB || 0) > 0) && <span style={{ color: MUTED, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: .3 }}>Penáltis {m.penA || 0}–{m.penB || 0}</span>}
+              {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? 'var(--warn)' : m.livePhase === 'pens' ? 'var(--brand)' : 'var(--danger)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
               {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Terminado</span>}
               {m.status === 'scheduled' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 700 }}>{m.time || 'Por jogar'}</span>}
             </div>

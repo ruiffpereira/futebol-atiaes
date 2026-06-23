@@ -16,7 +16,7 @@ export type Scorer = { id: string; team: string; player: string | null; own?: bo
 export type Card = { team: string; player: string | null; type: 'yellow' | 'red'; ts: number };
 
 export type Phase = 'group' | 'friendly' | 'sf' | 'final' | 'third';
-export type LivePhase = 'first' | 'half' | 'second';
+export type LivePhase = 'first' | 'half' | 'second' | 'pens';
 export type Status = 'scheduled' | 'live' | 'done';
 
 // origem automática de um lugar da fase final
@@ -41,6 +41,7 @@ export type Match = {
   finishedAt?: number;
   penA?: number;
   penB?: number;
+  penStart?: 'a' | 'b';  // fase final empatada: equipa que inicia o desempate por penáltis
   srcA?: Src;           // só fase final
   srcB?: Src;
   lockTeams?: boolean;  // fase final: equipas definidas à mão → não auto-preencher
