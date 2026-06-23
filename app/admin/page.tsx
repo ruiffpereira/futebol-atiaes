@@ -582,7 +582,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
     </div>
   );
   return (
-    <div onClick={onClose} className="modal-sheet" style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,30,18,.55)', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
+    <div onClick={onClose} className="modal-sheet" style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(10,12,11,.55)', display: 'flex', justifyContent: 'center', overflowY: 'auto' }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 620, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 48px)' }}>
         <div style={{ background: 'linear-gradient(120deg,#0f4d2e,#15803d)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="cond" style={{ fontWeight: 800, fontSize: 18, color: '#fff', textTransform: 'uppercase' }}>{phaseLabel(m)}</span>{isLive && <span style={{ background: 'rgba(255,255,255,.2)', color: '#fff', fontSize: 12, fontWeight: 800, padding: '5px 11px', borderRadius: 7 }}>{liveText(m)}</span>}</div>
@@ -631,7 +631,7 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
           <button onClick={onClose} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 700, fontSize: 14, padding: '13px 20px', borderRadius: 11 }}>Fechar</button>
         </div>
         {confirmPens && (
-          <div onClick={(e) => { e.stopPropagation(); setConfirmPens(false); }} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(8,30,18,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div onClick={(e) => { e.stopPropagation(); setConfirmPens(false); }} style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(10,12,11,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: 22, maxWidth: 360, width: '100%', boxShadow: '0 24px 60px rgba(8,30,18,.5)' }}>
               <div style={{ fontWeight: 800, fontSize: 18, color: DGREEN, marginBottom: 8 }}>Ir para penáltis?</div>
               <div style={{ fontSize: 14, color: '#5b7163', lineHeight: 1.5, marginBottom: 18 }}>O jogo está empatado. Tem a certeza que quer decidir a eliminatória por marcas de grande penalidade?</div>

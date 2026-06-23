@@ -121,7 +121,7 @@ export default function TeamDetail({
   };
 
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(8,30,18,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid #fff', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
       <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - var(--topbar-h, 0px) - 36px - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -178,22 +178,26 @@ export default function TeamDetail({
           </>}
 
           {label('Plantel')}
-          {team.players.length ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {team.players.map((p) => {
-                const s = stat(p.id);
-                return (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '6px 11px 6px 7px', borderRadius: 999 }}>
-                    {p.number != null && <span style={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}
-                    {team.captain === p.id && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
-                    {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 5px', borderRadius: 5 }}>GR</span>}
-                    <span style={{ fontSize: 13.5, color: INK }}>{p.name}</span>
-                    {s.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={12} />{s.g}</span>}
+          {team.players.length ? (() => {
+            const hasNum = team.players.some((p) => p.number != null);
+            const hasMark = team.players.some((p) => team.captain === p.id || p.gk);
+            // colunas fixas antes do nome → nomes alinhados; marcadores num slot que não empurra
+            const cols = `${hasNum ? '22px ' : ''}${hasMark ? '30px ' : ''}1fr`;
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+                {team.players.map((p) => (
+                  <div key={p.id} style={{ display: 'grid', gridTemplateColumns: cols, alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0 }}>
+                    {hasNum && <span style={{ justifySelf: 'center' }}>{p.number != null && <span style={{ width: 20, height: 20, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}</span>}
+                    {hasMark && <span style={{ display: 'flex', alignItems: 'center', gap: 3, overflow: 'hidden' }}>
+                      {team.captain === p.id && <span style={{ fontSize: 12, fontWeight: 800, color: GREEN }}>©</span>}
+                      {p.gk && <span style={{ fontSize: 8.5, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
+                    </span>}
+                    <span style={{ minWidth: 0, fontSize: 13.5, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                   </div>
-                );
-              })}
-            </div>
-          ) : <div style={{ fontSize: 13, color: MUTED, fontStyle: 'italic' }}>Sem jogadores registados.</div>}
+                ))}
+              </div>
+            );
+          })() : <div style={{ fontSize: 13, color: MUTED, fontStyle: 'italic' }}>Sem jogadores registados.</div>}
 
           {label('Todos os jogos')}
           {matches.length ? (
