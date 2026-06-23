@@ -38,3 +38,9 @@ export function useScrollLock() {
     return unlock;
   }, []);
 }
+
+// Há algum modal aberto? Usado pelo pull-to-refresh para não intercetar o
+// scroll dentro dos modais (o seu touchmove com preventDefault "empancava" o scroll).
+export function isScrollLocked() {
+  return locks > 0;
+}

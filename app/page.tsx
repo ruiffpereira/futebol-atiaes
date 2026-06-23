@@ -3,7 +3,7 @@
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
 import { useState, useEffect, useRef, useMemo, useContext, createContext } from "react";
 import { useTheme, type ThemeMode } from "@/lib/theme";
-import { useScrollLock } from "@/lib/useScrollLock";
+import { useScrollLock, isScrollLocked } from "@/lib/useScrollLock";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
 import {
@@ -626,7 +626,8 @@ function PullToRefresh({ onRefresh }: { onRefresh: () => void }) {
       setPull(v);
     };
     const onStart = (e: TouchEvent) => {
-      if (busy.current || window.scrollY > 4 || e.touches.length !== 1) {
+      // Não ativar dentro de modais (o preventDefault do onMove cancelava o scroll do modal).
+      if (busy.current || isScrollLocked() || window.scrollY > 4 || e.touches.length !== 1) {
         startY.current = null;
         return;
       }
