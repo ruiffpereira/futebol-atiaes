@@ -1,6 +1,7 @@
 'use client';
 import { scoreOf, phaseLabel, liveBadge, fmtDate, standings } from '@/lib/tournament';
 import type { Match, Team, TournamentState } from '@/lib/types';
+import { useScrollLock } from '@/lib/useScrollLock';
 import { Ball, Clock, TeamBadge } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
@@ -20,6 +21,7 @@ export default function TeamDetail({
   onMatch: (id: string) => void;
   onLive: () => void;
 }) {
+  useScrollLock();
   const nameOf = (id: string | null) => {
     const t = state.teams.find((x) => x.id === id);
     return t ? t.name : 'A definir';
@@ -121,7 +123,7 @@ export default function TeamDetail({
   };
 
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid #fff', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid #fff', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
       <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 540, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - var(--topbar-h, 0px) - 36px - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -1,12 +1,14 @@
 'use client';
 import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
+import { useScrollLock } from '@/lib/useScrollLock';
 import { Ball, Card, TeamBadge } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
 // Detalhe do jogo (lance-a-lance + equipas) — só leitura.
 export default function MatchDetail({ m, state, onClose }: { m: Match; state: TournamentState; onClose: () => void }) {
+  useScrollLock();
   const team = (id: string | null) => state.teams.find((t) => t.id === id);
   const ta = team(m.a), tb = team(m.b);
   const pname = (t: typeof ta, pid: string | null) => { if (!t || !pid) return null; const p = t.players.find((x) => x.id === pid); return p ? p.name : null; };
@@ -53,7 +55,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   );
 
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid rgba(255,255,255,1)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'auto' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid rgba(255,255,255,1)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
       <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - var(--topbar-h, 0px) - 36px - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>

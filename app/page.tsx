@@ -3,6 +3,7 @@
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
 import { useState, useEffect, useRef, useMemo, useContext, createContext } from "react";
 import { useTheme, type ThemeMode } from "@/lib/theme";
+import { useScrollLock } from "@/lib/useScrollLock";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
 import {
@@ -1140,6 +1141,7 @@ function NotifyModal({
   onDisable: () => void;
   onClose: () => void;
 }) {
+  useScrollLock();
   return (
     <div
       className="m-fade"
@@ -1252,6 +1254,7 @@ function PromoSheet({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  useScrollLock();
   return (
     <div
       onClick={onClose}
@@ -1634,6 +1637,7 @@ function FeedbackCard() {
 }
 
 function IosInstall({ onClose }: { onClose: () => void }) {
+  useScrollLock();
   const step = (n: number, text: React.ReactNode, icon?: React.ReactNode) => (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
       <span

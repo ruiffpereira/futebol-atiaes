@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTournament } from '@/lib/useTournament';
 import { actions } from '@/lib/actions';
+import { useScrollLock } from '@/lib/useScrollLock';
 import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate, uid } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 import { TeamBadge } from '../Icons';
@@ -527,6 +528,7 @@ function CommentsTab({ onSeen }: { onSeen: () => void }) {
 }
 
 function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: { state: TournamentState; m: Match; apply: (s: TournamentState) => void; onClose: () => void; editUnlock: boolean; setEditUnlock: (b: boolean) => void }) {
+  useScrollLock();
   const ta = state.teams.find((t) => t.id === m.a), tb = state.teams.find((t) => t.id === m.b);
   const isLive = m.status === 'live'; const canEdit = isLive || editUnlock; const silent = !isLive;
   const [confirmPens, setConfirmPens] = useState(false);
