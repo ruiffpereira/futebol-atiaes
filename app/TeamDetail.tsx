@@ -193,7 +193,7 @@ export default function TeamDetail({
                     <div key={p.id} style={{ position: 'relative', display: 'grid', gridTemplateColumns: cols, alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0, minHeight: 48, overflow: 'hidden' }}>
                       {hasNum && <span style={{ justifySelf: 'center' }}>{p.number != null && <span style={{ width: 20, height: 20, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}</span>}
                       <span style={{ minWidth: 0, paddingRight: pad, fontSize: 13.5, color: INK, lineHeight: 1.15, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', wordBreak: 'break-word' }}>{p.name}</span>
-                      {cap && <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 11, fontWeight: 800, color: GREEN, lineHeight: 1 }}>©</span>}
+                      {cap && <span style={{ position: 'absolute', top: 3, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--warn)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>C</span>}
                       {p.gk && <span style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>GR</span>}
                     </div>
                   );

@@ -36,7 +36,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number) => (
     <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: `1px solid ${LINE}` }}>
       {p.num != null && <span style={{ minWidth: 17, textAlign: 'center', fontSize: 11, fontWeight: 800, color: MUTED }}>{p.num}</span>}
-      {p.cap && <span style={{ fontSize: 11, fontWeight: 800, color: GREEN }}>©</span>}
+      {p.cap && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--warn)', padding: '1px 4px', borderRadius: 4 }}>C</span>}
       {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
       <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
       {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
