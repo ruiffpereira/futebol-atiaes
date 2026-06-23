@@ -142,6 +142,10 @@ input, select { font-family: inherit; }
 .admin-pad { padding: calc(env(safe-area-inset-top) + 22px) 20px 60px; }
 .modal-sheet { padding: 24px 16px; }
 .modal-inner { padding: 18px 20px; }
+/* Evita o "scroll chaining" (solavanco ao chegar ao fim) entre o conteúdo
+   scrollável da modal e o overlay/página por baixo, em telemóvel. */
+.m-fade, .modal-sheet, .modal-inner { overscroll-behavior: contain; }
+.modal-inner { -webkit-overflow-scrolling: touch; }
 .modal-foot { padding: 14px 20px; }
 .score-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 600px) {

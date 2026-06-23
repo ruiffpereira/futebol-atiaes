@@ -72,7 +72,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
             {teamCol(tb?.name || 'A definir', 'b', tb?.logo)}
           </div>
         </div>
-        <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
+        <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', marginBottom: 12 }}>Lance a lance</div>
           {rows.length ? <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: LINE, transform: 'translateX(-50%)' }} />

@@ -14,7 +14,7 @@ export default function Rules({ onClose }: { onClose: () => void }) {
           </div>
           <button onClick={onClose} style={{ border: 'none', background: 'rgba(255,255,255,.2)', color: '#fff', width: 32, height: 32, borderRadius: 9, fontSize: 18 }}>×</button>
         </div>
-        <div style={{ padding: '20px 22px 26px', overflowY: 'auto', flex: 1, minHeight: 0, color: 'var(--text)', fontSize: 14, lineHeight: 1.6 }}>
+        <div style={{ padding: '20px 22px 26px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', color: 'var(--text)', fontSize: 14, lineHeight: 1.6 }}>
           <Title>Participação de equipas e atletas</Title>
           <ul style={{ margin: '0 0 18px', paddingLeft: 20 }}>
             <li>Inscrição realizada através da organização do Torneio.</li>
