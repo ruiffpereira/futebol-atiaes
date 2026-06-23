@@ -128,8 +128,8 @@ export default function TeamDetail({
             <button onClick={onClose} aria-label="Fechar" style={{ border: `1px solid ${LINE}`, background: 'var(--surface)', color: 'var(--muted-2)', width: 42, height: 42, borderRadius: '50%', fontSize: 26, lineHeight: 1, boxShadow: '0 2px 8px rgba(10,30,20,.12)', cursor: 'pointer' }}>×</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: -14 }}>
-            <div style={{ padding: 5, borderRadius: '50%', background: 'var(--surface)', border: `3px solid ${GREEN}`, boxShadow: '0 4px 16px rgba(10,30,20,.14)' }}>
-              <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={104} style={{ display: 'block' }} />
+            <div style={{ padding: 5, borderRadius: '50%', background: 'var(--surface)', border: `3px solid ${GREEN}`, boxShadow: '0 4px 16px rgba(10,30,20,.14)', display: 'flex' }}>
+              <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={104} />
             </div>
             <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, textAlign: 'center', lineHeight: 1.05, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>

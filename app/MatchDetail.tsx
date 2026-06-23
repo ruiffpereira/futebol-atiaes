@@ -45,8 +45,8 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
 
   const teamCol = (label: string, side: 'a' | 'b', logo?: string) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-      <div style={{ padding: 3, borderRadius: '50%', background: 'var(--surface)', border: `2.5px solid ${GREEN}`, boxShadow: '0 3px 12px rgba(10,30,20,.12)' }}>
-        <TeamBadge name={label} seed={m[side] || side} logo={logo} size={48} style={{ display: 'block' }} />
+      <div style={{ padding: 3, borderRadius: '50%', background: 'var(--surface)', border: `2.5px solid ${GREEN}`, boxShadow: '0 3px 12px rgba(10,30,20,.12)', display: 'flex' }}>
+        <TeamBadge name={label} seed={m[side] || side} logo={logo} size={48} />
       </div>
       <span style={{ fontWeight: 700, fontSize: 14.5, color: INK, textAlign: 'center', lineHeight: 1.15, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
     </div>
