@@ -2,7 +2,7 @@
 // PLACAR PÚBLICO — só leitura, tempo real (React Query + SSE).
 // Visual segue o protótipo em /design-reference (Torneio.dc.html).
 import { useState, useEffect, useRef, useMemo, useContext, createContext } from "react";
-import { useTheme, nextMode } from "@/lib/theme";
+import { useTheme, type ThemeMode } from "@/lib/theme";
 import { useTournament } from "@/lib/useTournament";
 import { useNotifications } from "@/lib/useNotifications";
 import {
@@ -796,16 +796,26 @@ function Header({
   const parts = name.trim().split(" ");
   const brandFirst = parts[0];
   const brandRest = parts.slice(1).join(" ");
-  const [themeMode, setThemeMode] = useTheme();
-  const themeIcon =
-    themeMode === "light" ? <Sun size={19} /> : themeMode === "dark" ? <Moon size={19} /> : <Monitor size={19} />;
-  const themeLabel = themeMode === "light" ? "Claro" : themeMode === "dark" ? "Escuro" : "Sistema";
+  // Mede a altura real da topbar (inclui safe-area) e expõe-a como --topbar-h.
+  // As modais começam por baixo desta linha → a topbar fica SEMPRE por cima do
+  // fade e nunca escurece (requisito do utilizador).
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty("--topbar-h", el.offsetHeight + "px");
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
     <div
+      ref={barRef}
       style={{
         position: "sticky",
         top: 0,
-        zIndex: 40,
+        zIndex: 90,
         background: GREEN,
         paddingTop: "env(safe-area-inset-top)",
         borderBottom: "1px solid rgba(0,0,0,.06)",
@@ -902,25 +912,6 @@ function Header({
               {liveCount} ao vivo
             </div>
           )}
-          <button
-            onClick={() => setThemeMode(nextMode(themeMode))}
-            aria-label={`Tema: ${themeLabel}`}
-            title={`Tema: ${themeLabel}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 40,
-              height: 40,
-              border: "1px solid rgba(255,255,255,.4)",
-              borderRadius: "50%",
-              background: "rgba(255,255,255,.16)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            {themeIcon}
-          </button>
           <button
             onClick={onBell}
             aria-label="Notificações"
@@ -1155,7 +1146,10 @@ function NotifyModal({
       onClick={onClose}
       style={{
         position: "fixed",
-        inset: 0,
+        top: "var(--topbar-h, 0px)",
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 80,
         background: "rgba(8,30,18,.55)",
         display: "flex",
@@ -1794,6 +1788,12 @@ function Profile({
 }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [iosHelp, setIosHelp] = useState(false);
+  const [themeMode, setThemeMode] = useTheme();
+  const themeOpts: { mode: ThemeMode; label: string; icon: React.ReactNode }[] = [
+    { mode: "light", label: "Claro", icon: <Sun size={18} /> },
+    { mode: "dark", label: "Escuro", icon: <Moon size={18} /> },
+    { mode: "system", label: "Sistema", icon: <Monitor size={18} /> },
+  ];
   const rowLink = (
     icon: React.ReactNode,
     label: string,
@@ -1908,6 +1908,70 @@ function Profile({
       {iosHelp && <IosInstall onClose={() => setIosHelp(false)} />}
       {rowLink(<Document size={20} />, "Regulamento do torneio", onRules)}
       {rowLink(<MapPin size={20} />, "Localização do campo", undefined, "https://maps.app.goo.gl/oJx5AAZUgf63vpT77")}
+
+      {/* Aparência — tema claro / escuro / sistema */}
+      <div className="soft-card" style={{ padding: "13px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <span
+            style={{
+              width: 38,
+              height: 38,
+              flexShrink: 0,
+              borderRadius: 11,
+              background: "var(--brand-tint)",
+              color: GREEN,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {themeMode === "light" ? <Sun size={20} /> : themeMode === "dark" ? <Moon size={20} /> : <Monitor size={20} />}
+          </span>
+          <span style={{ fontWeight: 600, fontSize: 15, color: INK }}>Aparência</span>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3,1fr)",
+            gap: 8,
+            background: "var(--surface-2)",
+            border: `1px solid ${LINE}`,
+            borderRadius: 12,
+            padding: 4,
+          }}
+        >
+          {themeOpts.map((o) => {
+            const active = themeMode === o.mode;
+            return (
+              <button
+                key={o.mode}
+                onClick={() => setThemeMode(o.mode)}
+                aria-label={`Tema: ${o.label}`}
+                aria-pressed={active}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 5,
+                  padding: "10px 6px",
+                  borderRadius: 9,
+                  border: "none",
+                  cursor: "pointer",
+                  background: active ? "var(--surface)" : "transparent",
+                  boxShadow: active ? SOFT : "none",
+                  color: active ? GREEN : MUTED,
+                  fontWeight: active ? 700 : 600,
+                  fontSize: 12.5,
+                }}
+              >
+                {o.icon}
+                {o.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div
         className="soft-card"
@@ -2642,12 +2706,21 @@ function Line({
       >
         {score ? (
           <>
-            <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>
-              {date || "—"}
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: MUTED, textTransform: "uppercase" }}>
-              Final
-            </span>
+            {/* data/hora se existirem; se faltarem ambas, mostra só "Final" (sem o "–" solto) */}
+            {(date || m.time) ? (
+              <>
+                <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>
+                  {date || m.time}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: MUTED }}>
+                  {date ? (m.time || "Final") : "Final"}
+                </span>
+              </>
+            ) : (
+              <span style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase" }}>
+                Final
+              </span>
+            )}
           </>
         ) : (
           <>
