@@ -833,22 +833,21 @@ function Header({
           gap: 13,
         }}
       >
-        {/* espaço para o icon / logótipo do torneio */}
-        <div
+        {/* icon / logótipo do torneio */}
+        <img
+          src="/icon-header.png"
+          alt="Atiães em Movimento — Torneio Futebol 5"
+          width={46}
+          height={46}
           style={{
             width: 46,
             height: 46,
             flexShrink: 0,
             borderRadius: 14,
-            background: "rgba(255,255,255,.18)",
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            objectFit: "cover",
+            boxShadow: "0 1px 3px rgba(0,0,0,.25)",
           }}
-        >
-          <Ball size={26} />
-        </div>
+        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
