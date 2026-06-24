@@ -137,7 +137,7 @@ export default function TeamDetail({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {pos > 0 && <span style={{ background: 'var(--brand-tint)', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}
               <span style={{ fontSize: 12.5, color: MUTED, fontWeight: 600 }}>
-                {team.group ? 'Grupo ' + team.group : 'Amigável'}{team.coach ? ' · ' + team.coach : ''}
+                {team.group ? 'Grupo ' + team.group : 'Amigável'}
               </span>
             </div>
           </div>
@@ -176,6 +176,14 @@ export default function TeamDetail({
                   <span className="cond" style={{ fontWeight: 800, fontSize: 18, color: INK, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Ball size={13} />{p.g}</span>
                 </div>
               ))}
+            </div>
+          </>}
+
+          {team.coach && <>
+            {label('Treinador')}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '10px 12px', borderRadius: 10 }}>
+              <span style={{ width: 30, height: 30, borderRadius: '50%', background: GREEN, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{team.coach.trim().charAt(0).toUpperCase()}</span>
+              <span style={{ minWidth: 0, fontSize: 14.5, fontWeight: 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.coach}</span>
             </div>
           </>}
 
