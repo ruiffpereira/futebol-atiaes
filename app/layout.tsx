@@ -19,6 +19,8 @@ export const viewport: Viewport = {
   themeColor: '#15803d', // verde do header (claro); ajustado em runtime para #22c55e no tema dark
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1, // tranca o pinch-to-zoom em mobile
+  userScalable: false,
   viewportFit: 'cover',
 };
 

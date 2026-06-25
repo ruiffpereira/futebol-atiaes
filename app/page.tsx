@@ -346,7 +346,14 @@ export default function PublicPage() {
           <div style={{ display: "grid", gap: 24 }}>
             <Section title="Próximos jogos">
               {upcoming.length ? (
-                upcoming.map((m) => <Line key={m.id} m={m} nameOf={nameOf} />)
+                upcoming.map((m) => (
+                  <Line
+                    key={m.id}
+                    m={m}
+                    nameOf={nameOf}
+                    onClick={() => setDetail(m.id)}
+                  />
+                ))
               ) : (
                 <EmptyLine text="Sem jogos agendados." />
               )}

@@ -131,8 +131,9 @@ input, select { font-family: inherit; }
   .m-pop { animation: mPop .26s cubic-bezier(.2,.85,.25,1); }
   .m-sheet { animation: sheetUp .28s cubic-bezier(.2,.85,.25,1); }
 }
-::-webkit-scrollbar { height: 6px; width: 6px; }
-::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 3px; }
+/* Scroll invisível: não ocupa espaço no ecrã, mas continua funcional (rato/touch). */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+::-webkit-scrollbar { width: 0; height: 0; }
 .only-mobile { display: none; }
 .soft-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
 /* App pública um pouco mais compacta (parecia tudo ampliado). Só o site público. */

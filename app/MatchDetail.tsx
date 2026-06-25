@@ -2,7 +2,7 @@
 import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { Ball, Card, TeamBadge } from './Icons';
+import { Ball, Card, Jersey, Shield, TeamBadge, teamColor, User } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
@@ -31,19 +31,68 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     g: (m.scorers || []).filter((s) => s.player === p.id).length,
     y: (m.cards || []).filter((c) => c.player === p.id && c.type === 'yellow').length,
     r: (m.cards || []).filter((c) => c.player === p.id && c.type === 'red').length,
-  })) : []);
+  })).sort((a, b) => (b.gk ? 1 : 0) - (a.gk ? 1 : 0)) : []);  // guarda-redes primeiro (sort estável mantém o resto)
 
-  const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number) => (
-    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 0', borderBottom: `1px solid ${LINE}` }}>
-      {p.num != null && <span style={{ minWidth: 17, textAlign: 'center', fontSize: 11, fontWeight: 800, color: MUTED }}>{p.num}</span>}
-      {p.cap && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--warn)', padding: '1px 4px', borderRadius: 4 }}>C</span>}
-      {p.gk && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4 }}>GR</span>}
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
-      {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
-      {p.y > 0 && <Card size={12} color="var(--warn)" />}
-      {p.r > 0 && <Card size={12} color="var(--danger)" />}
-    </div>
-  );
+  // Camisola verde para os jogadores; o guarda-redes usa a cor do badge da equipa (distinta).
+  // Braçadeira dourada se for capitão; nº ao peito.
+  const jersey = (p: { num?: number; gk: boolean; cap: boolean }, teamCol: string) => {
+    const col = p.gk ? teamCol : GREEN;
+    return (
+      <span style={{ position: 'relative', width: 30, height: 30, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Jersey size={30} color={col} />
+        {p.num != null && <span style={{ position: 'absolute', left: '50%', top: '54%', transform: 'translate(-50%,-50%)', fontSize: String(p.num).length > 1 ? 8 : 10, fontWeight: 800, color: '#fff', lineHeight: 1, textShadow: '0 1px 1.5px rgba(0,0,0,.35)' }}>{p.num}</span>}
+        {p.cap && <span style={{ position: 'absolute', top: -2, right: -2, width: 13, height: 13, borderRadius: '50%', background: 'var(--warn)', color: '#fff', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid var(--surface)', lineHeight: 1 }}>C</span>}
+      </span>
+    );
+  };
+
+  const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number, teamCol: string, align: 'left' | 'right' = 'left') => {
+    const right = align === 'right';
+    return (
+      <div key={k} style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: `1px solid ${LINE}` }}>
+        {jersey(p, teamCol)}
+        <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+        {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
+        {p.y > 0 && <Card size={12} color="var(--warn)" />}
+        {p.r > 0 && <Card size={12} color="var(--danger)" />}
+      </div>
+    );
+  };
+
+  // Linha de "staff" (treinador / presidente) com ícone e rótulo.
+  const staffRow = (role: string, name: string, icon: React.ReactNode, color: string, align: 'left' | 'right' = 'left') => {
+    const right = align === 'right';
+    return (
+      <div style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 7, padding: '5px 0' }}>
+        <span style={{ width: 24, height: 24, flexShrink: 0, borderRadius: '50%', background: color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: 8.5, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase', color: MUTED, lineHeight: 1.2, textAlign: right ? 'right' : 'left' }}>{role}</span>
+          <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.2, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+        </span>
+      </div>
+    );
+  };
+
+  // Coluna de uma equipa: mini-emblema + nome, plantel e (por baixo) treinador + presidente.
+  const teamColumn = (t: typeof ta, side: 'a' | 'b', align: 'left' | 'right' = 'left') => {
+    const right = align === 'right';
+    const teamCol = teamColor(m[side] || t?.name || side);  // mesma cor do emblema da equipa
+    return (
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <TeamBadge name={t?.name || '—'} seed={m[side] || side} logo={t?.logo} size={28} />
+          <div style={{ minWidth: 0, fontWeight: 800, fontSize: 13.5, color: INK, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t?.name || '—'}</div>
+        </div>
+        {lineup(t).map((p, k) => playerRow(p, k, teamCol, align))}
+        {(t?.coach || t?.president) && (
+          <div style={{ marginTop: 8, paddingTop: 2 }}>
+            {t?.coach && staffRow('Treinador', t.coach, <User size={14} color="#fff" />, 'var(--info)', align)}
+            {t?.president && staffRow('Presidente', t.president, <Shield size={13} color="#fff" />, 'var(--warn)', align)}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const teamCol = (label: string, side: 'a' | 'b', logo?: string) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
@@ -89,8 +138,8 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
 
           <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', margin: '20px 0 10px' }}>Equipas</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: INK, marginBottom: 7 }}>{ta?.name || '—'}</div>{lineup(ta).map(playerRow)}</div>
-            <div><div style={{ fontWeight: 800, fontSize: 13.5, color: INK, marginBottom: 7 }}>{tb?.name || '—'}</div>{lineup(tb).map(playerRow)}</div>
+            {teamColumn(ta, 'a', 'left')}
+            {teamColumn(tb, 'b', 'right')}
           </div>
         </div>
       </div>
