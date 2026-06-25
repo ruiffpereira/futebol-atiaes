@@ -865,7 +865,7 @@ function Header({
             style={{
               fontWeight: 800,
               // proporcional à largura do container, com máximo de 27px (evita reticências em mobile)
-              fontSize: "min(27px, 9cqi)",
+              fontSize: "min(27px, 12cqi)",
               color: "rgba(255,255,255,.92)",
               lineHeight: 1.05,
               whiteSpace: "nowrap",
