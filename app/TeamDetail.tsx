@@ -153,7 +153,7 @@ export default function TeamDetail({
           </div>
         </div>
 
-        <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ padding: '16px 18px', overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
             {box('Jogos', doneOfficial.length)}
             {box('Vitórias', wins)}

@@ -2,7 +2,7 @@
 import { scoreOf, phaseLabel, liveBadge, fmtDate } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { Ball, Card, Jersey, Shield, TeamBadge, teamColor, User } from './Icons';
+import { Ball, Card, Jersey, Shield, TeamBadge, User } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
@@ -33,10 +33,10 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     r: (m.cards || []).filter((c) => c.player === p.id && c.type === 'red').length,
   })).sort((a, b) => (b.gk ? 1 : 0) - (a.gk ? 1 : 0)) : []);  // guarda-redes primeiro (sort estável mantém o resto)
 
-  // Camisola verde para os jogadores; o guarda-redes usa a cor do badge da equipa (distinta).
+  // Camisola verde para os jogadores; guarda-redes sempre azul (independente da equipa).
   // Braçadeira dourada se for capitão; nº ao peito.
-  const jersey = (p: { num?: number; gk: boolean; cap: boolean }, teamCol: string) => {
-    const col = p.gk ? teamCol : GREEN;
+  const jersey = (p: { num?: number; gk: boolean; cap: boolean }) => {
+    const col = p.gk ? 'var(--info)' : GREEN;
     return (
       <span style={{ position: 'relative', width: 30, height: 30, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
         <Jersey size={30} color={col} />
@@ -46,11 +46,11 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     );
   };
 
-  const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number, teamCol: string, align: 'left' | 'right' = 'left') => {
+  const playerRow = (p: { name: string; cap: boolean; gk: boolean; num?: number; g: number; y: number; r: number }, k: number, align: 'left' | 'right' = 'left') => {
     const right = align === 'right';
     return (
       <div key={k} style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: `1px solid ${LINE}` }}>
-        {jersey(p, teamCol)}
+        {jersey(p)}
         <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: INK, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
         {p.g > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11.5, fontWeight: 700, color: INK }}><Ball size={13} />{p.g}</span>}
         {p.y > 0 && <Card size={12} color="var(--warn)" />}
@@ -76,14 +76,13 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   // Coluna de uma equipa: mini-emblema + nome, plantel e (por baixo) treinador + presidente.
   const teamColumn = (t: typeof ta, side: 'a' | 'b', align: 'left' | 'right' = 'left') => {
     const right = align === 'right';
-    const teamCol = teamColor(m[side] || t?.name || side);  // mesma cor do emblema da equipa
     return (
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <TeamBadge name={t?.name || '—'} seed={m[side] || side} logo={t?.logo} size={28} />
           <div style={{ minWidth: 0, fontWeight: 800, fontSize: 13.5, color: INK, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t?.name || '—'}</div>
         </div>
-        {lineup(t).map((p, k) => playerRow(p, k, teamCol, align))}
+        {lineup(t).map((p, k) => playerRow(p, k, align))}
         {(t?.coach || t?.president) && (
           <div style={{ marginTop: 8, paddingTop: 2 }}>
             {t?.coach && staffRow('Treinador', t.coach, <User size={14} color="#fff" />, 'var(--info)', align)}
@@ -123,7 +122,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
             {teamCol(tb?.name || 'A definir', 'b', tb?.logo)}
           </div>
         </div>
-        <div style={{ padding: '16px 18px', overflowY: 'auto', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ padding: '16px 18px', overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', marginBottom: 12 }}>Lance a lance</div>
           {rows.length ? <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: LINE, transform: 'translateX(-50%)' }} />
