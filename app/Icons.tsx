@@ -119,6 +119,25 @@ export function Shield({ size = 24, color, style }: P) {
   );
 }
 
+// Camisola/equipamento — usada como "boneco" do jogador (número vai no peito).
+export function Jersey({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <path d="M8.5 3.2 L4 6 L6.2 9.8 L7.3 8.7 L7.3 21 L16.7 21 L16.7 8.7 L17.8 9.8 L20 6 L15.5 3.2 C14.3 4.7 9.7 4.7 8.5 3.2 Z" />
+    </svg>
+  );
+}
+
+// Gravata do treinador.
+export function Tie({ size = 24, color, style }: P) {
+  return (
+    <svg {...base(size, color, style)}>
+      <path d="M10.2 3h3.6l-.7 2.6h-2.2z" />
+      <path d="M9.7 6.2 L14.3 6.2 L15 9 L12 21 L9 9 Z" />
+    </svg>
+  );
+}
+
 export function Document({ size = 24, color, style }: P) {
   return (
     <svg {...base(size, color, style)}>

@@ -2,7 +2,7 @@
 import { scoreOf, phaseLabel, liveBadge, fmtDate, standings } from '@/lib/tournament';
 import type { Match, Team, TournamentState } from '@/lib/types';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { Ball, Clock, Shield, TeamBadge } from './Icons';
+import { Ball, Clock, Jersey, Shield, TeamBadge, User } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
@@ -138,9 +138,9 @@ export default function TeamDetail({
               <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: '100%', marginTop: 2, padding: '6px 16px 8px', borderRadius: 14, background: 'linear-gradient(135deg, #fdf6df, #f4e3b0)', border: '1px solid rgba(176,137,32,.28)', boxShadow: '0 1px 3px rgba(120,90,10,.12), inset 0 1px 0 rgba(255,255,255,.55)' }}>
                 <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: '#9a751c' }}>Presidente</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, maxWidth: '100%' }}>
-                  <Shield size={12} color="#b8901f" style={{ flexShrink: 0 }} />
+                  <Shield size={18} color="#b8901f" style={{ flexShrink: 0 }} />
                   <span style={{ minWidth: 0, fontSize: 14, fontWeight: 700, lineHeight: 1, color: '#5c4708', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.president}</span>
-                  <Shield size={12} color="#b8901f" style={{ flexShrink: 0 }} />
+                  <Shield size={18} color="#b8901f" style={{ flexShrink: 0 }} />
                 </span>
               </div>
             )}
@@ -191,34 +191,35 @@ export default function TeamDetail({
 
           {team.coach && <>
             {label('Treinador')}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '10px 12px', borderRadius: 10 }}>
-              <span style={{ width: 30, height: 30, borderRadius: '50%', background: GREEN, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{team.coach.trim().charAt(0).toUpperCase()}</span>
-              <span style={{ minWidth: 0, fontSize: 14.5, fontWeight: 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.coach}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, background: 'rgba(37,99,235,.08)', border: '1.5px solid var(--info)', padding: '10px 14px', borderRadius: 12 }}>
+              <span style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--info)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 6px rgba(37,99,235,.3)' }}>
+                <User size={19} color="#fff" />
+              </span>
+              <span style={{ minWidth: 0, fontSize: 14.5, fontWeight: 700, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.coach}</span>
             </div>
           </>}
 
           {label('Plantel')}
-          {team.players.length ? (() => {
-            const hasNum = team.players.some((p) => p.number != null);
-            // só número (se houver) antes do nome → nomes alinhados; © e GR vão para os cantos (absolutos)
-            const cols = `${hasNum ? '22px ' : ''}1fr`;
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                {team.players.map((p) => {
-                  const cap = team.captain === p.id;
-                  const pad = cap || p.gk ? 18 : 0;  // folga mínima p/ o nome não passar por baixo dos cantos
-                  return (
-                    <div key={p.id} style={{ position: 'relative', display: 'grid', gridTemplateColumns: cols, alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0, minHeight: 48, overflow: 'hidden' }}>
-                      {hasNum && <span style={{ justifySelf: 'center' }}>{p.number != null && <span style={{ width: 20, height: 20, borderRadius: '50%', background: GREEN, color: '#fff', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{p.number}</span>}</span>}
-                      <span style={{ minWidth: 0, paddingRight: pad, fontSize: 13.5, color: INK, lineHeight: 1.15, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', wordBreak: 'break-word' }}>{p.name}</span>
-                      {cap && <span style={{ position: 'absolute', top: 3, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--warn)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>C</span>}
-                      {p.gk && <span style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>GR</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })() : <div style={{ fontSize: 13, color: MUTED, fontStyle: 'italic' }}>Sem jogadores registados.</div>}
+          {team.players.length ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+              {team.players.map((p) => {
+                const cap = team.captain === p.id;
+                const pad = cap || p.gk ? 18 : 0;  // folga mínima p/ o nome não passar por baixo dos cantos
+                return (
+                  <div key={p.id} style={{ position: 'relative', display: 'grid', gridTemplateColumns: '40px 1fr', alignItems: 'center', gap: 8, background: 'var(--surface-2)', border: `1px solid ${LINE}`, padding: '7px 11px', borderRadius: 10, minWidth: 0, minHeight: 48, overflow: 'hidden' }}>
+                    {/* boneco (camisola) — tamanho fixo; número (se houver) vai no peito */}
+                    <span style={{ position: 'relative', width: 40, height: 40, justifySelf: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Jersey size={40} color={GREEN} />
+                      {p.number != null && <span style={{ position: 'absolute', left: '50%', top: '54%', transform: 'translate(-50%,-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: String(p.number).length > 1 ? 10 : 12, fontWeight: 800, color: GREEN, lineHeight: 1 }}>{p.number}</span>}
+                    </span>
+                    <span style={{ minWidth: 0, paddingRight: pad, fontSize: 13.5, color: INK, lineHeight: 1.15, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', wordBreak: 'break-word' }}>{p.name}</span>
+                    {cap && <span style={{ position: 'absolute', top: 3, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--warn)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>C</span>}
+                    {p.gk && <span style={{ position: 'absolute', bottom: 2, right: 4, fontSize: 8, fontWeight: 800, color: '#fff', background: 'var(--info)', padding: '1px 4px', borderRadius: 4, lineHeight: 1.3 }}>GR</span>}
+                  </div>
+                );
+              })}
+            </div>
+          ) : <div style={{ fontSize: 13, color: MUTED, fontStyle: 'italic' }}>Sem jogadores registados.</div>}
 
           {label('Todos os jogos')}
           {matches.length ? (
