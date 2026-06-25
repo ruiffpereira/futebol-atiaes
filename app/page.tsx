@@ -848,7 +848,7 @@ function Header({
             boxShadow: "0 1px 3px rgba(0,0,0,.25)",
           }}
         />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, containerType: "inline-size" }}>
           <div
             style={{
               fontSize: 10.5,
@@ -864,7 +864,8 @@ function Header({
             className="cond"
             style={{
               fontWeight: 800,
-              fontSize: 27,
+              // proporcional à largura do container, com máximo de 27px (evita reticências em mobile)
+              fontSize: "min(27px, 9cqi)",
               color: "rgba(255,255,255,.92)",
               lineHeight: 1.05,
               whiteSpace: "nowrap",
