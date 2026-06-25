@@ -2,7 +2,7 @@
 import { scoreOf, phaseLabel, liveBadge, fmtDate, standings } from '@/lib/tournament';
 import type { Match, Team, TournamentState } from '@/lib/types';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { Ball, Clock, TeamBadge } from './Icons';
+import { Ball, Clock, Shield, TeamBadge } from './Icons';
 
 const INK = 'var(--text)', MUTED = 'var(--muted)', LINE = 'var(--line)', GREEN = 'var(--brand)';
 
@@ -134,6 +134,16 @@ export default function TeamDetail({
               <TeamBadge name={team.name} seed={team.id} logo={team.logo} size={104} />
             </div>
             <div className="cond" style={{ fontWeight: 800, fontSize: 26, color: INK, textAlign: 'center', lineHeight: 1.05, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</div>
+            {team.president && (
+              <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: '100%', marginTop: 2, padding: '6px 16px 8px', borderRadius: 14, background: 'linear-gradient(135deg, #fdf6df, #f4e3b0)', border: '1px solid rgba(176,137,32,.28)', boxShadow: '0 1px 3px rgba(120,90,10,.12), inset 0 1px 0 rgba(255,255,255,.55)' }}>
+                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: '#9a751c' }}>Presidente</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, maxWidth: '100%' }}>
+                  <Shield size={12} color="#b8901f" style={{ flexShrink: 0 }} />
+                  <span style={{ minWidth: 0, fontSize: 14, fontWeight: 700, lineHeight: 1, color: '#5c4708', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.president}</span>
+                  <Shield size={12} color="#b8901f" style={{ flexShrink: 0 }} />
+                </span>
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {pos > 0 && <span style={{ background: 'var(--brand-tint)', color: GREEN, fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{pos}.º lugar</span>}
               <span style={{ fontSize: 12.5, color: MUTED, fontWeight: 600 }}>

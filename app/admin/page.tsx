@@ -214,7 +214,10 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
           ))}
         </div>
       ) : <div style={{ fontSize: 13, color: '#9bb0a3', fontStyle: 'italic' }}>Sem jogadores.</div>}
-      {t.coach && <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f0f4ee', fontSize: 13, color: '#5b7163' }}>Treinador: <b style={{ color: DGREEN }}>{t.coach}</b></div>}
+      {(t.coach || t.president) && <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f0f4ee', fontSize: 13, color: '#5b7163', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {t.coach && <div>Treinador: <b style={{ color: DGREEN }}>{t.coach}</b></div>}
+        {t.president && <div>Presidente: <b style={{ color: DGREEN }}>{t.president}</b></div>}
+      </div>}
     </div>
   );
 
@@ -256,6 +259,7 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
           <option value="">⊘ Capitão (opcional)</option>{draft.players.map((p) => <option key={p.id} value={p.id}>© {p.name}</option>)}
         </select>
         <input value={draft.coach || ''} onChange={(e) => patch({ coach: e.target.value })} placeholder="Treinador (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
+        <input value={draft.president || ''} onChange={(e) => patch({ president: e.target.value })} placeholder="Presidente (opcional)" style={{ ...inp, flex: 1, minWidth: 130, fontSize: 13 }} />
       </div>
       <button onClick={() => { if (confirm('Remover esta equipa?')) apply(actions.removeTeam(state, t.id)); }} style={{ width: '100%', marginTop: 10, border: '1px solid #f3d6d6', background: '#fdeaea', color: '#dc2626', fontWeight: 700, fontSize: 13, padding: '9px 10px', borderRadius: 8 }}>Remover equipa</button>
     </div>

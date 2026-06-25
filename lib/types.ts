@@ -9,6 +9,7 @@ export type Team = {
   players: Player[];
   captain?: string;     // id do jogador capitão
   coach?: string;       // nome do treinador
+  president?: string;   // nome do presidente do clube
   logo?: string;        // URL do logo (/api/uploads/<id>.webp); ausente = badge de iniciais
 };
 
