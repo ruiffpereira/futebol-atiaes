@@ -811,6 +811,31 @@ function Header({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // Auto-fit do título: ajusta a fonte para encher a largura disponível,
+  // com máximo de 27px (em ecrã largo) — assim nunca corta com reticências.
+  const titleRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = titleRef.current;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
+    const MAX = 27;
+    const fit = () => {
+      el.style.fontSize = MAX + "px";
+      const avail = parent.clientWidth;
+      if (avail <= 0) return;
+      const needed = el.scrollWidth;
+      if (needed > avail) {
+        el.style.fontSize = Math.max(12, Math.floor((MAX * avail) / needed)) + "px";
+      }
+    };
+    fit();
+    // a fonte (Barlow Condensed) carrega depois → remede quando estiver pronta
+    if (document.fonts?.ready) document.fonts.ready.then(fit);
+    const ro = new ResizeObserver(fit);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [brandFirst, brandRest]);
   return (
     <div
       ref={barRef}
@@ -848,7 +873,7 @@ function Header({
             boxShadow: "0 1px 3px rgba(0,0,0,.25)",
           }}
         />
-        <div style={{ flex: 1, minWidth: 0, containerType: "inline-size" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               fontSize: 10.5,
@@ -861,16 +886,14 @@ function Header({
             {title}
           </div>
           <div
+            ref={titleRef}
             className="cond"
             style={{
               fontWeight: 800,
-              // proporcional à largura do container, com máximo de 27px (evita reticências em mobile)
-              fontSize: "min(27px, 12cqi)",
+              fontSize: 27,
               color: "rgba(255,255,255,.92)",
               lineHeight: 1.05,
               whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
             }}
           >
             <span style={{ color: "#fff" }}>{brandFirst}</span>
