@@ -255,10 +255,10 @@ export default function PublicPage() {
           }}
         >
           <svg width="15" height="11" viewBox="0 0 44 32" aria-hidden="true">
-            <text x="0" y="25" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="28" fill="#14274a">R</text>
+            <text x="0" y="25" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="28" fill="var(--rv-blue)">R</text>
             <text x="20" y="25" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="28" fill="#ed1c24">V</text>
           </svg>
-          Desenvolvido por <b style={{ fontWeight: 700 }}><span style={{ color: "#14274a" }}>Ruf</span><span style={{ color: "#ed1c24" }}>Vision</span></b>
+          Desenvolvido por <b style={{ fontWeight: 700 }}><span style={{ color: "var(--rv-blue)" }}>Ruf</span><span style={{ color: "#ed1c24" }}>Vision</span></b>
         </a>
         <div
           className="hide-mobile"
