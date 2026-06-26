@@ -345,15 +345,27 @@ export default function PublicPage() {
         {tab === "schedule" && (
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 24 }}>
             <Section title="Próximos jogos">
-              {upcoming.length ? (
-                upcoming.map((m) => (
-                  <Line
-                    key={m.id}
-                    m={m}
-                    nameOf={nameOf}
-                    onClick={() => setDetail(m.id)}
-                  />
-                ))
+              {live.length || upcoming.length ? (
+                <>
+                  {/* jogos a decorrer ficam no calendário (no topo), com placar ao vivo */}
+                  {live.map((m) => (
+                    <Line
+                      key={m.id}
+                      m={m}
+                      nameOf={nameOf}
+                      live
+                      onClick={() => setDetail(m.id)}
+                    />
+                  ))}
+                  {upcoming.map((m) => (
+                    <Line
+                      key={m.id}
+                      m={m}
+                      nameOf={nameOf}
+                      onClick={() => setDetail(m.id)}
+                    />
+                  ))}
+                </>
               ) : (
                 <EmptyLine text="Sem jogos agendados." />
               )}
@@ -2704,11 +2716,13 @@ function Line({
   m,
   nameOf,
   score,
+  live,
   onClick,
 }: {
   m: Match;
   nameOf: (m: Match, s: "a" | "b") => string;
   score?: boolean;
+  live?: boolean;
   onClick?: () => void;
 }) {
   const sa = scoreOf(m, m.a),
@@ -2724,6 +2738,7 @@ function Line({
         alignItems: "stretch",
         gap: 14,
         cursor: onClick ? "pointer" : "default",
+        ...(live ? { borderColor: "var(--danger-tint)" } : null),
       }}
     >
       <div
@@ -2740,7 +2755,17 @@ function Line({
           textAlign: "center",
         }}
       >
-        {score ? (
+        {live ? (
+          <>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10.5, fontWeight: 800, color: "var(--danger)", textTransform: "uppercase" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--danger)", animation: "pulse 1.1s infinite" }} />
+              Ao vivo
+            </span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: "uppercase" }}>
+              {liveBadge(m)}
+            </span>
+          </>
+        ) : score ? (
           <>
             {/* data/hora se existirem; se faltarem ambas, mostra só "Final" (sem o "–" solto) */}
             {(date || m.time) ? (
@@ -2778,13 +2803,13 @@ function Line({
         <TeamLine
           name={nameOf(m, "a")}
           seed={m.a || "a"}
-          val={score ? sa : undefined}
+          val={score || live ? sa : undefined}
           winner={score && sa > sb}
         />
         <TeamLine
           name={nameOf(m, "b")}
           seed={m.b || "b"}
-          val={score ? sb : undefined}
+          val={score || live ? sb : undefined}
           winner={score && sb > sa}
         />
       </div>

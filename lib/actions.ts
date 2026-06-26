@@ -106,6 +106,20 @@ export const actions = {
   // voltar ao preenchimento automático de um jogo da fase final
   setKoAuto: (d: TournamentState, matchId: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === matchId); if (m) m.lockTeams = false; return done(n, true); },
 
+  // Comitar a edição de uma equipa (rascunho do admin): substitui a equipa e limpa
+  // golos/cartões de jogadores removidos. Aplicado no servidor → seguro com vários admins.
+  commitTeamEdit: (d: TournamentState, teamId: string, draft: TournamentState['teams'][number]) => {
+    const n = clone(d);
+    const old = n.teams.find((x) => x.id === teamId);
+    const removed = old ? old.players.filter((p) => !draft.players.some((q) => q.id === p.id)).map((p) => p.id) : [];
+    n.teams = n.teams.map((x) => (x.id === teamId ? JSON.parse(JSON.stringify(draft)) : x));
+    if (removed.length) n.matches.forEach((m) => {
+      m.scorers = m.scorers.filter((s) => !s.player || !removed.includes(s.player));
+      m.cards = (m.cards || []).filter((c) => !c.player || !removed.includes(c.player));
+    });
+    return done(n, true);
+  },
+
   // ---- definições ----
   setName: (d: TournamentState, name: string) => { const n = clone(d); n.tournamentName = name; return done(n, true); },
   reset: () => done(defaultState()),

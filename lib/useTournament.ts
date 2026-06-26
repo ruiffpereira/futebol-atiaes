@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TournamentState } from './types';
 import { defaultState } from './tournament';
+import { actionOf } from './act';
 
 const KEY = ['tournament-state'];
 
@@ -45,6 +46,16 @@ export function useTournament() {
 
   const apply = (next: TournamentState | { error: string }) => {
     if ((next as { error?: string }).error) { alert((next as { error: string }).error); return; }
+    // Resultado do proxy `act` → envia a AÇÃO (aplicada sobre o estado do servidor).
+    const a = actionOf(next);
+    if (a) {
+      qc.setQueryData(KEY, next); // otimista: `next` já é o novo estado
+      fetch('/api/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a) })
+        .then((r) => { if (r.status === 401) throw new Error('unauthorized'); if (!r.ok) throw new Error('action'); })
+        .catch(() => qc.invalidateQueries({ queryKey: KEY }));
+      return;
+    }
+    // Fallback: estado "cru" (sem metadados) → grava o estado inteiro.
     mutation.mutate(next as TournamentState);
   };
 

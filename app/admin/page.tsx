@@ -2,7 +2,10 @@
 // BACKOFFICE — login + gestão + registo ao vivo. Escritas protegidas (cookie de admin).
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTournament } from '@/lib/useTournament';
-import { actions } from '@/lib/actions';
+// `act` é um proxy sobre `actions`: corre a ação localmente (otimista) e marca-a para
+// ser reaplicada no servidor sobre o estado mais recente (evita lost-updates com vários
+// admins). Os call-sites continuam iguais: `actions.addGoal(state, ...)`.
+import { act as actions } from '@/lib/act';
 import { useScrollLock } from '@/lib/useScrollLock';
 import { scoreOf, cardsOf, phaseLabel, liveText, liveBadge, srcLabel, fmtDate, uid } from '@/lib/tournament';
 import type { Match, TournamentState } from '@/lib/types';
@@ -163,17 +166,9 @@ function TeamCard({ t, state, apply, groupOpts }: { t: TournamentState['teams'][
   const startEdit = () => { setDraft(JSON.parse(JSON.stringify(t))); setEdit(true); };
   const patch = (p: Partial<TournamentState['teams'][number]>) => setDraft((d) => ({ ...d, ...p }));
   const finishEdit = () => {
-    // Limpa golos/cartões de jogadores removidos durante a edição.
-    const removed = t.players.filter((p) => !draft.players.some((q) => q.id === p.id)).map((p) => p.id);
-    const teams = state.teams.map((x) => (x.id === t.id ? draft : x));
-    const matches = removed.length
-      ? state.matches.map((m) => ({
-          ...m,
-          scorers: m.scorers.filter((s) => !s.player || !removed.includes(s.player)),
-          cards: (m.cards || []).filter((c) => !c.player || !removed.includes(c.player)),
-        }))
-      : state.matches;
-    apply({ ...state, teams, matches, _notify: false });
+    // A ação trata de substituir a equipa e limpar golos/cartões de jogadores removidos
+    // (aplicada no servidor → seguro com vários admins).
+    apply(actions.commitTeamEdit(state, t.id, draft));
     setEdit(false);
   };
   const fileRef = useRef<HTMLInputElement>(null);
