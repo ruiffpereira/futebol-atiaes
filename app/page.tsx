@@ -343,7 +343,7 @@ export default function PublicPage() {
           ))}
 
         {tab === "schedule" && (
-          <div style={{ display: "grid", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 24 }}>
             <Section title="Próximos jogos">
               {upcoming.length ? (
                 upcoming.map((m) => (

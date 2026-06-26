@@ -31,7 +31,9 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     g: (m.scorers || []).filter((s) => s.player === p.id).length,
     y: (m.cards || []).filter((c) => c.player === p.id && c.type === 'yellow').length,
     r: (m.cards || []).filter((c) => c.player === p.id && c.type === 'red').length,
-  })).sort((a, b) => (b.gk ? 1 : 0) - (a.gk ? 1 : 0)) : []);  // guarda-redes primeiro (sort estável mantém o resto)
+  })).sort((a, b) => rank(a) - rank(b)) : []);  // guarda-redes, depois capitão, depois o resto (sort estável)
+
+  const rank = (p: { gk: boolean; cap: boolean }) => (p.gk ? 0 : p.cap ? 1 : 2);
 
   // Camisola verde para os jogadores; guarda-redes sempre azul (independente da equipa).
   // Braçadeira dourada se for capitão; nº ao peito.
@@ -73,15 +75,11 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
     );
   };
 
-  // Coluna de uma equipa: mini-emblema + nome, plantel e (por baixo) treinador + presidente.
-  const teamColumn = (t: typeof ta, side: 'a' | 'b', align: 'left' | 'right' = 'left') => {
-    const right = align === 'right';
+  // Coluna de uma equipa: plantel e (por baixo) treinador + presidente.
+  // O emblema/nome já aparecem no topo da modal, por isso não se repetem aqui.
+  const teamColumn = (t: typeof ta, _side: 'a' | 'b', align: 'left' | 'right' = 'left') => {
     return (
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: 'flex', flexDirection: right ? 'row-reverse' : 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <TeamBadge name={t?.name || '—'} seed={m[side] || side} logo={t?.logo} size={28} />
-          <div style={{ minWidth: 0, fontWeight: 800, fontSize: 13.5, color: INK, textAlign: right ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t?.name || '—'}</div>
-        </div>
         {lineup(t).map((p, k) => playerRow(p, k, align))}
         {(t?.coach || t?.president) && (
           <div style={{ marginTop: 8, paddingTop: 2 }}>
