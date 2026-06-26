@@ -7,7 +7,7 @@ const Title = ({ children }: { children: React.ReactNode }) => <div className="c
 export default function Rules({ onClose }: { onClose: () => void }) {
   useScrollLock();
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 80, background: 'rgba(10,12,11,.55)', borderTop: '1px solid #fff', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 80, background: 'rgba(10,12,11,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'calc(var(--topbar-h, 0px) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
       <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 18, width: '100%', maxWidth: 680, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - var(--topbar-h, 0px) - 36px - env(safe-area-inset-bottom))' }}>
         <div style={{ background: 'linear-gradient(135deg,var(--brand-dark),var(--brand))', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>

@@ -101,7 +101,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
   );
 
   return (
-    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 'var(--topbar-h, 0px)', left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', borderTop: '1px solid rgba(255,255,255,1)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
+    <div className="m-fade" onClick={onClose} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 70, background: 'rgba(10,12,11,.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'calc(var(--topbar-h, 0px) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)', overflowY: 'hidden' }}>
       <div className="m-pop" onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - var(--topbar-h, 0px) - 36px - env(safe-area-inset-bottom))', boxShadow: '0 12px 28px rgba(10,30,20,.22), 0 36px 90px rgba(8,30,18,.45)' }}>
         <div style={{ padding: '16px 18px', borderBottom: `1px solid ${LINE}`, flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
