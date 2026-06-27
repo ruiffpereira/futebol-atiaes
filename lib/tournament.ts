@@ -22,8 +22,16 @@ export function newMatch(extra: Partial<Match>): Match {
   } as Match, extra);
 }
 
+// golos atribuídos por falta de comparência (W.O.) — resultado administrativo, não golos reais
+export const WO_SCORE = 3;
+
 export function scoreOf(m: Match, teamId: string | null): number {
   if (!teamId) return 0;
+  // Falta de comparência: 3–0 para a equipa presente (sem golos reais registados).
+  if (m.walkover) {
+    const present = m.walkover === 'a' ? m.b : m.a;
+    return teamId === present ? WO_SCORE : 0;
+  }
   let n = 0; (m.scorers || []).forEach((s) => { if (s.team === teamId) n++; });
   return n;
 }
@@ -104,7 +112,7 @@ export function standings(d: TournamentState, g: string): StandingRow[] {
 export type ScorerRow = { id: string; name: string; team: string; goals: number };
 export function topScorers(d: TournamentState): ScorerRow[] {
   const map: Record<string, ScorerRow> = {};
-  d.matches.forEach((m) => { if (m.phase === 'friendly') return; (m.scorers || []).forEach((s) => {
+  d.matches.forEach((m) => { if (m.phase === 'friendly' || m.walkover) return; (m.scorers || []).forEach((s) => {
     if (!s.player) return;
     const t = d.teams.find((x) => x.id === s.team); if (!t) return;
     const pl = t.players.find((p) => p.id === s.player); if (!pl) return;
@@ -120,7 +128,7 @@ export function teamStats(d: TournamentState): TeamStatRow[] {
   const map: Record<string, TeamStatRow> = {};
   d.teams.forEach((t) => { map[t.id] = { id: t.id, name: t.name, gf: 0, ga: 0, games: 0 }; });
   d.matches.forEach((m) => {
-    if (m.phase === 'friendly') return;
+    if (m.phase === 'friendly' || m.walkover) return;  // W.O. não conta para ataque/defesa
     if (m.status !== 'done' && m.status !== 'live') return;
     if (!m.a || !m.b) return;
     const sa = scoreOf(m, m.a), sb = scoreOf(m, m.b);

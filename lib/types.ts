@@ -43,6 +43,7 @@ export type Match = {
   penA?: number;
   penB?: number;
   penStart?: 'a' | 'b';  // fase final empatada: equipa que inicia o desempate por penáltis
+  walkover?: 'a' | 'b';  // falta de comparência: lado que NÃO compareceu (perde 3–0). O jogo conta na classificação mas NÃO nas estatísticas (marcadores/ataque/defesa)
   srcA?: Src;           // só fase final
   srcB?: Src;
   lockTeams?: boolean;  // fase final: equipas definidas à mão → não auto-preencher

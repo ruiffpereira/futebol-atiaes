@@ -316,6 +316,7 @@ function FixtureRow({ m, i, total, state, apply, nameOf, onOpen }: { m: Match; i
           {m.phase === 'friendly' ? <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#7c3aed', padding: '2px 8px', borderRadius: 6 }}>AMIGÁVEL</span> : <span style={{ fontSize: 11, fontWeight: 700, color: GREEN, textTransform: 'uppercase' }}>{phaseLabel(m)}</span>}
           {m.status === 'live' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: m.livePhase === 'half' ? '#d97706' : m.livePhase === 'pens' ? '#15803d' : '#dc2626', padding: '2px 7px', borderRadius: 6 }}>{liveBadge(m)}</span>}
           {m.status === 'done' && <span style={{ fontSize: 10, fontWeight: 800, color: '#5b7163', background: '#eef2ec', padding: '2px 7px', borderRadius: 6 }}>TERMINADO</span>}
+          {m.walkover && <span title="Falta de comparência" style={{ fontSize: 10, fontWeight: 800, color: '#92660a', background: '#fef3c7', border: '1px solid #fadf8b', padding: '2px 7px', borderRadius: 6 }}>W.O.</span>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           {edit ? <>
@@ -534,6 +535,8 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
   const isKo = m.phase !== 'group' && m.phase !== 'friendly';        // fase final (meias, 3º/4º, final)
   const tied = scoreOf(m, m.a) === scoreOf(m, m.b);
   const inPens = isLive && m.livePhase === 'pens';
+  // Falta de comparência (W.O.): a equipa que faltou perde 3–0 e o jogo não conta para estatísticas.
+  const woConfirm = (sd: 'a' | 'b', t: typeof ta) => { if (!t) return; if (confirm(`Marcar falta de comparência: ${t.name} não compareceu? Perde 3–0 e apaga os golos/cartões deste jogo.`)) apply(actions.setWalkover(state, m.id, sd, silent)); };
   const side = (team: typeof ta, opp: typeof ta, teamId: string | null, oppId: string | null) => (
     <div style={{ pointerEvents: canEdit ? 'auto' : 'none', opacity: canEdit ? 1 : 0.45 }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: '#5b7163', textTransform: 'uppercase', marginBottom: 8 }}>{team?.name || '—'}</div>
@@ -613,7 +616,28 @@ function ScoringModal({ state, m, apply, onClose, editUnlock, setEditUnlock }: {
               ))}</div>
             </div>
           )}
-          {m.phase !== 'group' && m.phase !== 'friendly' && m.status === 'done' && scoreOf(m, m.a) === scoreOf(m, m.b) && (
+          {!inPens && (
+            <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f0f4ee' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#5b7163', textTransform: 'uppercase', marginBottom: 8 }}>Falta de comparência (W.O.)</div>
+              {m.walkover ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#fef3c7', border: '1px solid #fadf8b', borderRadius: 11, padding: '11px 14px' }}>
+                  <span style={{ fontSize: 13, color: '#92660a', flex: 1, minWidth: 120, lineHeight: 1.45 }}>
+                    <b>{(m.walkover === 'a' ? ta?.name : tb?.name) || 'Uma equipa'}</b> não compareceu. Resultado <b>3–0</b> para <b>{(m.walkover === 'a' ? tb?.name : ta?.name) || 'a outra equipa'}</b>. Não conta para marcadores, ataque nem defesa.
+                  </span>
+                  <button onClick={() => { if (confirm('Anular a falta de comparência? O jogo volta a "por jogar".')) apply(actions.clearWalkover(state, m.id, silent)); }} style={{ border: '1px solid #d3e0d0', background: '#fff', color: '#5b7163', fontWeight: 700, fontSize: 13, padding: '9px 13px', borderRadius: 9, flexShrink: 0 }}>Anular W.O.</button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 12.5, color: '#8aa093', marginBottom: 10, lineHeight: 1.45 }}>Marca a equipa que <b>não compareceu</b>. Fica 3–0 para a outra e o jogo não conta para as estatísticas. Apaga os golos/cartões já registados.</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button disabled={!ta} onClick={() => woConfirm('a', ta)} style={woBtn(!!ta)}>🚫 {ta?.name || '—'} faltou</button>
+                    <button disabled={!tb} onClick={() => woConfirm('b', tb)} style={woBtn(!!tb)}>🚫 {tb?.name || '—'} faltou</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          {m.phase !== 'group' && m.phase !== 'friendly' && m.status === 'done' && !m.walkover && scoreOf(m, m.a) === scoreOf(m, m.b) && (
             <div style={{ marginTop: 16, padding: '12px 14px', background: '#f6faf4', borderRadius: 11, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 12.5, fontWeight: 700, color: '#5b7163' }}>Penáltis:</span>
               <input type="number" value={m.penA || 0} onChange={(e) => apply(actions.setPen(state, m.id, 'penA', +e.target.value, silent))} style={{ width: 60, padding: 8, border: '1.5px solid #d3e0d0', borderRadius: 8, textAlign: 'center' }} /><span style={{ fontWeight: 700 }}>–</span>
@@ -652,4 +676,5 @@ const inp: React.CSSProperties = { padding: '11px 13px', border: '1.5px solid #d
 const iconBtn: React.CSSProperties = { border: '1px solid #d3e0d0', background: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 10px', borderRadius: 9 };
 const btn = (fs = 14): React.CSSProperties => ({ border: 'none', background: GREEN, color: '#fff', fontWeight: 700, fontSize: fs, padding: fs < 14 ? '8px 14px' : '11px 20px', borderRadius: fs < 14 ? 9 : 10 });
 const cardBtn = (bd: string, bg: string, col: string): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 3, border: `1px solid ${bd}`, background: bg, color: col, fontWeight: 800, fontSize: 12, padding: '7px 8px', borderRadius: 8, flexShrink: 0 });
+const woBtn = (on: boolean): React.CSSProperties => ({ flex: 1, minWidth: 150, border: '1px solid #f3d6d6', background: '#fdf3f3', color: '#b91c1c', fontWeight: 700, fontSize: 13.5, padding: '11px 12px', borderRadius: 10, cursor: on ? 'pointer' : 'not-allowed', opacity: on ? 1 : 0.5 });
 const Box = ({ children }: { children: React.ReactNode }) => <div style={{ background: '#fff', borderRadius: 14, padding: 18, border: '1px solid #e4ece0' }}>{children}</div>;

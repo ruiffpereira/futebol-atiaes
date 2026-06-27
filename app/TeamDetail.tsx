@@ -54,9 +54,9 @@ export default function TeamDetail({
     if (my > th) wins++;
     gf += my;
   });
-  // golos totais (inclui amigáveis)
+  // golos totais (inclui amigáveis; exclui faltas de comparência — não são golos reais)
   let totalGoals = 0;
-  state.matches.forEach((m) => { if (m.a === team.id || m.b === team.id) totalGoals += scoreOf(m, team.id); });
+  state.matches.forEach((m) => { if ((m.a === team.id || m.b === team.id) && !m.walkover) totalGoals += scoreOf(m, team.id); });
   // pontos (se em grupo)
   const groupRow = team.group ? standings(state, team.group).find((r) => r.team.id === team.id) : null;
   const pos = team.group ? standings(state, team.group).findIndex((r) => r.team.id === team.id) + 1 : 0;
@@ -113,7 +113,7 @@ export default function TeamDetail({
         {m.status === 'scheduled' && <span style={{ width: 24, height: 24, flexShrink: 0, color: MUTED, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Clock size={16} /></span>}
         <TeamBadge name={nameOf(oppId)} seed={oppId || 'x'} logo={logoOf(oppId)} size={26} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase' }}>{[phaseLabel(m), when].filter(Boolean).join(' · ')}</div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: MUTED, textTransform: 'uppercase' }}>{[phaseLabel(m), m.walkover ? 'W.O.' : '', when].filter(Boolean).join(' · ')}</div>
           <div style={{ fontWeight: 600, fontSize: 14, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nameOf(oppId)}</div>
         </div>
         {live && <span style={{ background: m.livePhase === 'half' ? 'var(--warn)' : m.livePhase === 'pens' ? 'var(--brand)' : 'var(--danger)', color: '#fff', fontSize: 9.5, fontWeight: 800, padding: '2px 7px', borderRadius: 6, flexShrink: 0 }}>{liveBadge(m)}</span>}

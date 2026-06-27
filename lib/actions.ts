@@ -84,7 +84,23 @@ export const actions = {
   setPenStart: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) m.penStart = side; return done(n); },
   addPen: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { const k = side === 'a' ? 'penA' : 'penB'; m[k] = (m[k] || 0) + 1; } return done(n); },
   removePen: (d: TournamentState, id: string, side: 'a' | 'b') => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { const k = side === 'a' ? 'penA' : 'penB'; m[k] = Math.max(0, (m[k] || 0) - 1); } return done(n); },
-  reopenMatch: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = m.livePhase || 'second'; } return done(n); },
+  reopenMatch: (d: TournamentState, id: string) => { const n = clone(d); const m = n.matches.find((x) => x.id === id); if (m) { m.status = 'live'; m.livePhase = m.livePhase || 'second'; m.walkover = undefined; } return done(n); },
+
+  // ---- falta de comparência (W.O.) ----
+  // Marca o lado que NÃO compareceu (absentSide). O jogo fica 3–0 para a outra equipa,
+  // terminado, e NÃO conta para estatísticas (marcadores/ataque/defesa) — só para a
+  // classificação. Limpa golos/cartões/penáltis já registados (ex.: auto-golos usados como remendo).
+  setWalkover: (d: TournamentState, matchId: string, absentSide: 'a' | 'b', silent = false) => {
+    const n = clone(d); const m = n.matches.find((x) => x.id === matchId);
+    if (m) { m.scorers = []; m.cards = []; m.penA = 0; m.penB = 0; m.penStart = undefined; m.walkover = absentSide; m.status = 'done'; m.finishedAt = Date.now(); }
+    return done(n, silent);
+  },
+  // Anula a falta de comparência → o jogo volta a "por jogar" (sem resultado).
+  clearWalkover: (d: TournamentState, matchId: string, silent = false) => {
+    const n = clone(d); const m = n.matches.find((x) => x.id === matchId);
+    if (m) { m.walkover = undefined; m.status = 'scheduled'; m.finishedAt = 0; }
+    return done(n, silent);
+  },
 
   // ---- fase final (automática) ----
   genKnockout: (d: TournamentState) => {

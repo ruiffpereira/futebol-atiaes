@@ -114,7 +114,7 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
               <span className="cond" style={{ fontWeight: 800, fontSize: 40, color: INK, lineHeight: 1 }}>{scoreOf(m, m.a)} : {scoreOf(m, m.b)}</span>
               {((m.penA || 0) > 0 || (m.penB || 0) > 0) && <span style={{ color: MUTED, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: .3 }}>Penáltis {m.penA || 0}–{m.penB || 0}</span>}
               {m.status === 'live' && <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: m.livePhase === 'half' ? 'var(--warn)' : m.livePhase === 'pens' ? 'var(--brand)' : 'var(--danger)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', animation: 'pulse 1.1s infinite' }} />{liveBadge(m)}</span>}
-              {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Terminado</span>}
+              {m.status === 'done' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>{m.walkover ? 'Terminado · W.O.' : 'Terminado'}</span>}
               {m.status === 'scheduled' && <span style={{ color: MUTED, fontSize: 11, fontWeight: 700 }}>{m.time || 'Por jogar'}</span>}
             </div>
             {teamCol(tb?.name || 'A definir', 'b', tb?.logo)}
@@ -122,7 +122,12 @@ export default function MatchDetail({ m, state, onClose }: { m: Match; state: To
         </div>
         <div style={{ padding: '16px 18px', overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: MUTED, letterSpacing: .5, textTransform: 'uppercase', marginBottom: 12 }}>Lance a lance</div>
-          {rows.length ? <div style={{ position: 'relative' }}>
+          {m.walkover ? (
+            <div style={{ background: 'var(--warn-tint)', border: '1px solid var(--warn)', borderRadius: 12, padding: '14px 16px', color: INK, fontSize: 13.5, lineHeight: 1.5, textAlign: 'center' }}>
+              <b style={{ color: 'var(--warn)' }}>Falta de comparência.</b><br />
+              {(m.walkover === 'a' ? ta?.name : tb?.name) || 'Uma equipa'} não compareceu — vitória por <b>3–0</b> de {(m.walkover === 'a' ? tb?.name : ta?.name) || 'a outra equipa'}.
+            </div>
+          ) : rows.length ? <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: LINE, transform: 'translateX(-50%)' }} />
             {rows.map((e) => (
               <div key={e.i} style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 36px 1fr', alignItems: 'center', gap: 8, padding: '6px 0' }}>

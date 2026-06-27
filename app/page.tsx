@@ -2639,6 +2639,21 @@ function KoCard({
           {liveBadge(m)}
         </div>
       )}
+      {m.status === "done" && m.walkover && (
+        <div
+          style={{
+            padding: "5px 14px",
+            fontSize: 10.5,
+            fontWeight: 800,
+            color: "var(--warn)",
+            textAlign: "center",
+            textTransform: "uppercase",
+            letterSpacing: 0.3,
+          }}
+        >
+          Falta de comparência (W.O.)
+        </div>
+      )}
     </div>
   );
 }
@@ -2796,6 +2811,11 @@ function Line({
         {m.phase === "friendly" && (
           <span style={{ fontSize: 9, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", marginTop: 2 }}>
             Amigável
+          </span>
+        )}
+        {m.walkover && (
+          <span title="Falta de comparência" style={{ fontSize: 9, fontWeight: 800, color: "var(--warn)", textTransform: "uppercase", marginTop: 2 }}>
+            W.O.
           </span>
         )}
       </div>
