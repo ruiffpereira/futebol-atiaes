@@ -198,6 +198,7 @@ export default function PublicPage() {
     icon: React.ReactNode,
     label: string,
     activeColor = GREEN,
+    alert = false, // jogo ao vivo → vermelho a piscar mesmo sem o separador ativo (como no header)
   ) => (
     <button
       onClick={() => setTab(id)}
@@ -210,11 +211,33 @@ export default function PublicPage() {
         alignItems: "center",
         gap: 3,
         padding: "6px 2px",
-        color: tab === id ? activeColor : "var(--muted)",
+        color: alert ? "var(--danger)" : tab === id ? activeColor : "var(--muted)",
       }}
     >
-      <span style={{ display: "flex", height: 22, alignItems: "center" }}>
+      <span
+        style={{
+          position: "relative",
+          display: "flex",
+          height: 22,
+          alignItems: "center",
+          animation: alert ? "pulse 1.1s infinite" : undefined,
+        }}
+      >
         {icon}
+        {alert && (
+          <span
+            style={{
+              position: "absolute",
+              top: -3,
+              right: -6,
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: "var(--danger)",
+              animation: "pulse 1.1s infinite",
+            }}
+          />
+        )}
       </span>
       <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
     </button>
@@ -233,6 +256,7 @@ export default function PublicPage() {
         liveCount={live.length}
         notifyOn={on}
         onBell={() => setNotifyOpen(true)}
+        onLive={() => setTab("live")}
       />
       <div
         className="pub-pad"
@@ -575,7 +599,7 @@ export default function PublicPage() {
         }}
       >
         {navBtn("standings", <List size={22} />, "Tabela")}
-        {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "var(--danger)")}
+        {navBtn("live", <Broadcast size={22} />, "Ao Vivo", "var(--danger)", live.length > 0)}
         {navBtn("schedule", <Calendar size={22} />, "Calend.")}
         {navBtn("stats", <Chart size={22} />, "Estat.")}
         {navBtn("profile", <Info size={22} />, "Info")}
@@ -806,6 +830,7 @@ function Header({
   liveCount,
   notifyOn,
   onBell,
+  onLive,
 }: {
   name: string;
   title: string;
@@ -813,6 +838,7 @@ function Header({
   liveCount: number;
   notifyOn: boolean;
   onBell: () => void;
+  onLive: () => void;
 }) {
   const parts = name.trim().split(" ");
   const brandFirst = parts[0];
@@ -931,11 +957,15 @@ function Header({
           }}
         >
           {liveCount > 0 && (
-            <div
+            <button
+              onClick={onLive}
+              aria-label="Ver jogos ao vivo"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
+                border: "none",
+                cursor: "pointer",
                 background: "var(--danger-tint)",
                 color: "var(--danger)",
                 padding: "7px 11px",
@@ -954,7 +984,7 @@ function Header({
                 }}
               />
               {liveCount} ao vivo
-            </div>
+            </button>
           )}
           <button
             onClick={onBell}
