@@ -11,6 +11,8 @@ const V = '${APP_VERSION}';
 self.addEventListener('push', (event) => {
   let data = { title: '⚽ Atiães em Movimento', body: 'Atualização do torneio' };
   try { if (event.data) data = event.data.json(); } catch (e) {}
+  var matchId = data.matchId || '';
+  var url = matchId ? '/?match=' + matchId : '/';
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
@@ -19,16 +21,31 @@ self.addEventListener('push', (event) => {
       vibrate: [130, 60, 130],
       tag: 'torneio',
       renotify: true,
+      data: { url: url, matchId: matchId },   // levado para o clique → abre a modal do jogo
     })
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  var d = event.notification.data || {};
+  var matchId = d.matchId || '';
+  var url = d.url || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      if (clients.openWindow) return clients.openWindow('/');
+      // se já houver uma janela no placar (rota '/'), foca-a e diz-lhe que jogo abrir
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        var path = '/';
+        try { path = new URL(c.url).pathname; } catch (e) {}
+        if (path === '/' && 'focus' in c) {
+          return c.focus().then(function () {
+            if (matchId) { try { c.postMessage({ type: 'open-match', matchId: matchId }); } catch (e) {} }
+          });
+        }
+      }
+      // senão, abre uma nova janela já no jogo
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });

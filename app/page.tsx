@@ -143,6 +143,29 @@ export default function PublicPage() {
     fetch("/api/visit", { method: "POST" }).catch(() => {});
   }, []);
 
+  // Abrir a modal de um jogo ao clicar numa notificação push.
+  // A MatchDetail mostra-se "ao vivo" se o jogo ainda decorrer, ou o resultado se já terminou.
+  useEffect(() => {
+    // 1) app aberta de novo (ou nova janela) via /?match=<id>
+    try {
+      const mid = new URLSearchParams(window.location.search).get("match");
+      if (mid) {
+        setDetail(mid);
+        window.history.replaceState({}, "", window.location.pathname); // evita reabrir num refresh
+      }
+    } catch {}
+    // 2) app já estava aberta → o service worker envia o id ao clicar na notificação
+    const sw = navigator.serviceWorker;
+    if (!sw) return;
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; matchId?: string } | null;
+      if (d && d.type === "open-match" && d.matchId) setDetail(d.matchId);
+    };
+    sw.addEventListener("message", onMsg);
+    return () => sw.removeEventListener("message", onMsg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const tn = (id: string | null) => state.teams.find((t) => t.id === id);
   const logoMap = useMemo(
     () => Object.fromEntries(state.teams.map((t) => [t.id, t.logo])),
@@ -529,7 +552,7 @@ export default function PublicPage() {
                       seed={t.id}
                       barVal={t.gf}
                       barMax={attack[0].gf}
-                      extra={t.games + "J"}
+                      games={t.games}
                       last={i === attack.length - 1}
                     />
                   ))}
@@ -557,7 +580,7 @@ export default function PublicPage() {
                       seed={t.id}
                       barVal={defense[defense.length - 1].ga - t.ga}
                       barMax={defense[defense.length - 1].ga - defense[0].ga}
-                      extra={t.games + "J"}
+                      games={t.games}
                       last={i === defense.length - 1}
                     />
                   ))}
@@ -2952,6 +2975,7 @@ const Row3 = ({
   val,
   color,
   extra,
+  games,
   seed,
   barVal,
   barMax,
@@ -2963,6 +2987,7 @@ const Row3 = ({
   val: number;
   color: string;
   extra?: string;
+  games?: number;
   seed?: string;
   barVal?: number;
   barMax?: number;
@@ -2997,17 +3022,35 @@ const Row3 = ({
       </span>
       {seed && <TeamBadge name={name} seed={seed} logo={rowLogo} size={28} />}
       <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: 14,
-            color: INK,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {name}
+        <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: 14,
+              color: INK,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              minWidth: 0,
+            }}
+          >
+            {name}
+          </span>
+          {games != null && (
+            <span
+              style={{
+                flexShrink: 0,
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: MUTED,
+                background: "var(--surface-2)",
+                padding: "2px 7px",
+                borderRadius: 999,
+              }}
+            >
+              {games} {games === 1 ? "jogo" : "jogos"}
+            </span>
+          )}
         </div>
         {pct > 0 ? (
           <div
